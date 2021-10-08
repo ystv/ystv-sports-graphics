@@ -1,11 +1,17 @@
-interface TeamDictionaryTeam {
+export interface TeamDictionaryTeam {
   teamName: string;
   logoSVG?: string;
   primaryColor: string;
   secondaryColor?: string;
+  teamShort: string;
 }
 
-const TeamDictionary: TeamDictionaryTeam[] = [
-  { teamName: "York", primaryColor: "#FAAF18" },
-  { teamName: "Glasgow", primaryColor: "#0d0802", secondaryColor: "#ffdd1a" },
-];
+export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
+  york: { teamName: "York", primaryColor: "#FAAF18", teamShort: "yrk" },
+  glasgow: {
+    teamName: "Glasgow",
+    primaryColor: "#0d0802",
+    secondaryColor: "#ffdd1a",
+    teamShort: "gls",
+  },
+};
