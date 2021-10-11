@@ -1,24 +1,22 @@
 import ReactDOM from "react-dom";
 import React from "react";
 import { useOnlyReplicantValue } from "common/useReplicant";
-import { Name } from "./Name";
 import { Scoreboard } from "./rugby/Scoreboard";
 import "./global.css";
 import { Lineup } from "./rugby/Lineup";
 
 function AllGraphics() {
   const name = useOnlyReplicantValue("name", undefined, { defaultValue: "" });
+  const show = useOnlyReplicantValue("show", undefined, {
+    defaultValue: false,
+  });
   return (
     <>
-      {/* <GraphicContainer>
-        <h1 style={{ color: "red" }}>This is the graphics, but React.</h1>
-        <Name name={name || ""} />
-      </GraphicContainer> */}
       <GraphicContainer>
         <Scoreboard />
       </GraphicContainer>
       <GraphicContainer>
-        <Lineup />
+        <Lineup isVisible={show} />
       </GraphicContainer>
     </>
   );

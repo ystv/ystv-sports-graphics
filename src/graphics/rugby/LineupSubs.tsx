@@ -7,40 +7,32 @@ export function LineupSubs() {
     <div className="titleSafe">
       <table style={{ fontWeight: 700 }} className={styles.lineupTable}>
         <tr style={{ textAlign: "center" }}>
-          <td className={styles.titleCell}>
-            <div>{sides[0].name}</div>
-          </td>
-          <td />
-          <td className={styles.titleCell}>
-            <div style={{ backgroundColor: sides[1].color }}>
-              {sides[1].name}
-            </div>
-          </td>
+          {sides.map((e, i) => (
+            <>
+              <td className={styles.titleCell}>
+                <div style={{ backgroundColor: e.color }}>{e.name}</div>
+              </td>
+              {i == 0 && <td />}
+            </>
+          ))}
         </tr>
         <tr>
-          <td className={styles.groupColumns}>
-            {sides[0].team.map((e, i) => (
-              <tr className={styles.lineupMicroRow}>
-                <td className={styles.positionNumber}>{i + 1}</td>
-                <td>
-                  {e.name}
-                  {e.captain && " (C)"}
-                </td>
-              </tr>
-            ))}
-          </td>
-          <td className={styles.spacerColumn}></td>
-          <td className={styles.groupColumns}>
-            {sides[1].team.map((e, i) => (
-              <tr className={styles.lineupMicroRow}>
-                <td className={styles.positionNumber}>{i + 1}</td>
-                <td>
-                  {e.name}
-                  {e.captain && " (C)"}
-                </td>
-              </tr>
-            ))}
-          </td>
+          {sides.map((side, i) => (
+            <>
+              <td className={styles.groupColumns}>
+                {side.team.map((e, i) => (
+                  <tr className={styles.lineupMicroRow}>
+                    <td className={styles.positionNumber}>{i + 1}</td>
+                    <td>
+                      {e.name}
+                      {e.captain && " (C)"}
+                    </td>
+                  </tr>
+                ))}
+              </td>
+              {i == 0 && <td className={styles.spacerColumn} />}
+            </>
+          ))}
         </tr>
       </table>
     </div>
