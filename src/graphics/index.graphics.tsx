@@ -4,6 +4,7 @@ import { useOnlyReplicantValue } from "common/useReplicant";
 import { Name } from "./Name";
 import { Scoreboard } from "./rugby/Scoreboard";
 import "./global.css";
+import { Lineup } from "./rugby/Lineup";
 
 function AllGraphics() {
   const name = useOnlyReplicantValue("name", undefined, { defaultValue: "" });
@@ -15,6 +16,9 @@ function AllGraphics() {
       </GraphicContainer> */}
       <GraphicContainer>
         <Scoreboard />
+      </GraphicContainer>
+      <GraphicContainer>
+        <Lineup />
       </GraphicContainer>
     </>
   );

@@ -1,11 +1,22 @@
-import { TeamDictionary, TeamDictionaryTeam } from "common/teamDictionary";
 import styles from "./Scoreboard.module.css";
 
-export interface ScoreboardProps {}
+export interface ScoreboardProps {
+  team1Name?: string;
+  team2Name?: string;
+  team1Score?: number;
+  team2Score?: number;
+  timer?: string;
+}
 
-export function Scoreboard() {
-  const team1 = TeamDictionary.york;
-  const team2 = TeamDictionary.glasgow;
+export function Scoreboard({
+  team1Name = "york",
+  team2Name = "glasgow",
+  team1Score = 0,
+  team2Score = 0,
+  timer = "00:00",
+}: ScoreboardProps) {
+  const team1 = TeamDictionary[team1Name];
+  const team2 = TeamDictionary[team2Name];
   return (
     <div className="titleSafe">
       <div className={styles.scoreboard}>
@@ -23,7 +34,9 @@ export function Scoreboard() {
               </div>
             </div>
           </div>
-          <div className={styles.scores}>12 - 26</div>
+          <div className={styles.scores}>
+            {team1Score} - {team2Score}
+          </div>
           <div className={styles.container2}>
             <div
               className={styles.parallelogram2}
@@ -37,9 +50,32 @@ export function Scoreboard() {
               </div>
             </div>
           </div>
-          <div className={styles.timer}>10:23</div>
+          <div className={styles.timer}>{timer}</div>
         </div>
       </div>
     </div>
   );
 }
+
+export interface TeamDictionaryTeam {
+  teamName: string;
+  logoSVG?: string;
+  primaryColor: string;
+  secondaryColor?: string;
+  teamShort: string;
+}
+
+export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
+  york: { teamName: "York", primaryColor: "#FAAF18", teamShort: "yrk" },
+  glasgow: {
+    teamName: "Glasgow",
+    primaryColor: "#0d0802",
+    secondaryColor: "#ffdd1a",
+    teamShort: "gls",
+  },
+  leeds: {
+    teamName: "Leeds",
+    primaryColor: "#44ff33",
+    teamShort: "lds",
+  },
+};
