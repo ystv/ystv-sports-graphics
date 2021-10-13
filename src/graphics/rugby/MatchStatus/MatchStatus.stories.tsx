@@ -1,13 +1,13 @@
 import { Story, Meta } from "@storybook/react";
-import { Scoreboard, ScoreboardProps } from "./Scoreboard";
-import { TeamDictionary } from "../../common/teamDictionary";
+import { MatchStatus, MatchStatusProps } from "./MatchStatus";
+import { TeamDictionary } from "../../../common/teamDictionary";
 
 export default {
-  title: "Scoreboard",
-  component: Scoreboard,
+  title: "MatchStatus",
+  component: MatchStatus,
 } as Meta;
 
-const Template: Story<ScoreboardProps> = (args) => <Scoreboard {...args} />;
+const Template: Story<MatchStatusProps> = (args) => <MatchStatus {...args} />;
 
 export const Hello = Template.bind({});
 
@@ -18,6 +18,7 @@ Hello.args = {
   team1Score: 28,
   team2Score: 12,
   timer: "10:23",
+  isOver: false,
 };
 
 Hello.argTypes = {

@@ -1,9 +1,9 @@
 import ReactDOM from "react-dom";
 import React from "react";
 import { useOnlyReplicantValue } from "common/useReplicant";
-import { Scoreboard } from "./rugby/Scoreboard";
+import { Scoreboard } from "./rugby/Scoreboard/Scoreboard";
 import "./global.css";
-import { Lineup } from "./rugby/Lineup";
+import { Lineup } from "./rugby/Lineup/Lineup";
 
 function AllGraphics() {
   const name = useOnlyReplicantValue("name", undefined, { defaultValue: "" });

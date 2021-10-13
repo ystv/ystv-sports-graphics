@@ -1,10 +1,10 @@
-import styles from "./Scoreboard.module.css";
+import styles from "./MatchStatus.module.css";
 import { TeamDictionary } from "common/teamDictionary";
 import { AnimatePresence, motion } from "framer-motion";
 
-export interface ScoreboardProps {
+export interface MatchStatusProps {
   isVisible: boolean;
-  isTimerShown: boolean;
+  isOver: boolean;
   team1Name?: string;
   team2Name?: string;
   team1Score?: number;
@@ -12,15 +12,15 @@ export interface ScoreboardProps {
   timer?: string;
 }
 
-export function Scoreboard({
+export function MatchStatus({
   isVisible = false,
-  isTimerShown = false,
+  isOver = false,
   team1Name = "york",
   team2Name = "glasgow",
   team1Score = 0,
   team2Score = 0,
   timer = "00:00",
-}: ScoreboardProps) {
+}: MatchStatusProps) {
   const team1 = TeamDictionary[team1Name];
   const team2 = TeamDictionary[team2Name];
   const parallelogramVariants = {
@@ -28,12 +28,14 @@ export function Scoreboard({
       width: 0,
       transition: {
         delay: 1,
+        type: "tween",
       },
     },
     visible: {
       width: "var(--width)",
       transition: {
         delay: 1,
+        type: "tween",
       },
     },
   };
@@ -42,12 +44,14 @@ export function Scoreboard({
       width: 0,
       transition: {
         delay: 0.8,
+        type: "tween",
       },
     },
     visible: {
       width: "calc(var(--width) * 1.4)",
       transition: {
         delay: 0.8,
+        type: "tween",
       },
     },
   };
@@ -56,12 +60,14 @@ export function Scoreboard({
       width: 0,
       transition: {
         delay: 0,
+        type: "tween",
       },
     },
     visible: {
-      width: "var(--width)",
+      width: "calc(3.18 * var(--width))",
       transition: {
         delay: 1,
+        type: "tween",
       },
     },
   };
@@ -136,20 +142,16 @@ export function Scoreboard({
                   </div>
                 </motion.div>
               </motion.div>
-              <AnimatePresence>
-                {isTimerShown && isVisible && (
-                  <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    variants={extrasVariants}
-                    className={styles.timer}
-                  >
-                    {timer}
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              variants={extrasVariants}
+              className={styles.timer}
+            >
+              {isOver ? "FULL TIME" : "HALF TIME"}
+            </motion.div>
           </div>
         </motion.div>
       )}

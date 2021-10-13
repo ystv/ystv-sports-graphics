@@ -1,0 +1,45 @@
+.container {
+	--height: 15vh;
+	--width: 5vw;
+	font-weight: 900;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	height: 100%;
+	overflow: hidden;
+}
+
+.third {
+	background-color: var(--dark);
+	overflow: hidden;
+	color: var(--light);
+	text-transform: uppercase;
+	border-left-style: solid;
+	border-left-width: 1.5vw;
+	/*border-left-color: ;*/
+}
+
+.third h2, .third h4 {
+	padding: 0 4vw;
+}
+
+.mask div {
+	height: var(--height);
+	text-align: center;
+	font-size: 0.7em;
+	text-transform: uppercase;
+	overflow: hidden;
+}
+
+.open {
+	background-color: var(--dark);
+	/*width: var(--width);*/
+	color: var(--light);
+}
+
+.live {
+	background-color: var(--light);
+	/*min-width: var(--width);*/
+	/*width: fit-content;*/
+	color: var(--dark);
+}

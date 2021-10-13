@@ -33,5 +33,11 @@ export const parameters = {
   },
   backgrounds: {
     default: "dark",
+    values: [
+      {
+        name: "mid",
+        value: "#cccccc",
+      },
+    ],
   },
 };
