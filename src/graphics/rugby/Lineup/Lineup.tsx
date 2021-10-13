@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export interface LineupProps {
   isVisible: boolean;
+  lineupTeam: number;
 }
 
 export const cellVariants = {
@@ -55,7 +56,7 @@ export const bodyVariants = {
   },
 };
 
-export function Lineup({ isVisible }: LineupProps) {
+export function Lineup({ isVisible, lineupTeam = 0 }: LineupProps) {
   return (
     <AnimatePresence>
       {isVisible && (
@@ -68,8 +69,14 @@ export function Lineup({ isVisible }: LineupProps) {
           <table style={{ fontWeight: 700 }} className={styles.lineupTable}>
             <thead>
               <td colSpan={3} className={styles.titleCell}>
-                <motion.div style={{ minWidth: 0 }} variants={titleVariants}>
-                  York
+                <motion.div
+                  style={{
+                    minWidth: 0,
+                    backgroundColor: teams[lineupTeam].color,
+                  }}
+                  variants={titleVariants}
+                >
+                  {teams[lineupTeam].name}
                 </motion.div>
               </td>
             </thead>
@@ -79,13 +86,16 @@ export function Lineup({ isVisible }: LineupProps) {
                   variants={columnVariants}
                   className={styles.groupColumns}
                 >
-                  {team.slice(0, 8).map((e, i) => (
+                  {teams[lineupTeam].team.slice(0, 8).map((e, i) => (
                     <motion.tr
                       variants={cellVariants}
                       className={styles.lineupMicroRow}
                     >
                       <td className={styles.positionNumber}>{i + 1}</td>
-                      <td>{e}</td>
+                      <td>
+                        {e.name}
+                        {e.captain ? " (C)" : ""}
+                      </td>
                     </motion.tr>
                   ))}
                 </motion.td>
@@ -94,13 +104,16 @@ export function Lineup({ isVisible }: LineupProps) {
                   variants={columnVariants}
                   className={styles.groupColumns}
                 >
-                  {team.slice(8).map((e, i) => (
+                  {teams[lineupTeam].team.slice(8).map((e, i) => (
                     <motion.tr
                       variants={cellVariants}
                       className={styles.lineupMicroRow}
                     >
                       <td className={styles.positionNumber}>{i + 9}</td>
-                      <td>{e}</td>
+                      <td>
+                        {e.name}
+                        {e.captain ? " (C)" : ""}
+                      </td>
                     </motion.tr>
                   ))}
                 </motion.td>
@@ -113,20 +126,47 @@ export function Lineup({ isVisible }: LineupProps) {
   );
 }
 
-const team = [
-  "Marcia Harmon",
-  "Samantha Wiley",
-  "Mildred Spencer",
-  "Lorna Stout",
-  "Gabrielle Munoz",
-  "Marissa Singleton",
-  "Yolanda Peck",
-  "Shelly Odonnell",
-  "Hope Patton",
-  "Maxine Kemp",
-  "Ruby Elliott",
-  "Gay Garrison",
-  "Lolita Best",
-  "Mariana Bonilla",
-  "Dorothea Mcclure",
+const teams = [
+  {
+    name: "York",
+    color: "#faaf18",
+    team: [
+      { name: "Marcia Harmon" },
+      { name: "Samantha Wiley" },
+      { name: "Mildred Spencer" },
+      { name: "Lorna Stout" },
+      { name: "Gabrielle Munoz", captain: true },
+      { name: "Marissa Singleton" },
+      { name: "Yolanda Peck" },
+      { name: "Shelly Odonnell" },
+      { name: "Hope Patton" },
+      { name: "Maxine Kemp" },
+      { name: "Ruby Elliott" },
+      { name: "Gay Garrison" },
+      { name: "Lolita Best" },
+      { name: "Mariana Bonilla" },
+      { name: "Dorothea Mcclure" },
+    ],
+  },
+  {
+    name: "Glasgow",
+    color: "#002542",
+    team: [
+      { name: "Marcia Harmon" },
+      { name: "Samantha Wiley" },
+      { name: "Mildred Spencer" },
+      { name: "Lorna Stout" },
+      { name: "Gabrielle Munoz" },
+      { name: "Marissa Singleton" },
+      { name: "Yolanda Peck" },
+      { name: "Shelly Odonnell" },
+      { name: "Hope Patton" },
+      { name: "Maxine Kemp" },
+      { name: "Ruby Elliott", captain: true },
+      { name: "Gay Garrison" },
+      { name: "Lolita Best" },
+      { name: "Mariana Bonilla" },
+      { name: "Dorothea Mcclure" },
+    ],
+  },
 ];

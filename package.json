@@ -19,9 +19,9 @@
       {
         "name": "controller",
         "title": "Controller",
-        "width": 2,
         "file": "dashboard.html",
-        "headerColor": "#FAAF18"
+        "headerColor": "#FAAF18",
+        "fullbleed": true
       }
     ],
     "graphics": [

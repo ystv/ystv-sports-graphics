@@ -23,9 +23,16 @@ const titleVariants = {
 
 export interface LineupSubsProps {
   isVisible: boolean;
+  team: number;
 }
 
-export function LineupSubs({ isVisible = false }: LineupSubsProps) {
+export function LineupSubs({ isVisible = false, team = 0 }: LineupSubsProps) {
+  let sides;
+  if (team == 2) {
+    sides = sideSubs;
+  } else {
+    sides = [sideSubs[team]];
+  }
   return (
     <AnimatePresence>
       {isVisible && (
@@ -83,10 +90,7 @@ export function LineupSubs({ isVisible = false }: LineupSubsProps) {
                           variants={cellVariants}
                         >
                           <td className={styles.positionNumber}>{i + 16}</td>
-                          <td>
-                            {e.name}
-                            {e.captain && " (C)"}
-                          </td>
+                          <td>{e.name}</td>
                         </motion.tr>
                       ))}
                     </motion.td>
@@ -101,14 +105,14 @@ export function LineupSubs({ isVisible = false }: LineupSubsProps) {
   );
 }
 
-const sides = [
+const sideSubs = [
   {
     name: "york",
     color: "#faaf18",
     team: [
       { name: "Hope Patton" },
       { name: "Maxine Kemp" },
-      { name: "Ruby Elliott", captain: true },
+      { name: "Ruby Elliott" },
       { name: "Gay Garrison" },
       { name: "Lolita Best" },
       { name: "Mariana Bonilla" },
@@ -123,7 +127,7 @@ const sides = [
       { name: "Samantha Wiley" },
       { name: "Mildred Spencer" },
       { name: "Lorna Stout" },
-      { name: "Marissa Singleton", captain: true },
+      { name: "Marissa Singleton" },
       { name: "Yolanda Peck" },
       { name: "Shelly O'donnell" },
     ],
