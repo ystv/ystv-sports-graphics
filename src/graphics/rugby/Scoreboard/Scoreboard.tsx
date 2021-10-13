@@ -104,7 +104,7 @@ export function Scoreboard({
                     >
                       {team1.teamShort.toUpperCase()}
                     </h1>
-                    <img src="yorksport.svg" style={{ opacity: "18%" }} />
+                    {/*<img src="yorksport.svg" style={{ opacity: "18%" }} />*/}
                   </div>
                 </motion.div>
               </motion.div>
@@ -138,7 +138,7 @@ export function Scoreboard({
                     >
                       {team2.teamShort.toUpperCase()}
                     </h1>
-                    <img src="lancs.svg" style={{ opacity: "40%" }} />
+                    {/*<img src="lancs.svg" style={{ opacity: "40%" }} />*/}
                   </div>
                 </motion.div>
               </motion.div>
