@@ -42,7 +42,7 @@ function AllGraphics() {
   });
   const name = useOnlyReplicantValue("name", undefined, { defaultValue: "" });
   const role = useOnlyReplicantValue("role", undefined, {
-    defaultValue: undefined,
+    defaultValue: "",
   });
 
   const showBug = useOnlyReplicantValue("showBug", undefined, {
@@ -60,7 +60,7 @@ function AllGraphics() {
       <GraphicContainer>
         <Scoreboard
           isVisible={showScoreboard}
-          isTimerShown={true}
+          isTimerShown={false}
           team1Score={team1Score}
           team2Score={team2Score}
           timer={timer}

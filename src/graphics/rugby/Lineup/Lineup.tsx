@@ -1,5 +1,6 @@
 import styles from "./Lineup.module.css";
 import { motion, AnimatePresence } from "framer-motion";
+import { TeamDictionary } from "../../../common/teamDictionary";
 
 export interface LineupProps {
   isVisible: boolean;
@@ -72,7 +73,10 @@ export function Lineup({ isVisible, lineupTeam = 0 }: LineupProps) {
                 <motion.div
                   style={{
                     minWidth: 0,
-                    backgroundColor: teams[lineupTeam].color,
+                    backgroundColor:
+                      TeamDictionary[teams[lineupTeam].name].primaryColor,
+                    color:
+                      TeamDictionary[teams[lineupTeam].name].secondaryColor,
                   }}
                   variants={titleVariants}
                 >
@@ -128,8 +132,7 @@ export function Lineup({ isVisible, lineupTeam = 0 }: LineupProps) {
 
 const teams = [
   {
-    name: "York",
-    color: "#faaf18",
+    name: "york",
     team: [
       { name: "Marcia Harmon" },
       { name: "Samantha Wiley" },
@@ -149,8 +152,7 @@ const teams = [
     ],
   },
   {
-    name: "Glasgow",
-    color: "#002542",
+    name: "glasgow",
     team: [
       { name: "Marcia Harmon" },
       { name: "Samantha Wiley" },

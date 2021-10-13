@@ -6,6 +6,7 @@ import {
   columnVariants,
   titleVariants as oldTitleVariants,
 } from "./Lineup";
+import { TeamDictionary } from "common/teamDictionary";
 
 const titleVariants = {
   hidden: {
@@ -63,7 +64,18 @@ export function LineupSubs({ isVisible = false, team = 0 }: LineupSubsProps) {
                     {i == 1 && <td />}
                     <motion.td className={styles.titleCell}>
                       <motion.div
-                        style={{ backgroundColor: e.color }}
+                        style={{
+                          backgroundColor:
+                            team == 2
+                              ? TeamDictionary[sideSubs[i].name].primaryColor
+                              : TeamDictionary[sideSubs[team].name]
+                                  .primaryColor,
+                          color:
+                            team == 2
+                              ? TeamDictionary[sideSubs[i].name].secondaryColor
+                              : TeamDictionary[sideSubs[team].name]
+                                  .secondaryColor,
+                        }}
                         variants={titleVariants}
                         transition={{ delay: 0.4 }}
                         key={"title" + i}
@@ -108,7 +120,7 @@ export function LineupSubs({ isVisible = false, team = 0 }: LineupSubsProps) {
 const sideSubs = [
   {
     name: "york",
-    color: "#faaf18",
+    color: TeamDictionary.york.primaryColor,
     team: [
       { name: "Hope Patton" },
       { name: "Maxine Kemp" },
@@ -121,7 +133,7 @@ const sideSubs = [
   },
   {
     name: "glasgow",
-    color: "#002542",
+    color: TeamDictionary.glasgow.primaryColor,
     team: [
       { name: "Marcia Harmon" },
       { name: "Samantha Wiley" },

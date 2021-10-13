@@ -143,7 +143,7 @@ export function Scoreboard({
                 </motion.div>
               </motion.div>
               <AnimatePresence>
-                {isVisible && (
+                {isVisible && isTimerShown && (
                   <motion.div
                     initial="hidden"
                     animate="visible"

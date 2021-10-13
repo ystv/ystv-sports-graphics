@@ -69,5 +69,9 @@
     "framer-motion": "^4.1.17",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "Chrome >= 75"
+  ]
 }
