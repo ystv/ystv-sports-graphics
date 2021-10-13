@@ -1,5 +1,6 @@
 import { Story, Meta } from "@storybook/react";
-import { Scoreboard, ScoreboardProps, TeamDictionary } from "./Scoreboard";
+import { Scoreboard, ScoreboardProps } from "./Scoreboard";
+import { TeamDictionary } from "../../common/teamDictionary";
 
 export default {
   title: "Scoreboard",
@@ -11,6 +12,7 @@ const Template: Story<ScoreboardProps> = (args) => <Scoreboard {...args} />;
 export const Hello = Template.bind({});
 
 Hello.args = {
+  isVisible: true,
   team1Name: "york",
   team2Name: "glasgow",
   team1Score: 28,

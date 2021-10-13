@@ -13,7 +13,7 @@ function AllGraphics() {
   return (
     <>
       <GraphicContainer>
-        <Scoreboard />
+        <Scoreboard isVisible={show} isTimerShown={show} />
       </GraphicContainer>
       <GraphicContainer>
         <Lineup isVisible={show} />

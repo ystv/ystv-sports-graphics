@@ -35,7 +35,7 @@
   position: absolute;
   height: calc(var(--height) * 2.6);
   top: -60%;
-  right: 0%;
+  right: 0;
   z-index: -1;
   transform: rotate(-10deg);
 }
@@ -60,6 +60,7 @@
   margin: 0 -4vh;
   overflow: hidden;
   white-space: nowrap;
+	z-index: -1;
 }
 
 .toprow {
@@ -98,7 +99,7 @@
   position: absolute;
   height: calc(var(--height) * 2.6);
   top: -60%;
-  left: 0%;
+  left: 0;
   z-index: -1;
   transform: rotate(-10deg);
 }
