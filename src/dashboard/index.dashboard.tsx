@@ -1,7 +1,65 @@
-import React, { Component, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { useReplicantValue } from "common/useReplicant";
 import { TeamDictionary } from "common/teamDictionary";
+import {
+  ChakraProvider,
+  ButtonGroup,
+  Button,
+  Checkbox,
+  Heading,
+  Select,
+  FormLabel,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  SimpleGrid,
+  Grid,
+  Box,
+  Input,
+} from "@chakra-ui/react";
+
+const LiveButton = ({ callback }: { callback: Function }) => (
+  <Button onClick={() => callback(true)} colorScheme={"green"}>
+    LIVE
+  </Button>
+);
+
+const KillButton = ({ callback }: { callback: Function }) => (
+  <Button onClick={() => callback(false)} colorScheme={"red"}>
+    KILL
+  </Button>
+);
+
+const LiveKillButtons = ({
+  name,
+  live,
+  callback,
+  children,
+}: {
+  name: string;
+  live: boolean;
+  callback: Function;
+  children?: JSX.Element;
+}) => (
+  <>
+    <Heading as="h2" size="lg">
+      {name}
+    </Heading>
+    <strong>Status: {live ? "LIVE" : "HIDDEN"}</strong>
+    <br />
+    <ButtonGroup>
+      <LiveButton callback={callback} />
+      <KillButton callback={callback} />
+    </ButtonGroup>
+    {children}
+    <br />
+    <br />
+    <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
+  </>
+);
 
 function Dashboard() {
   const [team1ID, setTeam1ID] = useReplicantValue("team1ID", undefined, {
@@ -95,123 +153,116 @@ function Dashboard() {
     defaultValue: false,
   });
   return (
-    <div>
-      <h2>Set Teams</h2>
-      <label>
-        Team1
-        <select
-          value={team1ID || "york"}
-          onChange={(e) => setTeam1ID(e.target.value)}
+    <div style={{ margin: "1rem 4rem" }}>
+      <ChakraProvider>
+        <Heading as="h2" size="lg">
+          Set Teams
+        </Heading>
+        <Grid templateColumns="repeat(2, 1fr)" spacing={8}>
+          <FormLabel>Team1</FormLabel>
+          <FormLabel>Team2</FormLabel>
+          <Select
+            value={team1ID || "york"}
+            onChange={(e) => setTeam1ID(e.target.value)}
+          >
+            {Object.keys(TeamDictionary).map((e) => (
+              <option value={e}>
+                {e[0].toUpperCase() + e.slice(1).toLowerCase()}
+              </option>
+            ))}
+          </Select>
+          <Select
+            value={team2ID || "york"}
+            onChange={(e) => setTeam2ID(e.target.value)}
+          >
+            {Object.keys(TeamDictionary).map((e) => (
+              <option value={e}>
+                {e[0].toUpperCase() + e.slice(1).toLowerCase()}
+              </option>
+            ))}
+          </Select>
+        </Grid>
+        <br />
+        <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
+        {/* ////////////////////// */}
+        <LiveKillButtons name="Bug" live={showBug} callback={setShowBug} />
+        <LiveKillButtons
+          name="Generic Lower Third"
+          live={showThird}
+          callback={setShowThird}
         >
-          {Object.keys(TeamDictionary).map((e) => (
-            <option value={e}>{e}</option>
-          ))}
-        </select>
-      </label>
-      <label>
-        <select
-          value={team2ID || "york"}
-          onChange={(e) => setTeam2ID(e.target.value)}
+          <>
+            <FormLabel>Name</FormLabel>
+            <Input
+              type="text"
+              value={name || ""}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <FormLabel>Role</FormLabel>
+            <Input
+              type="text"
+              value={role || ""}
+              onChange={(e) => setRole(e.target.value)}
+            />
+          </>
+        </LiveKillButtons>
+        <LiveKillButtons
+          name="Scoreboard"
+          live={showScoreboard}
+          callback={setShowScoreboard}
         >
-          {Object.keys(TeamDictionary).map((e) => (
-            <option value={e}>{e}</option>
-          ))}
-        </select>
-        Team2
-      </label>
-      <hr />
-      <h2>Bug</h2>
-      <label>
-        Show Bug
-        <input
-          type="checkbox"
-          checked={showBug || false}
-          onChange={(e) => setShowBug(e.target.checked)}
-        />
-      </label>
-      <hr />
-      <h2>Generic Lower Third</h2>
-      <label>
-        Name
-        <input
-          type="text"
-          value={name || ""}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </label>
-      <label>
-        Role
-        <input
-          type="text"
-          value={role || ""}
-          onChange={(e) => setRole(e.target.value)}
-        />
-      </label>
-      <label>
-        Show Third
-        <input
-          type="checkbox"
-          checked={showThird || false}
-          onChange={(e) => setShowThird(e.target.checked)}
-        />
-      </label>
-      <hr />
-      <h2>Scoreboard</h2>
-      <label>
-        Show Scoreboard
-        <input
-          type="checkbox"
-          checked={showScoreboard || false}
-          onChange={(e) => setShowScoreboard(e.target.checked)}
-        />
-      </label>
-      <br />
-      <label>
-        Home Team
-        <input
-          type="number"
-          value={team1Score || 0}
-          onChange={(e) => setTeam1Score(Number(e.target.value))}
-        />
-      </label>
-      <label>
-        <input
-          type="number"
-          value={team2Score || 0}
-          onChange={(e) => setTeam2Score(Number(e.target.value))}
-        />{" "}
-        Away Team
-      </label>
-      <br />
-      <label>
-        Include Timer
-        <input
-          type="checkbox"
-          checked={showTimer || false}
-          onChange={(e) => setShowTimer(e.target.checked)}
-        />
-      </label>
-      <Stopwatch updateStopWatchTime={setTimer} time={timer} />
-      <hr />
-      <h2>Half/Full-time Status Aston</h2>
-      <label>
-        Show Status
-        <input
-          type="checkbox"
-          checked={showStatus || false}
-          onChange={(e) => setShowStatus(e.target.checked)}
-        />
-      </label>
-      <label>
-        End of match?
-        <input
-          type="checkbox"
-          checked={matchOver || false}
-          onChange={(e) => setMatchOver(e.target.checked)}
-        />
-      </label>
-      <hr />
-      <br />
+          <>
+            <form>
+              <Grid templateColumns="repeat(2, 1fr)" spacing={8}>
+                <strong>Home Team</strong>
+                <strong>Away Team</strong>
+                <NumberInput
+                  type="number"
+                  value={team1Score}
+                  onChange={(e) => setTeam1Score(Number(e))}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <NumberInput
+                  type="number"
+                  value={team2Score}
+                  onChange={(e) => setTeam2Score(Number(e))}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Grid>
+            </form>
+            <br />
+            <Checkbox
+              checked={showTimer || false}
+              onChange={(e) => setShowTimer(e.target.checked)}
+            >
+              Include Timer
+            </Checkbox>
+            <Stopwatch updateStopWatchTime={setTimer} time={timer} />
+          </>
+        </LiveKillButtons>
+        <LiveKillButtons
+          name="Half/Full-time Status Aston"
+          live={showStatus}
+          callback={setShowStatus}
+        >
+          <Checkbox
+            checked={matchOver || false}
+            onChange={(e) => setMatchOver(e.target.checked)}
+          >
+            End of match?
+          </Checkbox>
+        </LiveKillButtons>
+      </ChakraProvider>
     </div>
   );
 }
@@ -243,12 +294,19 @@ function Stopwatch({
 
   return (
     <div>
-      <h1>{secondToTimeString(time)}</h1>
-      <button onClick={() => setInterval(1000)}>Start</button>
-      <button onClick={() => setInterval(null)}>Stop</button>
-      <button onClick={() => updateStopWatchTime(0)}>Reset</button>
-      <button onClick={() => setIncrement(-increment)}>Toggle Direction</button>
-      <p>{increment == 1 ? "counting up" : "counting down"}</p>
+      <Box borderWidth="2px" borderRadius="lg" maxW="3xs">
+        <Heading size="2xl">{secondToTimeString(time)}</Heading>
+      </Box>
+      <ButtonGroup>
+        <Button onClick={() => setInterval(1000)}>Start</Button>
+        <Button onClick={() => setInterval(null)}>Stop</Button>
+        <Button onClick={() => updateStopWatchTime(0)}>Reset</Button>
+        <Button onClick={() => setIncrement(-increment)}>
+          Toggle Direction
+        </Button>
+      </ButtonGroup>
+      <br />
+      <strong>{increment == 1 ? "counting up" : "counting down"}</strong>
       <br />
       <br />
       <form
@@ -257,19 +315,33 @@ function Stopwatch({
           updateStopWatchTime(minutes * 60 + seconds);
         }}
       >
-        Set Time{" "}
-        <input
-          type="number"
-          value={minutes}
-          onChange={(e) => setMinutes(Number(e.target.value))}
-        />{" "}
-        :{" "}
-        <input
-          type="number"
-          value={seconds}
-          onChange={(e) => setSeconds(Number(e.target.value))}
-        />{" "}
-        <button type="submit">Update</button>
+        <Heading size="md">Set Time</Heading>
+        <Grid templateColumns="repeat(2, 1fr)" spacing={8}>
+          <Heading size="sm">Minutes</Heading>
+          <Heading size="sm">Seconds</Heading>
+          <NumberInput
+            value={minutes | 0}
+            onChange={(e) => setMinutes(Number(e))}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+          <NumberInput
+            type="number"
+            value={seconds | 0}
+            onChange={(e) => setSeconds(Number(e))}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+        </Grid>
+        <Button type="submit">Update</Button>
       </form>
     </div>
   );

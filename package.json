@@ -65,9 +65,12 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
+    "@chakra-ui/react": "^1.6.10",
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
-    "framer-motion": "^4.1.17",
+    "framer-motion": "^4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
