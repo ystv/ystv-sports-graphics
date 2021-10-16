@@ -17,7 +17,7 @@ Hello.args = {
   team2Name: "glasgow",
   team1Score: 28,
   team2Score: 12,
-  timer: "10:23",
+  timer: 143,
 };
 
 Hello.argTypes = {

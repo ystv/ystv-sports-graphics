@@ -10,6 +10,14 @@ import { LowerThird } from "./generic/LowerThird/LowerThird";
 import { MatchStatus } from "./rugby/MatchStatus/MatchStatus";
 
 function AllGraphics() {
+  const team1ID = useOnlyReplicantValue("team1ID", undefined, {
+    defaultValue: "york",
+  });
+  const team2ID = useOnlyReplicantValue("team2ID", undefined, {
+    defaultValue: "glasgow",
+  });
+
+  //
   const showScoreboard = useOnlyReplicantValue("showScoreboard", undefined, {
     defaultValue: false,
   });
@@ -19,8 +27,11 @@ function AllGraphics() {
   const team2Score = useOnlyReplicantValue("team2Score", undefined, {
     defaultValue: 0,
   });
+  const showTimer = useOnlyReplicantValue("showTimer", undefined, {
+    defaultValue: false,
+  });
   const timer = useOnlyReplicantValue("timer", undefined, {
-    defaultValue: "00:00",
+    defaultValue: 0,
   });
 
   const showLineup = useOnlyReplicantValue("showLineup", undefined, {
@@ -60,10 +71,12 @@ function AllGraphics() {
       <GraphicContainer>
         <Scoreboard
           isVisible={showScoreboard}
-          isTimerShown={false}
+          isTimerShown={showTimer}
           team1Score={team1Score}
           team2Score={team2Score}
           timer={timer}
+          team1Name={team1ID}
+          team2Name={team2ID}
         />
       </GraphicContainer>
       <GraphicContainer>
@@ -79,7 +92,14 @@ function AllGraphics() {
         <Bug state={showBug} />
       </GraphicContainer>
       <GraphicContainer>
-        <MatchStatus isOver={matchOver} isVisible={showStatus} />
+        <MatchStatus
+          isOver={matchOver}
+          isVisible={showStatus}
+          team1Name={team1ID}
+          team2Name={team2ID}
+          team1Score={team1Score}
+          team2Score={team2Score}
+        />
       </GraphicContainer>
     </>
   );

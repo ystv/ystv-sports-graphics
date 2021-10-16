@@ -16,12 +16,16 @@ export enum BugState {
 export function Bug({ state, liveFrom }: BugProps) {
   const variants = {
     hidden: {
-      width: 0,
-      padding: 0,
+      x: "calc(var(--width) * 1.5)",
+      transition: {
+        style: "tween",
+      },
     },
     visible: {
-      width: "var(--width)",
-      padding: "0 .5vw",
+      x: 0,
+      transition: {
+        style: "tween",
+      },
     },
   };
   const liveVariants = {

@@ -9,7 +9,7 @@ export interface ScoreboardProps {
   team2Name?: string;
   team1Score?: number;
   team2Score?: number;
-  timer?: string;
+  timer?: number;
 }
 
 export function Scoreboard({
@@ -19,10 +19,16 @@ export function Scoreboard({
   team2Name = "glasgow",
   team1Score = 0,
   team2Score = 0,
-  timer = "00:00",
+  timer = 0,
 }: ScoreboardProps) {
   const team1 = TeamDictionary[team1Name];
   const team2 = TeamDictionary[team2Name];
+
+  const secondToTimeString = (time: number): string =>
+    `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(
+      time % 60
+    ).padStart(2, "0")}`;
+
   const parallelogramVariants = {
     hidden: {
       width: 0,
@@ -151,7 +157,7 @@ export function Scoreboard({
                     variants={extrasVariants}
                     className={styles.timer}
                   >
-                    {timer}
+                    {secondToTimeString(timer)}
                   </motion.div>
                 )}
               </AnimatePresence>
