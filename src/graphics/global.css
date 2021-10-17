@@ -1,37 +1,44 @@
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
 
 body {
-  margin: 0 !important;
-  padding: 0 !important;
-  position: absolute;
-  top: 0;
+	margin: 0 !important;
+	padding: 0 !important;
+	position: absolute;
+	top: 0;
 
-  width: 100vw;
-  height: 100vh;
-  font-size: 4vh;
-  --light: #fbfbfb;
-  --dark: #333333;
-  font-family: "Open Sans", sans-serif;
+	width: 100vw;
+	height: 100vh;
+	font-size: 4vh;
+	--light: #fbfbfb;
+	--dark: #333333;
+	font-family: "Open Sans", sans-serif;
 }
-#root {
-  margin: 0;
-  position: absolute;
-  top: 0;
 
-  width: 100%;
-  height: 100%;
+#root {
+	margin: 0;
+	position: absolute;
+	top: 0;
+
+	width: 100%;
+	height: 100%;
 }
 
 .actionSafe {
-  width: 90vw;
-  height: 90vh;
-  margin: 5vh 5vw;
+	width: 90vw;
+	height: 90vh;
+	margin: 5vh 5vw;
 }
 
 .titleSafe {
-  width: 80vw;
-  height: 80vh;
-  margin: 10vh 10vw;
+	width: 80vw;
+	height: 80vh;
+	margin: 10vh 10vw;
+}
+
+.titleSafePadding {
+	width: 80vw;
+	height: 80vh;
+	padding: 10vh 10vw;
 }
 
 h1,
@@ -39,5 +46,5 @@ h2,
 h3,
 h4,
 h5 {
-  margin: 0;
+	margin: 0;
 }

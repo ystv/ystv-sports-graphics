@@ -8,6 +8,7 @@ import { Bug } from "./rugby/Bug/Bug";
 import { LineupSubs } from "./rugby/Lineup/LineupSubs";
 import { LowerThird } from "./generic/LowerThird/LowerThird";
 import { MatchStatus } from "./rugby/MatchStatus/MatchStatus";
+import { HoldingCard } from "./generic/HoldingCard/HoldingCard";
 
 function AllGraphics() {
   const team1ID = useOnlyReplicantValue("team1ID", undefined, {
@@ -66,6 +67,18 @@ function AllGraphics() {
   const matchOver = useOnlyReplicantValue("matchOver", undefined, {
     defaultValue: false,
   });
+
+  const showHoldingCard = useOnlyReplicantValue("showHoldingCard", undefined, {
+    defaultValue: false,
+  });
+
+  const holdingCardIsGeneric = useOnlyReplicantValue(
+    "holdingCardIsGeneric",
+    undefined,
+    {
+      defaultValue: false,
+    }
+  );
   return (
     <>
       <GraphicContainer>
@@ -99,6 +112,12 @@ function AllGraphics() {
           team2Name={team2ID}
           team1Score={team1Score}
           team2Score={team2Score}
+        />
+      </GraphicContainer>
+      <GraphicContainer zIndex={100}>
+        <HoldingCard
+          isVisible={showHoldingCard}
+          isUnbranded={holdingCardIsGeneric}
         />
       </GraphicContainer>
     </>

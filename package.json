@@ -30,6 +30,12 @@
         "width": 1920,
         "height": 1080
       }
+    ],
+    "mount": [
+      {
+        "directory": "public",
+        "endpoint": "public"
+      }
     ]
   },
   "repository": "https://github.com/ystv/ystv-sports-graphics.git",

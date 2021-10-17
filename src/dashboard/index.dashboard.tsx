@@ -152,6 +152,22 @@ function Dashboard() {
   const [matchOver, setMatchOver] = useReplicantValue("matchOver", undefined, {
     defaultValue: false,
   });
+
+  const [showHoldingCard, setShowHoldingCard] = useReplicantValue(
+    "showHoldingCard",
+    undefined,
+    {
+      defaultValue: false,
+    }
+  );
+
+  const [holdingCardIsGeneric, setHoldingCardIsGeneric] = useReplicantValue(
+    "holdingCardIsGeneric",
+    undefined,
+    {
+      defaultValue: false,
+    }
+  );
   return (
     <div style={{ margin: "1rem 4rem" }}>
       <ChakraProvider>
@@ -185,6 +201,18 @@ function Dashboard() {
         <br />
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
         {/* ////////////////////// */}
+        <LiveKillButtons
+          name={"Holding Card"}
+          live={showHoldingCard}
+          callback={setShowHoldingCard}
+        >
+          <Checkbox
+            checked={holdingCardIsGeneric || false}
+            onChange={(e) => setHoldingCardIsGeneric(e.target.checked)}
+          >
+            Is Unbranded?
+          </Checkbox>
+        </LiveKillButtons>
         <LiveKillButtons name="Bug" live={showBug} callback={setShowBug} />
         <LiveKillButtons
           name="Generic Lower Third"
@@ -358,6 +386,7 @@ function useInterval(callback: any, delay: any) {
     function tick() {
       savedCallback.current();
     }
+
     if (delay !== null) {
       let id = setInterval(tick, delay);
       return () => clearInterval(id);
