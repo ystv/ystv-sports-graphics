@@ -19,4 +19,18 @@
 
 .third h2 {
 	padding: 0 4vw;
+	opacity: 1;
+	animation: flickerAnimation 3s infinite ease-in-out;
+}
+
+@keyframes flickerAnimation { /* flame pulses */
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
 }

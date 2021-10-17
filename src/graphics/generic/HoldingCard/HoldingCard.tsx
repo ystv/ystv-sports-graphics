@@ -37,22 +37,13 @@ export function HoldingCard({
           className={styles.backgroundImage}
           style={{
             backgroundImage: isUnbranded
-              ? "linear-gradient(red, yellow, blue)"
+              ? "url(../public/HoldingCard/GenericHoldingCard.jpg)"
               : "url(../public/HoldingCard/YSTVSportHoldingCard.png)",
           }}
         >
           <div className={`titleSafePadding ${styles.flexBottom}`}>
             <motion.div className={styles.third} variants={variants}>
-              <motion.h2
-                variants={variants}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                }}
-              >
-                Stream starts soon...
-              </motion.h2>
+              <motion.h2 variants={variants}>Stream starts soon...</motion.h2>
             </motion.div>
           </div>
         </motion.div>

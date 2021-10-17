@@ -19,4 +19,10 @@ export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
     primaryColor: "#44ff33",
     teamShort: "lds",
   },
+  yorkFutsal: { teamName: "York", primaryColor: "#d70d0d", teamShort: "yrk" },
+  leicesterFutsal: {
+    teamName: "Leicester",
+    primaryColor: "#1837ee",
+    teamShort: "leic",
+  },
 };
