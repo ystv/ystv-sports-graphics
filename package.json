@@ -11,7 +11,8 @@
     "build": "cross-env NODE_ENV=production webpack",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "schema": "json2ts -i schemas/ -o src/common/types/ && json2ts -i configschema.json -o src/common/types/config.d.ts"
+    "schema": "json2ts -i schemas/ -o src/common/types/ && json2ts -i configschema.json -o src/common/types/config.d.ts",
+    "generate": "graphql-codegen --config codegen.yml"
   },
   "nodecg": {
     "compatibleRange": "^1.1.1",
@@ -45,6 +46,10 @@
     "@babel/preset-env": "^7.15.8",
     "@babel/preset-react": "^7.13.13",
     "@babel/preset-typescript": "^7.13.0",
+    "@graphql-codegen/cli": "2.2.1",
+    "@graphql-codegen/introspection": "2.1.0",
+    "@graphql-codegen/typescript": "2.2.4",
+    "@graphql-codegen/typescript-resolvers": "2.3.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@storybook/addon-actions": "^6.2.2",
     "@storybook/addon-essentials": "^6.2.2",
@@ -71,12 +76,15 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
+    "@apollo/client": "^3.4.16",
     "@chakra-ui/react": "^1.6.10",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
+    "cross-fetch": "^3.1.4",
     "framer-motion": "^4",
+    "graphql": "^15.7.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
