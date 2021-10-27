@@ -12,18 +12,20 @@ import {
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
+import { w3cwebsocket } from "websocket";
 
 export = (nodecg: NodeCG) => {
   const httpLink = new HttpLink({
-    uri: `http://${process.env.REACT_APP_API}/graphql`,
+    uri: `http://${nodecg.bundleConfig.API}/graphql`,
     fetch,
   });
 
   const wsLink = new WebSocketLink({
-    uri: `ws://${process.env.REACT_APP_API}/graphql`,
+    uri: `ws://${nodecg.bundleConfig.API}/graphql`,
     options: {
       reconnect: true,
     },
+    webSocketImpl: w3cwebsocket,
   });
 
   const splitLink = split(
@@ -64,13 +66,29 @@ export = (nodecg: NodeCG) => {
   });
 
   dataSubscription.subscribe({
+    start(e) {
+      console.log("starting");
+
+      console.log(nodecg.bundleConfig.API);
+
+      console.log(e);
+    },
     next(e) {
+      console.log("next");
+
       console.log(e);
     },
     error(e) {
+      console.log("error");
+
       console.error(e);
     },
+    complete() {
+      console.log("complete");
+    },
   });
+
+  console.log("ping");
 };
 
 const FootballScoresFragment = gql`
