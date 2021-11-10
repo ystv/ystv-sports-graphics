@@ -8,20 +8,26 @@ import {
   InMemoryCache,
   from,
   gql,
+  Observable,
+  FetchResult,
 } from "@apollo/client";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { w3cwebsocket } from "websocket";
+import { Event as SportsEvent } from "../common/generated/graphql";
 
 export = (nodecg: NodeCG) => {
+  console.log("Using data", nodecg.bundleConfig);
+
+  // SETUP APOLLO
   const httpLink = new HttpLink({
-    uri: `http://${nodecg.bundleConfig.API}/graphql`,
+    uri: `https://${nodecg.bundleConfig.API}/graphql`,
     fetch,
   });
 
   const wsLink = new WebSocketLink({
-    uri: `ws://${nodecg.bundleConfig.API}/graphql`,
+    uri: `wss://${nodecg.bundleConfig.API}/graphql`,
     options: {
       reconnect: true,
     },
@@ -58,37 +64,52 @@ export = (nodecg: NodeCG) => {
     credentials: "include",
   });
 
-  const dataSubscription = client.subscribe({
-    query: DataSubscriptionQuery,
-    variables: {
-      id: "0762b425-ffb2-4b94-ad4e-9922e673047f",
-    },
+  // SETUP BASIC REPLICANT & MESSAGES
+
+  const allEvents = nodecg.Replicant("allEvents", { defaultValue: [] });
+  const currentEvent = nodecg.Replicant("currentEvent", {
+    defaultValue: {} as SportsEvent,
   });
 
-  dataSubscription.subscribe({
-    start(e) {
-      console.log("starting");
+  // callback handles switching events
+  nodecg.listenFor("currentEventChanged", (value, ack) => {
+    console.log(`currentEvent changed to ${value}`);
 
-      console.log(nodecg.bundleConfig.API);
+    dataSubscription = client.subscribe({
+      query: DataSubscriptionQuery,
+      variables: {
+        id: value,
+      },
+    });
 
-      console.log(e);
-    },
-    next(e) {
-      console.log("next");
+    dataSubscription.subscribe({
+      start() {
+        console.log("Subscription started");
+      },
+      next(e) {
+        console.log("Event data received");
 
-      console.log(e);
-    },
-    error(e) {
-      console.log("error");
+        currentEvent.value = e.data;
+      },
+      error(e) {
+        console.log("Error");
 
-      console.error(e);
-    },
-    complete() {
-      console.log("complete");
-    },
+        console.error(e);
+      },
+      complete() {
+        console.log("Subscription completed");
+      },
+    });
   });
 
-  console.log("ping");
+  // GQL QUERIES
+  let dataSubscription: Observable<
+    FetchResult<any, Record<string, any>, Record<string, any>>
+  >;
+
+  client.query({ query: AllEventsQuery }).then((e) => {
+    allEvents.value = JSON.parse(JSON.stringify(e.data.allEvents));
+  });
 };
 
 const FootballScoresFragment = gql`
@@ -140,14 +161,30 @@ const FootballScoresFragment = gql`
 const DataSubscriptionQuery = gql`
   subscription LiveScores_Data($id: ID!) {
     eventChanges(eventId: $id) {
+      id
+      title
+      time
+      venue
       type
-      ... on RugbyUnionEvent {
-        ...RugbyUnionLiveScores
-      }
+      #      ... on RugbyUnionEvent {
+      #        ...RugbyUnionLiveScores
+      #      }
       ... on FootballEvent {
         ...FootballLiveScores
       }
     }
   }
   ${FootballScoresFragment}
+`;
+
+const AllEventsQuery = gql`
+  {
+    allEvents {
+      id
+      title
+      time
+      venue
+      type
+    }
+  }
 `;
