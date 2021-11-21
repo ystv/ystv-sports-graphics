@@ -31,6 +31,102 @@ export function Scoreboard({
       time % 60
     ).padStart(2, "0")}`;
 
+  const variants = {
+    hidden: {
+      width: 0,
+      transition: {
+        style: "tween",
+        when: "afterChildren",
+        staggerChildren: 0.1,
+        staggerDirection: -1,
+        // delayChildren: 0.2,
+      },
+    },
+    visible: {
+      width: "var(--width)",
+      transition: {
+        style: "tween",
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const textVariants = {
+    hidden: {
+      y: 50,
+      opacity: 0,
+      borderLeftWidth: 0,
+      transition: {
+        style: "tween",
+        when: "beforeEach",
+      },
+    },
+    visible: {
+      y: 0,
+      opacity: 100,
+      borderWidth: ".2rem",
+      transition: {
+        style: "tween",
+        when: "afterAll",
+      },
+    },
+  };
+
+  const timerVariants = {
+    hidden: {
+      width: 0,
+      transition: {
+        style: "tween",
+      },
+    },
+    visible: {
+      width: "8vw",
+      transition: {
+        style: "tween",
+      },
+    },
+  };
+
+  const timerVariantsParent = {
+    hidden: {
+      maxWidth: 0,
+      transition: {
+        style: "tween",
+      },
+    },
+    visible: {
+      maxWidth: "8vw",
+      transition: {
+        style: "tween",
+      },
+    },
+  };
+
+  const sectionVariants = {
+    ...variants,
+    visible: {
+      ...variants.visible,
+      width: "calc(var(--width) / 2)",
+    },
+  };
+
+  const blankVariants = {
+    hidden: {
+      transition: {
+        style: "tween",
+        staggerChildren: 0.1,
+        staggerDirection: -1,
+      },
+    },
+    visible: {
+      transition: {
+        style: "tween",
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -38,15 +134,14 @@ export function Scoreboard({
           initial="hidden"
           animate="visible"
           exit="hidden"
+          variants={blankVariants}
           className="titleSafe"
         >
           <div className={styles.scoreboard}>
             <div className={styles.toprow}>
-              <motion.div initial="hidden" animate="visible" exit="hidden">
+              <div>
                 <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
+                  variants={variants}
                   className={styles.parallelogram}
                   style={{ background: team1.primaryColor }}
                 >
@@ -56,17 +151,28 @@ export function Scoreboard({
                         color: team1.secondaryColor ?? "var(--light)",
                       }}
                     >
-                      <span className={styles.teamSpan}>
+                      <motion.div
+                        variants={textVariants}
+                        className={styles.teamSpan2}
+                        // style={{
+                        //   borderColor: team2.secondaryColor ?? "var(--light)",
+                        // }}
+                      >
                         {team1.teamShort.toUpperCase()}
-                      </span>
-                      <div
-                        className={styles.scoreDiv}
+                      </motion.div>
+                      <motion.div
                         style={{
-                          borderColor: team1.secondaryColor ?? "var(--light)",
+                          borderColor: team2.secondaryColor ?? "var(--light)",
                         }}
+                        variants={textVariants}
+                        className={styles.teamSpan}
+                      />
+                      <motion.div
+                        variants={textVariants}
+                        className={styles.scoreDiv}
                       >
                         {team1Score}
-                      </div>
+                      </motion.div>
                     </div>
                     <img
                       src="../public/logos/york_cent.png"
@@ -74,7 +180,7 @@ export function Scoreboard({
                     />
                   </div>
                 </motion.div>
-              </motion.div>
+              </div>
               {/*<motion.div*/}
               {/*  initial="hidden"*/}
               {/*  animate="visible"*/}
@@ -84,11 +190,9 @@ export function Scoreboard({
               {/*>*/}
               {/*  {team1Score} - {team2Score}*/}
               {/*</motion.div>*/}
-              <motion.div initial="hidden" animate="visible" exit="hidden">
+              <div>
                 <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
+                  variants={variants}
                   className={styles.parallelogram}
                   style={{ background: team2.primaryColor }}
                 >
@@ -96,17 +200,25 @@ export function Scoreboard({
                     <div
                       style={{ color: team2.secondaryColor ?? "var(--light)" }}
                     >
-                      <span className={styles.teamSpan}>
+                      <motion.div
+                        className={styles.teamSpan2}
+                        variants={textVariants}
+                      >
                         {team2.teamShort.toUpperCase()}
-                      </span>
-                      <div
-                        className={styles.scoreDiv}
+                      </motion.div>
+                      <motion.div
                         style={{
                           borderColor: team2.secondaryColor ?? "var(--light)",
                         }}
+                        variants={textVariants}
+                        className={styles.teamSpan}
+                      />
+                      <motion.div
+                        variants={textVariants}
+                        className={styles.scoreDiv}
                       >
                         {team2Score}
-                      </div>
+                      </motion.div>
                     </div>
                     <img
                       src="../public/logos/north_mustangs.png"
@@ -114,30 +226,30 @@ export function Scoreboard({
                     />
                   </div>
                 </motion.div>
-              </motion.div>
-              <motion.h1
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className={styles.section}
-              >
-                {matchOver == 1 && "1st"}
-                {matchOver == 2 && "2nd"}
-                {matchOver == 3 && "3rd"}
-                {matchOver == 4 && "4th"}
+              </div>
+              <motion.h1 variants={sectionVariants} className={styles.section}>
+                <motion.div variants={textVariants}>
+                  {matchOver == 1 && "1st"}
+                  {matchOver == 2 && "2nd"}
+                  {matchOver == 3 && "3rd"}
+                  {matchOver == 4 && "4th"}
+                </motion.div>
               </motion.h1>
-              <AnimatePresence>
-                {isVisible && isTimerShown && (
-                  <motion.h1
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    className={styles.timer}
-                  >
-                    {secondToTimeString(timer)}
-                  </motion.h1>
-                )}
-              </AnimatePresence>
+              <motion.div variants={timerVariantsParent}>
+                <AnimatePresence>
+                  {isTimerShown && (
+                    <motion.h1
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      variants={timerVariants}
+                      className={styles.timer}
+                    >
+                      {secondToTimeString(timer)}
+                    </motion.h1>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </div>
           </div>
         </motion.div>

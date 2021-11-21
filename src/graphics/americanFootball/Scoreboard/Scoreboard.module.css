@@ -16,7 +16,7 @@
 }
 
 .parallelogram {
-	min-width: var(--width);
+	/*width: var(--width);*/
 	height: var(--height);
 	/*margin: 0 0 0 -2vh;*/
 	background: #fcaf17;
@@ -34,6 +34,7 @@
 	filter: drop-shadow(0px 0px 1vh #00000088);
 	font-size: var(--font-size);
 	padding: 0 .5rem;
+	overflow: hidden;
 }
 
 .parallelogram img {
@@ -89,22 +90,31 @@
 .scoreDiv {
 	margin-left: 1rem;
 
-	border-width: .2rem;
 	width: 2ch;
 	text-align: center;
 	display: inline-block;
+	height: var(--height);
+	vertical-align: top
 }
 
 .teamSpan {
-	padding-right: 1rem;
 	border-right-style: solid;
 	height: var(--height);
+	display: inline-block;
+	vertical-align: top
+}
+
+.teamSpan2 {
+	padding-right: 1rem;
+	display: inline-block;
+	height: var(--height);
+	vertical-align: top
 }
 
 .section {
 	box-shadow: inset 11px 0px 15px -11px rgb(0 0 0 / 70%);
 	height: var(--height);
-	width: calc(var(--width) / 2) !important;
+	/*width: calc(var(--width) / 2) !important;*/
 	overflow: hidden;
 	font-weight: 900;
 	background-color: var(--dark);
