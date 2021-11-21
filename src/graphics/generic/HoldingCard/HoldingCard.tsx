@@ -43,7 +43,7 @@ export function HoldingCard({
         >
           <div className={`titleSafePadding ${styles.flexBottom}`}>
             <motion.div className={styles.third} variants={variants}>
-              <motion.h2 variants={variants}>Stream starts soon...</motion.h2>
+              <motion.h4 variants={variants}>Stream starts soon</motion.h4>
             </motion.div>
           </div>
         </motion.div>

@@ -6,10 +6,11 @@
 }
 
 .third {
-	background-color: rgba(0, 0, 0, 0.71);
 	overflow: hidden;
 	color: var(--light);
 	text-transform: uppercase;
+	text-align: center;
+	padding-bottom: 18%;
 }
 
 .flexBottom {
@@ -17,10 +18,11 @@
 	flex-direction: column-reverse;
 }
 
-.third h2 {
+.third h4 {
 	padding: 0 4vw;
 	opacity: 1;
 	animation: flickerAnimation 3s infinite ease-in-out;
+	filter: drop-shadow(0 0 .3rem #00000088);
 }
 
 @keyframes flickerAnimation { /* flame pulses */

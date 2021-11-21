@@ -1,13 +1,13 @@
 import ReactDOM from "react-dom";
 import React from "react";
 import { useOnlyReplicantValue } from "common/useReplicant";
-import { Scoreboard } from "./rugby/Scoreboard/Scoreboard";
+import { Scoreboard } from "./americanFootball/Scoreboard/Scoreboard";
 import "./global.css";
 import { Lineup } from "./rugby/Lineup/Lineup";
 import { Bug } from "./rugby/Bug/Bug";
 import { LineupSubs } from "./rugby/Lineup/LineupSubs";
 import { LowerThird } from "./generic/LowerThird/LowerThird";
-import { MatchStatus } from "./rugby/MatchStatus/MatchStatus";
+import { MatchStatus } from "./americanFootball/MatchStatus/MatchStatus";
 import { HoldingCard } from "./generic/HoldingCard/HoldingCard";
 
 function AllGraphics() {
@@ -65,7 +65,7 @@ function AllGraphics() {
     defaultValue: false,
   });
   const matchOver = useOnlyReplicantValue("matchOver", undefined, {
-    defaultValue: false,
+    defaultValue: 1,
   });
 
   const showHoldingCard = useOnlyReplicantValue("showHoldingCard", undefined, {
@@ -90,6 +90,7 @@ function AllGraphics() {
           timer={timer}
           team1Name={team1ID}
           team2Name={team2ID}
+          matchOver={matchOver}
         />
       </GraphicContainer>
       <GraphicContainer>

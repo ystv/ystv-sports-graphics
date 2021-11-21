@@ -1,31 +1,32 @@
 .mask {
-  --height: 4vh;
-  --width: 5vw;
-  font-weight: 900;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  overflow: hidden;
+	--height: 4vh;
+	--width: 5vw;
+	font-weight: 900;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	overflow: hidden;
 }
 
 .mask div {
-  height: var(--height);
-  text-align: center;
-  font-size: 0.7em;
-  text-transform: uppercase;
-  overflow: hidden;
+	height: var(--height);
+	text-align: center;
+	font-size: 0.7em;
+	text-transform: uppercase;
+	overflow: hidden;
+	opacity: 96%;
 }
 
 .open {
-  background-color: var(--dark);
-  width: var(--width);
-  color: var(--light);
-  padding: 0 0.5vw;
+	background-color: var(--dark);
+	width: var(--width);
+	color: var(--light);
+	padding: 0 0.5vw;
 }
 
 .live {
-  background-color: var(--light);
-  min-width: var(--width);
-  width: fit-content;
-  color: var(--dark);
+	background-color: var(--light);
+	min-width: var(--width);
+	width: fit-content;
+	color: var(--dark);
 }

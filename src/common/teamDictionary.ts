@@ -7,7 +7,7 @@ export interface TeamDictionaryTeam {
 }
 
 export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
-  york: { teamName: "York", primaryColor: "#009cf2", teamShort: "yrk" },
+  york: { teamName: "York", primaryColor: "#faaf18", teamShort: "yrk" },
   glasgow: {
     teamName: "Glasgow",
     primaryColor: "#ffdd1a",
@@ -23,6 +23,17 @@ export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
   leicesterFutsal: {
     teamName: "Leicester",
     primaryColor: "#1837ee",
-    teamShort: "leic",
+    teamShort: "lec",
+  },
+  northumbria: {
+    teamName: "Northumbria",
+    primaryColor: "#151515",
+    teamShort: "nrt",
+  },
+  northumbriaInverted: {
+    teamName: "Northumbria",
+    primaryColor: "#eeeeee",
+    secondaryColor: "#151515",
+    teamShort: "nrt",
   },
 };
