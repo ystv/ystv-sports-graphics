@@ -31,59 +31,10 @@ export function Scoreboard({
       time % 60
     ).padStart(2, "0")}`;
 
-  const parallelogramVariants = {
-    hidden: {
-      width: 0,
-      transition: {
-        delay: 1,
-        type: "tween",
-      },
-    },
-    visible: {
-      width: "var(--width)",
-      transition: {
-        delay: 1,
-        type: "tween",
-      },
-    },
-  };
-  const scoresVariants = {
-    hidden: {
-      width: 0,
-      transition: {
-        delay: 0.8,
-        type: "tween",
-      },
-    },
-    visible: {
-      width: "calc(var(--width) * 1.4)",
-      transition: {
-        delay: 0.8,
-        type: "tween",
-      },
-    },
-  };
-  const extrasVariants = {
-    hidden: {
-      width: 0,
-      transition: {
-        delay: 0,
-        type: "tween",
-      },
-    },
-    visible: {
-      width: "var(--width)",
-      transition: {
-        delay: 1,
-        type: "tween",
-      },
-    },
-  };
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          //variants={variants}
           initial="hidden"
           animate="visible"
           exit="hidden"
@@ -91,88 +42,100 @@ export function Scoreboard({
         >
           <div className={styles.scoreboard}>
             <div className={styles.toprow}>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={parallelogramVariants}
-                className={styles.container}
-              >
+              <motion.div initial="hidden" animate="visible" exit="hidden">
                 <motion.div
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
-                  variants={parallelogramVariants}
                   className={styles.parallelogram}
                   style={{ background: team1.primaryColor }}
                 >
                   <div className={styles.parallelogramInnerContainer}>
-                    <h1
-                      style={{ color: team1.secondaryColor ?? "var(--light)" }}
+                    <div
+                      style={{
+                        color: team1.secondaryColor ?? "var(--light)",
+                      }}
                     >
-                      {team1.teamShort.toUpperCase()}
-                    </h1>
-                    {/*<img src="yorksport.svg" style={{ opacity: "18%" }} />*/}
+                      <span className={styles.teamSpan}>
+                        {team1.teamShort.toUpperCase()}
+                      </span>
+                      <div
+                        className={styles.scoreDiv}
+                        style={{
+                          borderColor: team1.secondaryColor ?? "var(--light)",
+                        }}
+                      >
+                        {team1Score}
+                      </div>
+                    </div>
+                    <img
+                      src="../public/logos/york_cent.png"
+                      style={{ opacity: "18%" }}
+                    />
                   </div>
                 </motion.div>
               </motion.div>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={scoresVariants}
-                className={styles.scores}
-              >
-                {team1Score} - {team2Score}
-              </motion.div>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={parallelogramVariants}
-                className={styles.container2}
-              >
+              {/*<motion.div*/}
+              {/*  initial="hidden"*/}
+              {/*  animate="visible"*/}
+              {/*  exit="hidden"*/}
+              {/*  variants={scoresVariants}*/}
+              {/*  className={styles.scores}*/}
+              {/*>*/}
+              {/*  {team1Score} - {team2Score}*/}
+              {/*</motion.div>*/}
+              <motion.div initial="hidden" animate="visible" exit="hidden">
                 <motion.div
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
-                  variants={parallelogramVariants}
-                  className={styles.parallelogram2}
+                  className={styles.parallelogram}
                   style={{ background: team2.primaryColor }}
                 >
-                  <div className={styles.parallelogramInnerContainer2}>
-                    <h1
+                  <div className={styles.parallelogramInnerContainer}>
+                    <div
                       style={{ color: team2.secondaryColor ?? "var(--light)" }}
                     >
-                      {team2.teamShort.toUpperCase()}
-                    </h1>
-                    {/*<img src="lancs.svg" style={{ opacity: "40%" }} />*/}
+                      <span className={styles.teamSpan}>
+                        {team2.teamShort.toUpperCase()}
+                      </span>
+                      <div
+                        className={styles.scoreDiv}
+                        style={{
+                          borderColor: team2.secondaryColor ?? "var(--light)",
+                        }}
+                      >
+                        {team2Score}
+                      </div>
+                    </div>
+                    <img
+                      src="../public/logos/north_mustangs.png"
+                      style={{ opacity: "20%", right: "10%" }}
+                    />
                   </div>
                 </motion.div>
               </motion.div>
-              <motion.div
+              <motion.h1
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                variants={extrasVariants}
-                className={styles.timer}
+                className={styles.section}
               >
                 {matchOver == 1 && "1st"}
                 {matchOver == 2 && "2nd"}
                 {matchOver == 3 && "3rd"}
                 {matchOver == 4 && "4th"}
-              </motion.div>
+              </motion.h1>
               <AnimatePresence>
                 {isVisible && isTimerShown && (
-                  <motion.div
+                  <motion.h1
                     initial="hidden"
                     animate="visible"
                     exit="hidden"
-                    variants={extrasVariants}
                     className={styles.timer}
                   >
                     {secondToTimeString(timer)}
-                  </motion.div>
+                  </motion.h1>
                 )}
               </AnimatePresence>
             </div>

@@ -3,7 +3,7 @@ import { Scoreboard, ScoreboardProps } from "./Scoreboard";
 import { TeamDictionary } from "../../../common/teamDictionary";
 
 export default {
-  title: "Scoreboard",
+  title: "American Football Scoreboard",
   component: Scoreboard,
 } as Meta;
 
@@ -18,6 +18,7 @@ Hello.args = {
   team1Score: 28,
   team2Score: 12,
   timer: 143,
+  matchOver: 1,
 };
 
 Hello.argTypes = {

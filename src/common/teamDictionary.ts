@@ -28,12 +28,12 @@ export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
   northumbria: {
     teamName: "Northumbria",
     primaryColor: "#151515",
-    teamShort: "nrt",
+    teamShort: "ntb",
   },
   northumbriaInverted: {
     teamName: "Northumbria",
     primaryColor: "#eeeeee",
     secondaryColor: "#151515",
-    teamShort: "nrt",
+    teamShort: "ntb",
   },
 };

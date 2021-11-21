@@ -104,7 +104,12 @@ export function MatchStatus({
                     >
                       {team1.teamShort.toUpperCase()}
                     </h1>
-                    {/*<img src="yorksport.svg" style={{ opacity: "18%" }} />*/}
+                    <img
+                      src="../public/logos/york_cent.png"
+                      style={{
+                        opacity: "18%",
+                      }}
+                    />
                   </div>
                 </motion.div>
               </motion.div>
@@ -138,7 +143,10 @@ export function MatchStatus({
                     >
                       {team2.teamShort.toUpperCase()}
                     </h1>
-                    {/*<img src="lancs.svg" style={{ opacity: "40%" }} />*/}
+                    <img
+                      src="../public/logos/north_mustangs.png"
+                      style={{ opacity: "20%", right: "10%" }}
+                    />
                   </div>
                 </motion.div>
               </motion.div>

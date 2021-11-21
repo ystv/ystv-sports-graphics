@@ -40,8 +40,8 @@
 
 .parallelogram img {
 	position: absolute;
-	height: calc(var(--height) * 2.6);
-	top: -60%;
+	height: calc(var(--height) * 1.8);
+	top: -50%;
 	right: 0;
 	z-index: -1;
 	transform: rotate(-10deg);
@@ -105,9 +105,9 @@
 
 .parallelogram2 img {
 	position: absolute;
-	height: calc(var(--height) * 2.6);
-	top: -60%;
-	left: 0;
+	height: calc(var(--height) * 1.8);
+	top: -40%;
+	left: 10%;
 	z-index: -1;
 	transform: rotate(-10deg);
 }

@@ -22,8 +22,7 @@ A boilerplate for NodeCG with React, TypeScript, Babel, and Webpack.
 ### Instructions
 
 * ```git clone https://github.com/ystv/ystv-sports-graphics.git``` **_into the bundles folder_** in your nodecg
-  instance (
-  for windows usually in the root of the C drive)
+  instance (for windows usually in the root of the C drive)
 * cd into the bundle
 * ```yarn install --frozen-lockfile```
 * ```yarn generate```
