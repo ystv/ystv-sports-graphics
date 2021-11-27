@@ -1,0 +1,124 @@
+.scoreboard {
+	--height: 6vh;
+	--width: 18vw;
+	--font-size: 1em;
+
+	display: flex;
+	justify-content: center;
+	height: 100%;
+	align-items: flex-end;
+	font-weight: 900;
+}
+
+.container {
+	overflow: hidden;
+	min-width: var(--width);
+}
+
+.parallelogram {
+	/*width: var(--width);*/
+	height: var(--height);
+	/*margin: 0 0 0 -2vh;*/
+	background: #fcaf17;
+	overflow: hidden;
+	position: relative;
+	z-index: -2;
+}
+
+
+.parallelogramInnerContainer > div {
+	color: var(--light);
+	font-weight: 900;
+	margin: 0;
+	/*margin-right: 1.5vh;*/
+	filter: drop-shadow(0px 0px 1vh #00000088);
+	font-size: var(--font-size);
+	padding: 0 .5rem;
+	overflow: hidden;
+}
+
+.parallelogram img {
+	position: absolute;
+	height: calc(var(--height) * 2.6);
+	top: -60%;
+	right: 0;
+	z-index: -1;
+	transform: rotate(-10deg);
+}
+
+.parallelogramInnerContainer {
+	/*margin-left: 2vh;*/
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	/*width: calc(100% - 1vh);*/
+	height: var(--height);
+}
+
+.scores {
+	font-weight: 900;
+	background-color: var(--dark);
+	width: calc(var(--width) * 1.4);
+	height: var(--height);
+	text-align: center;
+	color: var(--light);
+	font-size: 0.7em;
+	/*margin: 0 -4vh;*/
+	overflow: hidden;
+	white-space: nowrap;
+	z-index: -1;
+}
+
+.toprow {
+	display: flex;
+	overflow: hidden;
+}
+
+.timer {
+	box-shadow: inset 11px 0px 15px -11px rgb(0 0 0 / 70%), inset -11px 0px 15px -11px rgb(0 0 0 / 70%);
+	height: var(--height);
+	width: 8vw;
+	overflow: hidden;
+	font-weight: 900;
+	background-color: var(--light);
+	text-align: center;
+	color: var(--dark);
+	font-size: var(--font-size);
+}
+
+.scoreDiv {
+	margin-left: 1rem;
+
+	width: 2ch;
+	text-align: center;
+	display: inline-block;
+	height: var(--height);
+	vertical-align: top
+}
+
+.teamSpan {
+	border-right-style: solid;
+	height: var(--height);
+	display: inline-block;
+	vertical-align: top
+}
+
+.teamSpan2 {
+	/*padding-right: 1rem;*/
+	display: inline-block;
+	height: var(--height);
+	vertical-align: top
+}
+
+.section {
+	box-shadow: inset 11px 0px 15px -11px rgb(0 0 0 / 70%);
+	height: var(--height);
+	/*width: calc(var(--width) / 2) !important;*/
+	overflow: hidden;
+	font-weight: 900;
+	background-color: var(--dark);
+	text-align: center;
+	color: var(--light);
+	font-size: var(--font-size);
+}

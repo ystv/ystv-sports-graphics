@@ -4,3 +4,5 @@ extension.js
 *.bundle.js*
 .idea/
 *.local
+public/local
+src/common/boxerDictionary.ts

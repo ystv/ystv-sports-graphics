@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { useOnlyReplicantValue, useReplicantValue } from "common/useReplicant";
 import { TeamDictionary } from "common/teamDictionary";
+import { BoxerDictionary } from "common/boxerDictionary";
 import {
   ChakraProvider,
   ButtonGroup,
@@ -189,30 +190,37 @@ function Dashboard() {
         <Heading as="h2" size="lg">
           Set Teams
         </Heading>
-        <Grid templateColumns="repeat(2, 1fr)" spacing={8}>
-          <FormLabel>Team1</FormLabel>
-          <FormLabel>Team2</FormLabel>
-          <Select
-            value={team1ID || "york"}
-            onChange={(e) => setTeam1ID(e.target.value)}
-          >
-            {Object.keys(TeamDictionary).map((e) => (
-              <option value={e}>
-                {e[0].toUpperCase() + e.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </Select>
-          <Select
-            value={team2ID || "york"}
-            onChange={(e) => setTeam2ID(e.target.value)}
-          >
-            {Object.keys(TeamDictionary).map((e) => (
-              <option value={e}>
-                {e[0].toUpperCase() + e.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </Select>
-        </Grid>
+        <FormLabel>Fight</FormLabel>
+        <Select
+          value={team1ID || "york"}
+          onChange={(e) => setTeam1ID(e.target.value)}
+        >
+          {BoxerDictionary.map((e, i) => (
+            <option value={i}>
+              {e[0].name.split(" ")[1] + " vs " + e[1].name.split(" ")[1]}
+            </option>
+          ))}
+        </Select>
+        {/*<Select*/}
+        {/*  value={team1ID || "york"}*/}
+        {/*  onChange={(e) => setTeam1ID(e.target.value)}*/}
+        {/*>*/}
+        {/*  {Object.keys(BoxerDictionary).map((e) => (*/}
+        {/*    <option value={e}>*/}
+        {/*      {e[0].toUpperCase() + e.slice(1).toLowerCase()}*/}
+        {/*    </option>*/}
+        {/*  ))}*/}
+        {/*</Select>*/}
+        {/*<Select*/}
+        {/*  value={team2ID || "york"}*/}
+        {/*  onChange={(e) => setTeam2ID(e.target.value)}*/}
+        {/*>*/}
+        {/*  {Object.keys(BoxerDictionary).map((e) => (*/}
+        {/*    <option value={e}>*/}
+        {/*      {e[0].toUpperCase() + e.slice(1).toLowerCase()}*/}
+        {/*    </option>*/}
+        {/*  ))}*/}
+        {/*</Select>*/}
         <br />
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
         {/* ////////////////////// */}

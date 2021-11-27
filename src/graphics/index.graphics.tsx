@@ -1,18 +1,18 @@
 import ReactDOM from "react-dom";
 import React from "react";
 import { useOnlyReplicantValue } from "common/useReplicant";
-import { Scoreboard } from "./americanFootball/Scoreboard/Scoreboard";
+import { Scoreboard } from "./boxing/Scoreboard/Scoreboard";
 import "./global.css";
 import { Lineup } from "./rugby/Lineup/Lineup";
 import { Bug } from "./rugby/Bug/Bug";
 import { LineupSubs } from "./rugby/Lineup/LineupSubs";
 import { LowerThird } from "./generic/LowerThird/LowerThird";
-import { MatchStatus } from "./americanFootball/MatchStatus/MatchStatus";
+import { MatchStatus } from "./boxing/MatchStatus/MatchStatus";
 import { HoldingCard } from "./generic/HoldingCard/HoldingCard";
 
 function AllGraphics() {
   const team1ID = useOnlyReplicantValue("team1ID", undefined, {
-    defaultValue: "york",
+    defaultValue: 0,
   });
   const team2ID = useOnlyReplicantValue("team2ID", undefined, {
     defaultValue: "glasgow",
@@ -109,7 +109,7 @@ function AllGraphics() {
         <MatchStatus
           isOver={matchOver}
           isVisible={showStatus}
-          team1Name={team1ID}
+          team1Name={"york"}
           team2Name={team2ID}
           team1Score={team1Score}
           team2Score={team2Score}
