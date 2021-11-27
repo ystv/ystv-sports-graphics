@@ -108,7 +108,7 @@ export function Scoreboard({
     ...variants,
     visible: {
       ...variants.visible,
-      width: "calc(var(--width) / 2)",
+      width: "8vw",
     },
   };
 
@@ -165,9 +165,24 @@ export function Scoreboard({
                   </div>
                 </motion.div>
               </div>
-              <motion.div variants={timerVariantsParent}>
-                <AnimatePresence>
-                  {isTimerShown && (
+              <div
+                style={{
+                  width: "8vw",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <motion.h1
+                  variants={sectionVariants}
+                  className={styles.section}
+                >
+                  <motion.div variants={textVariants}>
+                    {`Round ${matchOver}`}
+                  </motion.div>
+                </motion.h1>
+                <motion.div variants={timerVariantsParent}>
+                  <AnimatePresence>
                     <motion.h1
                       initial="hidden"
                       animate="visible"
@@ -177,9 +192,9 @@ export function Scoreboard({
                     >
                       {secondToTimeString(timer)}
                     </motion.h1>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                  </AnimatePresence>
+                </motion.div>
+              </div>
               <div>
                 <motion.div
                   variants={variants}
@@ -200,14 +215,6 @@ export function Scoreboard({
                   </div>
                 </motion.div>
               </div>
-              {/*<motion.h1 variants={sectionVariants} className={styles.section}>*/}
-              {/*  <motion.div variants={textVariants}>*/}
-              {/*    {matchOver == 1 && "1st"}*/}
-              {/*    {matchOver == 2 && "2nd"}*/}
-              {/*    {matchOver == 3 && "3rd"}*/}
-              {/*    {matchOver == 4 && "4th"}*/}
-              {/*  </motion.div>*/}
-              {/*</motion.h1>*/}
             </div>
           </div>
         </motion.div>

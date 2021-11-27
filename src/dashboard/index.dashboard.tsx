@@ -225,6 +225,71 @@ function Dashboard() {
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
         {/* ////////////////////// */}
         <LiveKillButtons
+          name="Scoreboard"
+          live={showScoreboard}
+          callback={setShowScoreboard}
+        >
+          <>
+            {/*<form>*/}
+            {/*  <Grid templateColumns="repeat(2, 1fr)" spacing={8}>*/}
+            {/*  <strong>Home Team</strong>*/}
+            {/*  <strong>Away Team</strong>*/}
+            {/*  <NumberInput*/}
+            {/*    type="number"*/}
+            {/*    value={team1Score}*/}
+            {/*    onChange={(e) => setTeam1Score(Number(e))}*/}
+            {/*  >*/}
+            {/*    <NumberInputField />*/}
+            {/*    <NumberInputStepper>*/}
+            {/*      <NumberIncrementStepper />*/}
+            {/*      <NumberDecrementStepper />*/}
+            {/*    </NumberInputStepper>*/}
+            {/*  </NumberInput>*/}
+            {/*  <NumberInput*/}
+            {/*    type="number"*/}
+            {/*    value={team2Score}*/}
+            {/*    onChange={(e) => setTeam2Score(Number(e))}*/}
+            {/*  >*/}
+            {/*    <NumberInputField />*/}
+            {/*    <NumberInputStepper>*/}
+            {/*      <NumberIncrementStepper />*/}
+            {/*      <NumberDecrementStepper />*/}
+            {/*    </NumberInputStepper>*/}
+            {/*  </NumberInput>*/}
+            {/*</Grid>*/}
+            {/*</form>*/}
+            {/*<br />*/}
+            <Checkbox
+              checked={showTimer || false}
+              onChange={(e) => setShowTimer(e.target.checked)}
+            >
+              Include Timer
+            </Checkbox>
+            <Stopwatch updateStopWatchTime={setTimer} time={timer} />
+            <>
+              <NumberInput
+                type="number"
+                value={matchOver || 1}
+                onChange={(e) => setMatchOver(Number(e))}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <label>Round</label>
+            </>
+          </>
+        </LiveKillButtons>
+        <LiveKillButtons
+          name="Match Lineup"
+          live={showStatus}
+          callback={setShowStatus}
+        >
+          <></>
+        </LiveKillButtons>
+        <LiveKillButtons
           name={"Holding Card"}
           live={showHoldingCard}
           callback={setShowHoldingCard}
@@ -255,70 +320,6 @@ function Dashboard() {
               value={role || ""}
               onChange={(e) => setRole(e.target.value)}
             />
-          </>
-        </LiveKillButtons>
-        <LiveKillButtons
-          name="Scoreboard"
-          live={showScoreboard}
-          callback={setShowScoreboard}
-        >
-          <>
-            <form>
-              <Grid templateColumns="repeat(2, 1fr)" spacing={8}>
-                <strong>Home Team</strong>
-                <strong>Away Team</strong>
-                <NumberInput
-                  type="number"
-                  value={team1Score}
-                  onChange={(e) => setTeam1Score(Number(e))}
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-                <NumberInput
-                  type="number"
-                  value={team2Score}
-                  onChange={(e) => setTeam2Score(Number(e))}
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </Grid>
-            </form>
-            <br />
-            <Checkbox
-              checked={showTimer || false}
-              onChange={(e) => setShowTimer(e.target.checked)}
-            >
-              Include Timer
-            </Checkbox>
-            <Stopwatch updateStopWatchTime={setTimer} time={timer} />
-          </>
-        </LiveKillButtons>
-        <LiveKillButtons
-          name="Half/Full-time Status Aston"
-          live={showStatus}
-          callback={setShowStatus}
-        >
-          <>
-            <NumberInput
-              type="number"
-              value={matchOver || 1}
-              onChange={(e) => setMatchOver(Number(e))}
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-            <label>Quarter</label>
           </>
         </LiveKillButtons>
         {/*  CLOUD STUFF TEMP DISABLE */}

@@ -73,6 +73,7 @@
 .toprow {
 	display: flex;
 	overflow: hidden;
+	align-items: flex-end;
 }
 
 .timer {
@@ -112,13 +113,13 @@
 }
 
 .section {
-	box-shadow: inset 11px 0px 15px -11px rgb(0 0 0 / 70%);
-	height: var(--height);
-	/*width: calc(var(--width) / 2) !important;*/
+	height: 3vh;
+	width: 8vw;
 	overflow: hidden;
-	font-weight: 900;
+	font-weight: 800;
 	background-color: var(--dark);
 	text-align: center;
 	color: var(--light);
-	font-size: var(--font-size);
+	font-size: calc(var(--font-size) / 2);
+	text-transform: uppercase;
 }
