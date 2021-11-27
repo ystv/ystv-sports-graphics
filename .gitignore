@@ -6,3 +6,4 @@ extension.js
 *.local
 public/local
 src/common/boxerDictionary.ts
+.DS_Store
