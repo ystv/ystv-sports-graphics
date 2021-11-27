@@ -1,171 +1,233 @@
 import styles from "./MatchStatus.module.css";
-import { TeamDictionary } from "common/teamDictionary";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+// import { TeamDictionary } from "../../../common/teamDictionary";
+import { BoxerDictionary } from "../../../common/boxerDictionary";
 
 export interface MatchStatusProps {
   isVisible: boolean;
-  isOver: number;
-  team1Name?: string;
-  team2Name?: string;
-  team1Score?: number;
-  team2Score?: number;
-  timer?: string;
+  lineupTeam: number;
 }
 
-export function MatchStatus({
-  isVisible = false,
-  isOver = 1,
-  team1Name = "york",
-  team2Name = "glasgow",
-  team1Score = 0,
-  team2Score = 0,
-  timer = "00:00",
-}: MatchStatusProps) {
-  const team1 = TeamDictionary[team1Name];
-  const team2 = TeamDictionary[team2Name];
-  const parallelogramVariants = {
-    hidden: {
-      width: 0,
-      transition: {
-        delay: 1,
-        type: "tween",
-      },
+export const cellVariants = {
+  visible: { y: 0, opacity: 1 },
+  hidden: { y: -20, opacity: 0 },
+};
+export const titleVariants = {
+  hidden: {
+    maxWidth: 0,
+    minWidth: 0,
+    padding: "1vh 0vw",
+    transition: {
+      duration: 1,
+      type: "tween",
+      delay: 1,
     },
-    visible: {
-      width: "var(--width)",
-      transition: {
-        delay: 1,
-        type: "tween",
-      },
+  },
+  visible: {
+    maxWidth: "80vw",
+    minWidth: "20vw",
+    padding: "1vh 5vw",
+    transition: {
+      duration: 1,
+      type: "tween",
     },
-  };
-  const scoresVariants = {
-    hidden: {
-      width: 0,
-      transition: {
-        delay: 0.8,
-        type: "tween",
-      },
+  },
+};
+
+export const columnVariants = {
+  hidden: {
+    transition: {
+      staggerDirection: -1,
+      staggerChildren: 0.05,
     },
-    visible: {
-      width: "calc(var(--width) * 1.4)",
-      transition: {
-        delay: 0.8,
-        type: "tween",
-      },
+  },
+  visible: {
+    transition: { staggerChildren: 0.05 },
+  },
+};
+
+export const bodyVariants = {
+  hidden: {
+    transition: {
+      staggerDirection: -1,
+      staggerChildren: 0.5,
     },
-  };
-  const extrasVariants = {
-    hidden: {
-      width: 0,
-      transition: {
-        delay: 0,
-        type: "tween",
-      },
-    },
-    visible: {
-      width: "calc(3.18 * var(--width))",
-      transition: {
-        delay: 1,
-        type: "tween",
-      },
-    },
-  };
+  },
+  visible: {
+    transition: { staggerChildren: 0.5, delayChildren: 0.8 },
+  },
+};
+
+export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
+  const team1 = BoxerDictionary[lineupTeam][0];
+  const team2 = BoxerDictionary[lineupTeam][1];
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          //variants={variants}
           initial="hidden"
           animate="visible"
           exit="hidden"
           className="titleSafe"
         >
-          <div className={styles.scoreboard}>
-            <div className={styles.toprow}>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={parallelogramVariants}
-                className={styles.container}
-              >
+          <table
+            style={{ fontWeight: 700, tableLayout: "fixed" }}
+            className={styles.lineupTable}
+          >
+            <colgroup>
+              <col style={{ width: "24vw" }} />
+              <col style={{ width: "12vw" }} />
+              <col style={{ width: "24vw" }} />
+            </colgroup>
+            <thead>
+              <td colSpan={3} className={styles.titleCell}>
                 <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                  variants={parallelogramVariants}
-                  className={styles.parallelogram}
-                  style={{ background: team1.primaryColor }}
+                  style={{
+                    minWidth: 0,
+                    textAlign: "center",
+                    backgroundColor: "#faaf18",
+                    color: "var(--light)",
+                    whiteSpace: "nowrap",
+                  }}
+                  variants={titleVariants}
                 >
-                  <div className={styles.parallelogramInnerContainer}>
-                    <h1
-                      style={{
-                        color: team1.secondaryColor ?? "var(--light)",
-                      }}
-                    >
-                      {team1.teamShort.toUpperCase()}
-                    </h1>
-                    <img
-                      src="../public/logos/york_cent.png"
-                      style={{
-                        opacity: "18%",
-                      }}
-                    />
-                  </div>
+                  Fight Night 2021
                 </motion.div>
-              </motion.div>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={scoresVariants}
-                className={styles.scores}
-              >
-                {team1Score} - {team2Score}
-              </motion.div>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={parallelogramVariants}
-                className={styles.container2}
-              >
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                  variants={parallelogramVariants}
-                  className={styles.parallelogram2}
-                  style={{ background: team2.primaryColor }}
+              </td>
+            </thead>
+            <tbody>
+              <motion.tr variants={bodyVariants}>
+                <motion.td
+                  variants={columnVariants}
+                  className={styles.groupColumns}
                 >
-                  <div className={styles.parallelogramInnerContainer2}>
-                    <h1
-                      style={{ color: team2.secondaryColor ?? "var(--light)" }}
-                    >
-                      {team2.teamShort.toUpperCase()}
-                    </h1>
-                    <img
-                      src="../public/logos/north_mustangs.png"
-                      style={{ opacity: "20%", right: "10%" }}
-                    />
-                  </div>
-                </motion.div>
-              </motion.div>
-            </div>
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={extrasVariants}
-              className={styles.timer}
-            >
-              {isOver == 1 && "End of 1st Quarter"}
-              {isOver == 2 && "End of 2nd Quarter"}
-              {isOver == 3 && "End of 3rd Quarter"}
-              {isOver == 4 && "Final"}
-            </motion.div>
-          </div>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                    style={{ backgroundColor: "#ee2222" }}
+                  >
+                    <td>{team1.name}</td>
+                  </motion.tr>
+                  {/*<motion.tr*/}
+                  {/*  variants={cellVariants}*/}
+                  {/*  className={styles.lineupMicroRow}*/}
+                  {/*>*/}
+                  {/*  <td>Photo</td>*/}
+                  {/*</motion.tr>*/}
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team1.age}</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team1.weight} kg</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team1.height}</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team1.reach}"</td>
+                  </motion.tr>
+                </motion.td>
+                {/*<td className={styles.spacerColumn}></td>*/}
+                <motion.td
+                  variants={columnVariants}
+                  className={styles.groupColumns}
+                >
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                    style={{ backgroundColor: "transparent" }}
+                  >
+                    {/*<td>{team1.name}</td>*/}
+                    <td style={{ color: "transparent" }}>Name</td>
+                  </motion.tr>
+                  {/*<motion.tr*/}
+                  {/*  variants={cellVariants}*/}
+                  {/*  className={styles.lineupMicroRow}*/}
+                  {/*>*/}
+                  {/*  <td>Photo</td>*/}
+                  {/*</motion.tr>*/}
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>Age</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>Weight</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>Height</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>Reach</td>
+                  </motion.tr>
+                </motion.td>
+                <motion.td
+                  variants={columnVariants}
+                  className={styles.groupColumns}
+                >
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                    style={{ backgroundColor: "#2222ee" }}
+                  >
+                    <td>{team2.name}</td>
+                  </motion.tr>
+                  {/*<motion.tr*/}
+                  {/*  variants={cellVariants}*/}
+                  {/*  className={styles.lineupMicroRow}*/}
+                  {/*>*/}
+                  {/*  <td>Photo</td>*/}
+                  {/*</motion.tr>*/}
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team2.age}</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team2.weight} kg</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team2.height}</td>
+                  </motion.tr>
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                  >
+                    <td>{team2.reach}"</td>
+                  </motion.tr>
+                </motion.td>
+              </motion.tr>
+            </tbody>
+          </table>
         </motion.div>
       )}
     </AnimatePresence>

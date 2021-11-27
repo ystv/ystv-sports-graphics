@@ -106,14 +106,7 @@ function AllGraphics() {
         <Bug state={showBug} />
       </GraphicContainer>
       <GraphicContainer>
-        <MatchStatus
-          isOver={matchOver}
-          isVisible={showStatus}
-          team1Name={"york"}
-          team2Name={team2ID}
-          team1Score={team1Score}
-          team2Score={team2Score}
-        />
+        <MatchStatus lineupTeam={team1ID} isVisible={showStatus} />
       </GraphicContainer>
       <GraphicContainer zIndex={100}>
         <HoldingCard
