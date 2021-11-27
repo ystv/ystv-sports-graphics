@@ -108,12 +108,13 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                   >
                     <td>{team1.name}</td>
                   </motion.tr>
-                  {/*<motion.tr*/}
-                  {/*  variants={cellVariants}*/}
-                  {/*  className={styles.lineupMicroRow}*/}
-                  {/*>*/}
-                  {/*  <td>Photo</td>*/}
-                  {/*</motion.tr>*/}
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                    style={{ backgroundColor: "transparent" }}
+                  >
+                    <img src={`../public/local/cutouts/${team1.photo}.png`} />
+                  </motion.tr>
                   <motion.tr
                     variants={cellVariants}
                     className={styles.lineupMicroRow}
@@ -152,12 +153,13 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                     {/*<td>{team1.name}</td>*/}
                     <td style={{ color: "transparent" }}>Name</td>
                   </motion.tr>
-                  {/*<motion.tr*/}
-                  {/*  variants={cellVariants}*/}
-                  {/*  className={styles.lineupMicroRow}*/}
-                  {/*>*/}
-                  {/*  <td>Photo</td>*/}
-                  {/*</motion.tr>*/}
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                    style={{ backgroundColor: "transparent", height: "24vh" }}
+                  >
+                    <td style={{ color: "transparent" }}>Photo</td>
+                  </motion.tr>
                   <motion.tr
                     variants={cellVariants}
                     className={styles.lineupMicroRow}
@@ -194,12 +196,13 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                   >
                     <td>{team2.name}</td>
                   </motion.tr>
-                  {/*<motion.tr*/}
-                  {/*  variants={cellVariants}*/}
-                  {/*  className={styles.lineupMicroRow}*/}
-                  {/*>*/}
-                  {/*  <td>Photo</td>*/}
-                  {/*</motion.tr>*/}
+                  <motion.tr
+                    variants={cellVariants}
+                    className={styles.lineupMicroRow}
+                    style={{ backgroundColor: "transparent" }}
+                  >
+                    <img src={`../public/local/cutouts/${team2.photo}.png`} />
+                  </motion.tr>
                   <motion.tr
                     variants={cellVariants}
                     className={styles.lineupMicroRow}

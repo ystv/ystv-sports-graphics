@@ -18,6 +18,11 @@
 	margin-bottom: .2rem;
 }
 
+.lineupMicroRow img {
+	max-width: 24vw;
+	max-height: 24vh;
+}
+
 .groupColumns {
 	vertical-align: top;
 	padding: 0;
