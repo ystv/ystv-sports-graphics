@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { useOnlyReplicantValue, useReplicantValue } from "common/useReplicant";
 import { TeamDictionary } from "common/teamDictionary";
-import { BoxerDictionary } from "common/boxerDictionary";
+// import { BoxerDictionary } from "common/boxerDictionary";
 import {
   ChakraProvider,
   ButtonGroup,
@@ -153,7 +153,7 @@ function Dashboard() {
     }
   );
   const [matchOver, setMatchOver] = useReplicantValue("matchOver", undefined, {
-    defaultValue: 1,
+    defaultValue: false,
   });
 
   const [showHoldingCard, setShowHoldingCard] = useReplicantValue(
@@ -190,37 +190,37 @@ function Dashboard() {
         <Heading as="h2" size="lg">
           Set Teams
         </Heading>
-        <FormLabel>Fight</FormLabel>
-        <Select
-          value={team1ID || "york"}
-          onChange={(e) => setTeam1ID(e.target.value)}
-        >
-          {BoxerDictionary.map((e, i) => (
-            <option value={i}>
-              {e[0].name.split(" ")[1] + " vs " + e[1].name.split(" ")[1]}
-            </option>
-          ))}
-        </Select>
+        {/*<FormLabel>Fight</FormLabel>*/}
         {/*<Select*/}
         {/*  value={team1ID || "york"}*/}
         {/*  onChange={(e) => setTeam1ID(e.target.value)}*/}
         {/*>*/}
-        {/*  {Object.keys(BoxerDictionary).map((e) => (*/}
-        {/*    <option value={e}>*/}
-        {/*      {e[0].toUpperCase() + e.slice(1).toLowerCase()}*/}
+        {/*  {BoxerDictionary.map((e, i) => (*/}
+        {/*    <option value={i}>*/}
+        {/*      {e[0].name.split(" ")[1] + " vs " + e[1].name.split(" ")[1]}*/}
         {/*    </option>*/}
         {/*  ))}*/}
         {/*</Select>*/}
-        {/*<Select*/}
-        {/*  value={team2ID || "york"}*/}
-        {/*  onChange={(e) => setTeam2ID(e.target.value)}*/}
-        {/*>*/}
-        {/*  {Object.keys(BoxerDictionary).map((e) => (*/}
-        {/*    <option value={e}>*/}
-        {/*      {e[0].toUpperCase() + e.slice(1).toLowerCase()}*/}
-        {/*    </option>*/}
-        {/*  ))}*/}
-        {/*</Select>*/}
+        <Select
+          value={team1ID || "york"}
+          onChange={(e) => setTeam1ID(e.target.value)}
+        >
+          {Object.keys(TeamDictionary).map((e) => (
+            <option value={e}>
+              {e[0].toUpperCase() + e.slice(1).toLowerCase()}
+            </option>
+          ))}
+        </Select>
+        <Select
+          value={team2ID || "york"}
+          onChange={(e) => setTeam2ID(e.target.value)}
+        >
+          {Object.keys(TeamDictionary).map((e) => (
+            <option value={e}>
+              {e[0].toUpperCase() + e.slice(1).toLowerCase()}
+            </option>
+          ))}
+        </Select>
         <br />
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
         {/* ////////////////////// */}
@@ -230,35 +230,35 @@ function Dashboard() {
           callback={setShowScoreboard}
         >
           <>
-            {/*<form>*/}
-            {/*  <Grid templateColumns="repeat(2, 1fr)" spacing={8}>*/}
-            {/*  <strong>Home Team</strong>*/}
-            {/*  <strong>Away Team</strong>*/}
-            {/*  <NumberInput*/}
-            {/*    type="number"*/}
-            {/*    value={team1Score}*/}
-            {/*    onChange={(e) => setTeam1Score(Number(e))}*/}
-            {/*  >*/}
-            {/*    <NumberInputField />*/}
-            {/*    <NumberInputStepper>*/}
-            {/*      <NumberIncrementStepper />*/}
-            {/*      <NumberDecrementStepper />*/}
-            {/*    </NumberInputStepper>*/}
-            {/*  </NumberInput>*/}
-            {/*  <NumberInput*/}
-            {/*    type="number"*/}
-            {/*    value={team2Score}*/}
-            {/*    onChange={(e) => setTeam2Score(Number(e))}*/}
-            {/*  >*/}
-            {/*    <NumberInputField />*/}
-            {/*    <NumberInputStepper>*/}
-            {/*      <NumberIncrementStepper />*/}
-            {/*      <NumberDecrementStepper />*/}
-            {/*    </NumberInputStepper>*/}
-            {/*  </NumberInput>*/}
-            {/*</Grid>*/}
-            {/*</form>*/}
-            {/*<br />*/}
+            <form>
+              <Grid templateColumns="repeat(2, 1fr)" spacing={8}>
+                <strong>Home Team</strong>
+                <strong>Away Team</strong>
+                <NumberInput
+                  type="number"
+                  value={team1Score}
+                  onChange={(e) => setTeam1Score(Number(e))}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <NumberInput
+                  type="number"
+                  value={team2Score}
+                  onChange={(e) => setTeam2Score(Number(e))}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Grid>
+            </form>
+            <br />
             <Checkbox
               checked={showTimer || false}
               onChange={(e) => setShowTimer(e.target.checked)}
@@ -266,28 +266,35 @@ function Dashboard() {
               Include Timer
             </Checkbox>
             <Stopwatch updateStopWatchTime={setTimer} time={timer} />
-            <>
-              <NumberInput
-                type="number"
-                value={matchOver || 1}
-                onChange={(e) => setMatchOver(Number(e))}
-              >
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-              <label>Round</label>
-            </>
+            {/*<>*/}
+            {/*  <NumberInput*/}
+            {/*    type="number"*/}
+            {/*    value={matchOver || false}*/}
+            {/*    onChange={(e) => setMatchOver(e)}*/}
+            {/*  >*/}
+            {/*    <NumberInputField />*/}
+            {/*    <NumberInputStepper>*/}
+            {/*      <NumberIncrementStepper />*/}
+            {/*      <NumberDecrementStepper />*/}
+            {/*    </NumberInputStepper>*/}
+            {/*  </NumberInput>*/}
+            {/*  <label>Round</label>*/}
+            {/*</>*/}
           </>
         </LiveKillButtons>
         <LiveKillButtons
-          name="Match Lineup"
+          name="Aston"
           live={showStatus}
           callback={setShowStatus}
         >
-          <></>
+          <>
+            <Checkbox
+              checked={matchOver || false}
+              onChange={(e) => setMatchOver(e.target.checked)}
+            >
+              End of match?
+            </Checkbox>
+          </>
         </LiveKillButtons>
         <LiveKillButtons
           name={"Holding Card"}
