@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  couchbase:
+    volumes:
+    - ./.devcontainer/couchbase-entrypoint.sh:/entrypoint.sh:ro
+
+  server:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    init: true
+    working_dir: /workspaces/sports-scores
+    volumes:
+      - .:/workspaces/sports-scores:cached
+      - vscode-cache:/home/vscode/.vscode-server/extensions
+      - vscode-insiders-cache:/home/vscode/.vscode-server-insiders/extensions
+      - yarn-cache:/workspaces/sports-scores/.yarn/cache
+    command: sleep 9999999999
+    environment:
+      - DB_CONNECTION_STRING=couchbase://couchbase
+      - DB_USER=sports-scores
+      - DB_PASSWORD=password
+      - DB_BUCKET=sports-scores
+    depends_on:
+      - couchbase
+
+volumes:
+  vscode-cache:
+  vscode-insiders-cache:
+  yarn-cache:

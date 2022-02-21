@@ -1,0 +1,12 @@
+{
+    "db": {
+        "connectionString": "couchbase://couchbase",
+        "username": "sports-scores",
+        "password": "password",
+        "bucket": "sports-scores",
+        "scope": "_default"
+    },
+    "logLevel": "info",
+    "pathPrefix": "",
+    "port": 8000
+}
