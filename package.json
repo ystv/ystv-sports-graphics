@@ -18,8 +18,8 @@
     "compatibleRange": "^1.1.1",
     "dashboardPanels": [
       {
-        "name": "controller",
-        "title": "Controller",
+        "name": "sports-graphics-controller",
+        "title": "SportsGraphicsController",
         "file": "dashboard.html",
         "headerColor": "#FAAF18",
         "fullbleed": true
