@@ -107,7 +107,7 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                     className={styles.lineupMicroRow}
                     style={{ backgroundColor: "#ee2222" }}
                   >
-                    <td>{team1.name}</td>
+                    <td>{team1.name.split(" ").slice(0, 2).join(" ")}</td>
                   </motion.tr>
                   <motion.tr
                     variants={cellVariants}
@@ -152,7 +152,9 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                     style={{ backgroundColor: "transparent" }}
                   >
                     {/*<td>{team1.name}</td>*/}
-                    <td style={{ color: "transparent" }}>Name</td>
+                    <td style={{ color: "transparent" }}>
+                      {team1.name.split(" ").slice(0, 2).join(" ")}
+                    </td>
                   </motion.tr>
                   <motion.tr
                     variants={cellVariants}
@@ -198,7 +200,7 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                     className={styles.lineupMicroRow}
                     style={{ backgroundColor: "#2222ee" }}
                   >
-                    <td>{team2.name}</td>
+                    <td>{team2.name.split(" ").slice(0, 2).join(" ")}</td>
                   </motion.tr>
                   <motion.tr
                     variants={cellVariants}
