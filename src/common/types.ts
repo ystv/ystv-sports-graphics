@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { TypedSchema } from "yup/lib/util/types";
 
 export const BaseEvent = Yup.object().shape({
     id: Yup.string().uuid().required(),
@@ -6,19 +7,25 @@ export const BaseEvent = Yup.object().shape({
     name: Yup.string().required()
 });
 
-export interface EventActionTypes {
-    readonly [K: string]: Yup.AnyObjectSchema;
+export interface EventActionTypes<TEventSchema extends Yup.AnySchema> {
+    readonly [K: string]: {
+      schema: Yup.AnyObjectSchema;
+      valid?: (state: Yup.InferType<TEventSchema>) => boolean;
+    };
 }
 
-export type EventActionFunctions<TEventSchema extends Yup.AnyObjectSchema, TActionTypes extends EventActionTypes> = {
-    [K in keyof TActionTypes]: (value: Yup.InferType<TEventSchema>, data: Yup.InferType<TActionTypes[K]>) => void;
+export type EventActionFunctions<TEventSchema extends Yup.AnyObjectSchema, TActionTypes extends EventActionTypes<TEventSchema>> = {
+    [K in keyof TActionTypes]: (value: Yup.InferType<TEventSchema>, data: Yup.InferType<TActionTypes[K]["schema"]>) => void;
 }
 
-interface EventActionInfo<TEvent> {
+export interface ActionFormProps<TEventSchema extends TypedSchema> {
+  currentState: Yup.InferType<TEventSchema>
+}
+
+interface EventActionInfo<TEventSchema extends TypedSchema> {
   schema: Yup.AnyObjectSchema;
-  Form: (props: {
-    currentState: TEvent
-  }) => JSX.Element;
+  Form: (props: ActionFormProps<TEventSchema>) => JSX.Element;
+  valid?: (state: Yup.InferType<TEventSchema>) => boolean;
 }
 
 export interface EventTypeInfo<T extends Yup.AnyObjectSchema> {

@@ -39,7 +39,7 @@ export function EditEventForm() {
           validationSchema={EVENTS[type!].schema}
           onSubmit={submit}
         >
-          {({ handleSubmit, handleReset, isSubmitting }) => (
+          {({ handleSubmit, handleReset, isSubmitting, errors }) => (
             <BootstrapForm onSubmit={handleSubmit} onReset={handleReset}>
               <EditForm />
               <Button variant="primary" type="submit" disabled={isSubmitting}>

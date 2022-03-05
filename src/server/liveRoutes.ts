@@ -45,6 +45,15 @@ export function createLiveRouter() {
     }
 
     const logger = logging.getLogger(`live:${sid}`);
+
+    ctx.websocket.on("close", (code: number) => {
+      logger.info("WebSocket closed", code);
+    });
+
+    ctx.websocket.on("error", err => {
+      logger.warn("WebSocket error", err);
+    })
+
     logger.debug("hello");
     send({
       kind: "HELLO",
@@ -68,7 +77,7 @@ export function createLiveRouter() {
         "invalid last_mid type"
       );
       while (true) {
-        const data = await getEventChanges(ctx.query.last_mid);
+        const data = await getEventChanges(ctx.query.last_mid, 0);
         if (data === null || data.length === 0) {
           break;
         }
@@ -86,6 +95,9 @@ export function createLiveRouter() {
         ensure(typeof msg === "string", UserError, "non-string message");
         payload = JSON.parse(msg);
         switch (payload.kind) {
+          case "PING":
+            send({ kind: "PONG" });
+            break;
           case "SUBSCRIBE":
             ensure(
               typeof payload.to === "string",
@@ -141,12 +153,13 @@ export function createLiveRouter() {
     let lastMid = "$";
 
     while (true) {
-      const data = await getEventChanges(lastMid, 0);
+      const data = await getEventChanges(lastMid, 10_000);
       if (ctx.websocket.readyState === ctx.websocket.CLOSED) {
         logger.info("WebSocket state is CLOSED, ending Redis loop.");
         return;
       }
       if (data === null) {
+        send({ kind: "PING" });
         continue;
       }
       for (const msg of data) {

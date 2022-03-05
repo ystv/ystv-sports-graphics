@@ -7,7 +7,13 @@ import { Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
 
-function EventActionModal(props: { eventType: keyof typeof EVENTS, eventId: string, actionType: any, onClose: () => void, currentState: any }) {
+function EventActionModal(props: {
+  eventType: keyof typeof EVENTS;
+  eventId: string;
+  actionType: any;
+  onClose: () => void;
+  currentState: any;
+}) {
   const actionSchema = EVENTS[props.eventType].actions[props.actionType].schema;
   const ActionForm = EVENTS[props.eventType].actions[props.actionType].Form;
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -29,7 +35,7 @@ function EventActionModal(props: { eventType: keyof typeof EVENTS, eventId: stri
   return (
     <Modal show onHide={() => props.onClose()}>
       <Modal.Body>
-      <Formik
+        <Formik
           initialValues={{}}
           onSubmit={submit}
           validationSchema={actionSchema}
@@ -41,14 +47,16 @@ function EventActionModal(props: { eventType: keyof typeof EVENTS, eventId: stri
                 Submit
               </Button>
               {submitError !== null && (
-                <Alert variant="danger">Could not perform {props.actionType}! {submitError}</Alert>
+                <Alert variant="danger">
+                  Could not perform {props.actionType}! {submitError}
+                </Alert>
               )}
             </BootstrapForm>
           )}
         </Formik>
       </Modal.Body>
     </Modal>
-  )
+  );
 }
 
 export function LiveScores() {
@@ -59,7 +67,9 @@ export function LiveScores() {
   const RenderScore = EVENTS[type!].RenderScore;
   const actions = EVENTS[type].actions;
 
-  const [activeAction, setActiveAction] = useState<keyof typeof actions | null>(null);
+  const [activeAction, setActiveAction] = useState<keyof typeof actions | null>(
+    null
+  );
 
   if (!ready) {
     if (error != null) {
@@ -85,11 +95,27 @@ export function LiveScores() {
       {error !== null && <Alert variant="warning">{error}</Alert>}
       <RenderScore
         value={data}
-        actions={Object.keys(actions).map((actionType) => (
-          <Button key={actionType} onClick={() => setActiveAction(actionType)}>{actionType}</Button>
+        actions={Object.keys(actions).filter(type => {
+          const validFn = actions[type].valid;
+          if (!validFn) {
+            return true;
+          }
+          return validFn(data);
+        }).map((actionType) => (
+          <Button key={actionType} onClick={() => setActiveAction(actionType)}>
+            {actionType}
+          </Button>
         ))}
       />
-      {activeAction !== null && <EventActionModal eventType={type} eventId={id} actionType={activeAction} currentState={data} onClose={() => setActiveAction(null)} />}
+      {activeAction !== null && (
+        <EventActionModal
+          eventType={type}
+          eventId={id}
+          actionType={activeAction}
+          currentState={data}
+          onClose={() => setActiveAction(null)}
+        />
+      )}
     </>
   );
 }

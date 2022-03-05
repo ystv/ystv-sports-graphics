@@ -6,7 +6,11 @@ export type LiveClientMessage =
   | {
       kind: "UNSUBSCRIBE";
       to: string;
-    };
+    }
+  | {
+      kind: "PING";
+    }
+  | { kind: "PONG" };
 
 export type LiveServerMessage =
   | {
@@ -32,4 +36,8 @@ export type LiveServerMessage =
   | {
       kind: "ERROR";
       error: string;
-    };
+    }
+  | {
+      kind: "PING";
+    }
+  | { kind: "PONG" };

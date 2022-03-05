@@ -7,6 +7,7 @@ import type {
 import invariant from "tiny-invariant";
 import { stringify as stringifyQS } from "qs";
 const logger = logging.getLogger("liveData");
+logger.setLevel(import.meta.env.DEV ? "trace" : "info");
 
 export function useLiveData<T>(eventId: string) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -98,6 +99,9 @@ export function useLiveData<T>(eventId: string) {
           break;
         case "ERROR":
           setError(payload.error);
+          break;
+        case "PING":
+          send({ kind: "PONG" });
           break;
         default:
           invariant(false, "Unhandled message KIND" + (payload as any).kind);
