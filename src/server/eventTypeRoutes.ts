@@ -4,6 +4,8 @@ import { DB } from "./db";
 import { v4 as uuidv4 } from "uuid";
 import { DocumentExistsError } from "couchbase";
 import { EventActionFunctions, EventActionTypes } from "../common/types";
+import { REDIS } from "./redis";
+import { dispatchChangeToEvent } from "./updatesRepo";
 
 export function makeEventAPI<TEventSchema extends Yup.AnyObjectSchema, TActions extends EventActionTypes>(
     typeName: string,
@@ -46,6 +48,7 @@ export function makeEventAPI<TEventSchema extends Yup.AnyObjectSchema, TActions 
                 throw e;
             }
         }
+        await dispatchChangeToEvent(key(val.id), val);
         ctx.response.body = JSON.stringify(val);
         ctx.response.status = 201;
     });
@@ -59,10 +62,11 @@ export function makeEventAPI<TEventSchema extends Yup.AnyObjectSchema, TActions 
         const inputData = ctx.request.body;
         const val: Yup.InferType<TEventSchema> = await schema.omit(["id", "type"]).validate(inputData, { abortEarly: false, stripUnknown: true });
         const result = Object.assign({}, data.content, val);
-        DB.collection("_default").replace(
+        await DB.collection("_default").replace(
             key(id),
             result
         );
+        await dispatchChangeToEvent(key(id), result);
         ctx.response.body = JSON.stringify(result);
     });
     
@@ -76,6 +80,7 @@ export function makeEventAPI<TEventSchema extends Yup.AnyObjectSchema, TActions 
             let val = result.content;
             actionFuncs[action](val, data);
             await DB.collection("_default").replace(key(ctx.params.id), val, { cas: result.cas });
+            await dispatchChangeToEvent(key(ctx.params.id), val);
             ctx.response.body = JSON.stringify(val);
         });
     }

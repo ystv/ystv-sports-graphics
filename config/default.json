@@ -8,5 +8,8 @@
     },
     "logLevel": "info",
     "pathPrefix": "",
-    "port": 8000
+    "port": 8000,
+    "redis": {
+        "connectionString": "redis://localhost"
+    }
 }

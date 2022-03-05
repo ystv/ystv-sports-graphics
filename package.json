@@ -1,11 +1,16 @@
 {
   "scripts": {
     "cfg": "node-config-ts",
-    "dev": "concurrently -n server,client npm:dev:server npm:dev:client",
-    "dev:server": "nodemon src/server/index.server.ts",
+    "dev": "concurrently -n server,client npm:dev:server npm:dev:server:typecheck npm:dev:client",
+    "dev:server": "node startDevServer.js",
+    "dev:server:typecheck": "cd src/server && tsc -w --preserveWatchOutput",
     "dev:client": "vite dev",
-    "build:server": "tsc --extendedDiagnostics"
+    "build": "rm -rf dist && yarn build:client && yarn build:server",
+    "build:server": "esbuild --platform=node --tree-shaking=true --bundle --outfile=dist/index.server.js src/server/index.server.ts && mkdir -p addon-build/release/install-root && cp ./node_modules/couchbase/build/Release/couchbase_impl.node addon-build/release/install-root/couchbase_impl.node",
+    "build:client": "vite build",
+    "postinstall": "patch-package"
   },
+  "private": true,
   "devDependencies": {
     "@tsconfig/node16": "^1.0.2",
     "@tsconfig/vite-react": "^1.0.0",
@@ -14,21 +19,25 @@
     "concurrently": "^7.0.0",
     "esbuild": "^0.14.23",
     "nodemon": "^2.0.15",
+    "patch-package": "^6.4.7",
     "ts-node": "^10.5.0",
     "typescript": "^4.5.5",
     "vite": "^2.8.4"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.2",
     "@types/config": "^0.0.41",
     "@types/http-errors": "^1.8.2",
     "@types/koa": "^2.13.4",
     "@types/koa-bodyparser": "^4.3.5",
     "@types/koa-logger": "^3.1.2",
     "@types/koa-router": "^7.4.4",
+    "@types/koa-websocket": "^5.0.7",
     "@types/qs": "^6.9.7",
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "@types/uuid": "^8.3.4",
+    "bootstrap": "5",
     "conf": "^10.1.1",
     "config": "^3.3.7",
     "convict": "^6.2.1",
@@ -42,14 +51,20 @@
     "koa-bodyparser": "^4.3.0",
     "koa-logger": "^3.2.1",
     "koa-router": "^10.1.1",
+    "koa-websocket": "^6.0.0",
+    "lodash": "^4.17.21",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4",
     "qs": "^6.10.3",
     "react": "^17.0.2",
+    "react-bootstrap": "^2.1.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "6",
+    "redis": "^4.0.4",
     "swr": "^1.2.2",
+    "tiny-invariant": "^1.2.0",
     "uuid": "^8.3.2",
     "yup": "^0.32.11"
-  }
+  },
+  "packageManager": "yarn@3.2.0"
 }

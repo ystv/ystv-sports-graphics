@@ -1,3 +1,12 @@
 dist/
 node_modules/
 yarn-error.log
+addon-build/
+
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*

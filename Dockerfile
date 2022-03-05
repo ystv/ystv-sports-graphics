@@ -6,11 +6,10 @@ COPY package.json yarn.lock /app/
 RUN yarn --no-progress --frozen-lockfile install
 
 COPY . /app
-# postinstall is to ensure we re-generate node-config-ts
 RUN yarn build:server
 
 FROM gcr.io/distroless/nodejs:16
-# needed
+# needed for libcouchbase
 COPY --from=build-env /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libz.so.1
 COPY --from=build /app /app
 WORKDIR /app

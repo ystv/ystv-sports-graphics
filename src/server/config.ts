@@ -10,7 +10,10 @@ const config = {
     },
     port: cfg.get<number>("port"),
     logLevel: cfg.get<string>("logLevel"),
-    pathPrefix: cfg.get<string>("pathPrefix")
+    pathPrefix: cfg.get<string>("pathPrefix"),
+    redis: {
+        connectionString: cfg.get<string>("redis.connectionString")
+    }
 };
 
 export default config;

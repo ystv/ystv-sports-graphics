@@ -1,7 +1,7 @@
 {
-    "references": [
-        { "path": "../common/tsconfig.json" }
-    ],
+    // "references": [
+    //     { "path": "../common/tsconfig.json" }
+    // ],
     "extends": "@tsconfig/vite-react/tsconfig.json",
     "compilerOptions": {
         "module": "ESNext",

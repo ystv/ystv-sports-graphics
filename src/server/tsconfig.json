@@ -1,10 +1,12 @@
 {
-    "references": [
-        { "path": "../common/tsconfig.json" }
-    ],
+    // "references": [
+    //     { "path": "../common/tsconfig.json" }
+    // ],
     "extends": "@tsconfig/node16/tsconfig.json",
     "compilerOptions": {
         "module": "commonjs",
-        "rootDir": ".."
+        "rootDir": "..",
+        "noEmit": true,
+        "jsx": "preserve" // only needed for type-checking, esbuild will strip it
     }
 }
