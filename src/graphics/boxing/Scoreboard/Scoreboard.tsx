@@ -91,7 +91,7 @@ export function Scoreboard({
 
   const timerVariantsParent = {
     hidden: {
-      maxWidth: 0,
+      maxWidth: "0vw",
       transition: {
         style: "tween",
       },
@@ -112,18 +112,35 @@ export function Scoreboard({
     },
   };
 
+  const timerTextVariants = {
+    ...textVariants,
+    hidden: {
+      opacity: "0%",
+    },
+    visible: {
+      // ...textVariants.visible,
+      opacity: "100%",
+      transition: {
+        style: "tween",
+        when: "beforeAll",
+        delay: 0,
+        duration: 1,
+      },
+    },
+  };
+
   const blankVariants = {
     hidden: {
       transition: {
         style: "tween",
-        staggerChildren: 0.1,
+        // staggerChildren: 0.1,
         staggerDirection: -1,
       },
     },
     visible: {
       transition: {
         style: "tween",
-        staggerChildren: 0.2,
+        // staggerChildren: 0.2,
       },
     },
   };
@@ -165,36 +182,41 @@ export function Scoreboard({
                   </div>
                 </motion.div>
               </div>
-              <div
+              <motion.div
+                variants={timerVariantsParent}
                 style={{
                   width: "8vw",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
+                  overflow: "hidden",
                 }}
               >
                 <motion.h1
                   variants={sectionVariants}
                   className={styles.section}
                 >
-                  <motion.div variants={textVariants}>
+                  <motion.div variants={timerTextVariants}>
                     {`Round ${matchOver}`}
                   </motion.div>
                 </motion.h1>
-                <motion.div variants={timerVariantsParent}>
+                <motion.div
+                // style={{ alignSelf: "start" }}
+                // variants={timerVariantsParent}
+                >
                   <AnimatePresence>
                     <motion.h1
                       initial="hidden"
                       animate="visible"
                       exit="hidden"
-                      variants={timerVariants}
+                      // variants={timerVariants}
                       className={styles.timer}
                     >
                       {secondToTimeString(timer)}
                     </motion.h1>
                   </AnimatePresence>
                 </motion.div>
-              </div>
+              </motion.div>
               <div>
                 <motion.div
                   variants={variants}
