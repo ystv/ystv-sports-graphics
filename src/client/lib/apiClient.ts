@@ -79,3 +79,20 @@ export function usePUTEvent() {
         return result;
     }
 }
+
+export function usePOSTEventAction() {
+    const { mutate } = useSWRConfig();
+
+    return async (type: string, id: string, actionType: string, data: Record<string, any>) => {
+        const result = await fetcher(`/events/${type}/${id}/${actionType}`, {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }, 200) as InferType<typeof BaseEvent>;
+        mutate("/events");
+        mutate(`/events/${type}/${result.id}`, result, false);
+        return result;
+    }
+}

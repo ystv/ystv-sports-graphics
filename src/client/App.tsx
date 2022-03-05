@@ -16,10 +16,9 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Wrapper />}>
-        <Route path="events">
-          <Route path="" element={<ListEvents />} />
+      <Route path="events/:type/:id" element={<LiveScores />} />
+        <Route path="events" element={<ListEvents />}>
           <Route path=":type/:id/edit" element={<EditEventModal />} />
-          <Route path=":type/:id" element={<LiveScores />} />
           <Route path="new" element={<CreateEventModal />} />
         </Route>
 
