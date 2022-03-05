@@ -91,10 +91,11 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                   }}
                   variants={titleVariants}
                 >
-                  Fight Night 2021
+                  Fight Night 2022
                 </motion.div>
               </td>
             </thead>
+            <br />
             <tbody>
               <motion.tr variants={bodyVariants}>
                 <motion.td
@@ -113,7 +114,7 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                     className={styles.lineupMicroRow}
                     style={{ backgroundColor: "transparent" }}
                   >
-                    <img src={`../public/local/cutouts/${team1.photo}.png`} />
+                    {/* <img src={`../public/local/cutouts/${team1.photo}.png`} /> */}
                   </motion.tr>
                   <motion.tr
                     variants={cellVariants}
@@ -156,9 +157,12 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                   <motion.tr
                     variants={cellVariants}
                     className={styles.lineupMicroRow}
-                    style={{ backgroundColor: "transparent", height: "24vh" }}
+                    style={{
+                      backgroundColor: "transparent",
+                      // height: "24vh"
+                    }}
                   >
-                    <td style={{ color: "transparent" }}>Photo</td>
+                    {/* <td style={{ color: "transparent" }}>Photo</td> */}
                   </motion.tr>
                   <motion.tr
                     variants={cellVariants}
@@ -201,7 +205,7 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
                     className={styles.lineupMicroRow}
                     style={{ backgroundColor: "transparent" }}
                   >
-                    <img src={`../public/local/cutouts/${team2.photo}.png`} />
+                    {/* <img src={`../public/local/cutouts/${team2.photo}.png`} /> */}
                   </motion.tr>
                   <motion.tr
                     variants={cellVariants}

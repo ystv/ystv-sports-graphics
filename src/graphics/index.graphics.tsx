@@ -1,18 +1,18 @@
 import ReactDOM from "react-dom";
 import React from "react";
 import { useOnlyReplicantValue } from "common/useReplicant";
+import { Scoreboard } from "./boxing/Scoreboard/Scoreboard";
 import "./global.css";
-import { Scoreboard } from "./rugby/Scoreboard/Scoreboard";
 import { Lineup } from "./rugby/Lineup/Lineup";
 import { Bug } from "./rugby/Bug/Bug";
 import { LineupSubs } from "./rugby/Lineup/LineupSubs";
 import { LowerThird } from "./generic/LowerThird/LowerThird";
-import { MatchStatus } from "./rugby/MatchStatus/MatchStatus";
+import { MatchStatus } from "./boxing/MatchStatus/MatchStatus";
 import { HoldingCard } from "./generic/HoldingCard/HoldingCard";
 
 function AllGraphics() {
   const team1ID = useOnlyReplicantValue("team1ID", undefined, {
-    defaultValue: "york",
+    defaultValue: 0,
   });
   const team2ID = useOnlyReplicantValue("team2ID", undefined, {
     defaultValue: "glasgow",
@@ -65,7 +65,7 @@ function AllGraphics() {
     defaultValue: false,
   });
   const matchOver = useOnlyReplicantValue("matchOver", undefined, {
-    defaultValue: false,
+    defaultValue: 1,
   });
 
   const showHoldingCard = useOnlyReplicantValue("showHoldingCard", undefined, {
@@ -90,7 +90,7 @@ function AllGraphics() {
           timer={timer}
           team1Name={team1ID}
           team2Name={team2ID}
-          // matchOver={matchOver}
+          matchOver={matchOver}
         />
       </GraphicContainer>
       <GraphicContainer>
@@ -106,14 +106,7 @@ function AllGraphics() {
         <Bug state={showBug} />
       </GraphicContainer>
       <GraphicContainer>
-        <MatchStatus
-          isOver={matchOver}
-          team1Name={team1ID}
-          team2Name={team2ID}
-          team1Score={team1Score}
-          team2Score={team2Score}
-          isVisible={showStatus}
-        />
+        <MatchStatus lineupTeam={team1ID} isVisible={showStatus} />
       </GraphicContainer>
       <GraphicContainer zIndex={100}>
         <HoldingCard
