@@ -1,14 +1,26 @@
 import * as Yup from "yup";
-import { ActionFormProps, BaseEvent, EventActionTypes, EventTypeInfo } from "../../types";
+import {
+  ActionFormProps,
+  BaseEvent,
+  EventActionTypes,
+  EventTypeInfo,
+} from "../../types";
 import {
   ArrayField,
+  Checkbox,
   Field,
   RandomUUIDField,
   SelectField,
 } from "../../formFields";
 import type { EventActionFunctions } from "../../types";
 import { useFormikContext } from "formik";
-import { Clock, currentTime, RenderClock, startClock } from "../../clock";
+import {
+  Clock,
+  currentTime,
+  RenderClock,
+  startClock,
+  stopClock,
+} from "../../clock";
 
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
@@ -26,17 +38,32 @@ export const schema = BaseEvent.shape({
     away: Yup.array().of(playerSchema).required().default([]),
   }).required(),
   clock: Clock,
-  goals: Yup.array().of(Yup.object({
-    time: Yup.number().required(),
-    side: Yup.string().oneOf(["home", "away"]).required(),
-    player: Yup.string().uuid().required()
-  })).required().default([])
+  halves: Yup.array()
+    .of(
+      Yup.object({
+        stoppageTime: Yup.number().required().default(0),
+        goals: Yup.array()
+          .of(
+            Yup.object({
+              time: Yup.number().required(),
+              side: Yup.string().oneOf(["home", "away"]).required(),
+              player: Yup.string().uuid().required(),
+            })
+          )
+          .required()
+          .default([]),
+      })
+    )
+    .required()
+    .max(2)
+    .default([]),
 });
 
 type ValueType = Yup.InferType<typeof schema>;
 
 export function GoalForm(props: ActionFormProps<typeof schema>) {
-  const { values } = useFormikContext<Yup.InferType<typeof actionTypes.goal.schema>>();
+  const { values } =
+    useFormikContext<Yup.InferType<typeof actionTypes.goal.schema>>();
   const players =
     values.side === "home"
       ? props.currentState.players.home
@@ -107,25 +134,42 @@ export function RenderScore(props: {
   value: ValueType;
   actions: JSX.Element[];
 }) {
+  const currentHalf =
+    props.value.halves.length > 0
+      ? props.value.halves[props.value.halves.length - 1]
+      : null;
   return (
     <div>
       <h1>
         Home {props.value.scoreHome} - Away {props.value.scoreAway}
       </h1>
       <div>
-        <RenderClock clock={props.value.clock} precisionMs={0} precisionHigh={2} />
+        <RenderClock
+          clock={props.value.clock}
+          precisionMs={0}
+          precisionHigh={2}
+        />
+        {currentHalf?.stoppageTime > 0 && (
+          <span>+{currentHalf.stoppageTime}</span>
+        )}
       </div>
       {props.actions}
       <h2>Goals</h2>
       <ul>
-        {props.value.goals?.sort((a, b) => b.time - a.time).map((goal) => {
-          const player = props.value.players[goal.side].find(x => x.id === goal.player);
-          return (
-            (
-              <li key={goal.time}>{player.name} ({player.number}) at {(goal.time / 60 / 1000).toFixed(0)} minutes</li>
-            )
-          )
-        })}
+        {props.value.halves
+          .flatMap((x) => x.goals.slice().reverse())
+          // .reverse()
+          .map((goal) => {
+            const player = props.value.players[goal.side].find(
+              (x) => x.id === goal.player
+            );
+            return (
+              <li key={goal.time}>
+                {player.name} ({player.number}) at{" "}
+                {Math.floor(goal.time / 60 / 1000).toFixed(0)} minutes
+              </li>
+            );
+          })}
       </ul>
     </div>
   );
@@ -137,12 +181,26 @@ export const actionTypes: EventActionTypes<typeof schema> = {
       side: Yup.string().oneOf(["home", "away"]).required(),
       player: Yup.string().uuid().required(),
     }).required(),
-    valid: val => val.clock.state === "running"
+    valid: (val) => val.clock.state === "running",
   },
   startHalf: {
     schema: Yup.object({}),
-    valid: val => val.clock.state === "stopped"
-  }
+    valid: (val) => val.clock.state === "stopped" && val.halves.length < 2,
+  },
+  restartCurrentHalf: {
+    schema: Yup.object({}),
+    valid: (val) => val.clock.state === "stopped" && val.halves.length > 0,
+  },
+  addStoppageTime: {
+    schema: Yup.object({
+      minutes: Yup.number().required().min(0),
+    }),
+    valid: (val) => val.halves.length > 0,
+  },
+  endHalf: {
+    schema: Yup.object({}),
+    valid: (val) => val.clock.state === "running",
+  },
 };
 
 export const actionFuncs: EventActionFunctions<
@@ -155,15 +213,33 @@ export const actionFuncs: EventActionFunctions<
     } else {
       val.scoreAway++;
     }
-    val.goals.push({
+    val.halves[val.halves.length - 1].goals.push({
       side: data.side,
       player: data.player,
-      time: currentTime(val.clock)
+      time: currentTime(val.clock),
     });
   },
   async startHalf(val, data) {
     startClock(val.clock);
-  }
+    val.halves.push({
+      goals: [],
+      stoppageTime: 0,
+    });
+    // Round the clock time to the nearest 45m, even if there was stoppage time
+    const fourtyFiveMinutesInMs = 45 * 60 * 1000;
+    val.clock.timeLastStartedOrStopped =
+      Math.floor(val.clock.timeLastStartedOrStopped / fourtyFiveMinutesInMs) *
+      fourtyFiveMinutesInMs;
+  },
+  async restartCurrentHalf(val) {
+    startClock(val.clock);
+  },
+  async addStoppageTime(val, data) {
+    val.halves[val.halves.length - 1].stoppageTime = data.minutes;
+  },
+  async endHalf(val, data) {
+    stopClock(val.clock);
+  },
 };
 
 export const typeInfo: EventTypeInfo<typeof schema> = {
@@ -177,7 +253,27 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     },
     startHalf: {
       ...actionTypes.startHalf,
-      Form: () => null
-    }
+      Form: () => null,
+    },
+    restartCurrentHalf: {
+      ...actionTypes.restartCurrentHalf,
+      Form: () => (
+        <strong className="text-warning">
+          Only use this if you stopped the last half by accident!
+        </strong>
+      ),
+    },
+    addStoppageTime: {
+      ...actionTypes.addStoppageTime,
+      Form: () => (
+        <>
+          <Field name="minutes" title="Minutes" type="number" />
+        </>
+      ),
+    },
+    endHalf: {
+      ...actionTypes.endHalf,
+      Form: () => null,
+    },
   },
 };

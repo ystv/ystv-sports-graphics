@@ -2,7 +2,13 @@ import { useParams } from "react-router-dom";
 import { EVENTS } from "../eventTypes";
 import { useLiveData } from "../lib/liveData";
 import invariant from "tiny-invariant";
-import { Alert, Button, Modal, Form as BootstrapForm } from "react-bootstrap";
+import {
+  Alert,
+  Button,
+  Modal,
+  Form as BootstrapForm,
+  ButtonGroup,
+} from "react-bootstrap";
 import { Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
@@ -40,10 +46,10 @@ function EventActionModal(props: {
           onSubmit={submit}
           validationSchema={actionSchema}
         >
-          {({ handleReset, handleSubmit, isSubmitting }) => (
+          {({ handleReset, handleSubmit, isSubmitting, isValid }) => (
             <BootstrapForm onReset={handleReset} onSubmit={handleSubmit}>
               <ActionForm currentState={props.currentState} />
-              <Button type="submit" variant="primary" disabled={isSubmitting}>
+              <Button type="submit" variant="primary" disabled={isSubmitting || !isValid}>
                 Submit
               </Button>
               {submitError !== null && (
@@ -95,17 +101,26 @@ export function LiveScores() {
       {error !== null && <Alert variant="warning">{error}</Alert>}
       <RenderScore
         value={data}
-        actions={Object.keys(actions).filter(type => {
-          const validFn = actions[type].valid;
-          if (!validFn) {
-            return true;
-          }
-          return validFn(data);
-        }).map((actionType) => (
-          <Button key={actionType} onClick={() => setActiveAction(actionType)}>
-            {actionType}
-          </Button>
-        ))}
+        actions={
+          <ButtonGroup>
+            {Object.keys(actions)
+              .filter((type) => {
+                const validFn = actions[type].valid;
+                if (!validFn) {
+                  return true;
+                }
+                return validFn(data);
+              })
+              .map((actionType) => (
+                <Button
+                  key={actionType}
+                  onClick={() => setActiveAction(actionType)}
+                >
+                  {actionType}
+                </Button>
+              ))}
+          </ButtonGroup>
+        }
       />
       {activeAction !== null && (
         <EventActionModal

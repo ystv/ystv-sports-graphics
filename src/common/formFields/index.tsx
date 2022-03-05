@@ -62,6 +62,28 @@ export function Field(props: FieldProps) {
   );
 }
 
+interface CheckboxProps extends BaseFieldProps {
+  independent?: boolean;
+}
+
+export function Checkbox(props: CheckboxProps) {
+  const FieldComponent = props.independent ? FastField : FormikField;
+  return (
+    <FieldComponent name={props.name} type="checkbox">
+      {({ field, meta }) => (
+        <FieldWrapper {...props}>
+          <Form.Check
+            {...field}
+            type="checkbox"
+            isValid={meta.touched && !meta.error}
+            isInvalid={meta.touched && !!meta.error}
+          />
+        </FieldWrapper>
+      )}
+    </FieldComponent>
+  );
+}
+
 interface SelectFieldProps extends BaseFieldProps {
   values: [string, string][];
   initialValue?: string;

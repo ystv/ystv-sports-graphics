@@ -19,6 +19,13 @@ export function useLiveData<T>(eventId: string) {
   const sid = useRef<string | null>(null);
   const lastMid = useRef<string | null>(null);
 
+  // This is necessary because we need it inside onMessage, which is a closure,
+  // which captures the initial value
+  const latestEventId = useRef<string>(eventId);
+  useEffect(() => {
+    latestEventId.current = eventId;
+  }, [eventId]);
+
   function send(data: LiveClientMessage) {
     invariant(wsRef.current !== null, "tried to send with a null websocket");
     wsRef.current.send(JSON.stringify(data));
@@ -94,6 +101,11 @@ export function useLiveData<T>(eventId: string) {
         case "UNSUBSCRIBE_OK":
           break;
         case "CHANGE":
+          if (payload.changed !== latestEventId.current) {
+            logger.debug("Ignoring unwanted change to", payload.changed);
+            break;
+          }
+
           setValue(payload.data as any);
           lastMid.current = payload.mid;
           break;
@@ -109,6 +121,7 @@ export function useLiveData<T>(eventId: string) {
     };
 
     return () => {
+      setReady(false);
       if (
         wsRef.current !== null &&
         wsRef.current.readyState === WebSocket.OPEN
@@ -124,12 +137,6 @@ export function useLiveData<T>(eventId: string) {
       kind: "SUBSCRIBE",
       to: eventId,
     });
-    return () => {
-      sendOrEnqueue({
-        kind: "UNSUBSCRIBE",
-        to: eventId,
-      });
-    };
   }, [eventId]);
 
   return [value, ready, error] as const;

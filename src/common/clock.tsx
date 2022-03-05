@@ -28,8 +28,8 @@ export function startClock(clock: ClockType) {
 }
 
 export function stopClock(clock: ClockType) {
-  clock.state = "stopped";
   clock.timeLastStartedOrStopped = currentTime(clock);
+  clock.state = "stopped";
 }
 
 function formatMMSSMS(
@@ -38,14 +38,14 @@ function formatMMSSMS(
   precisionHigh = 2
 ): string {
   let str = "";
-  
+
   if (precisionMs > 0) {
     const ms = (time % 1000) / 10 ** (3 - precisionMs);
     str = ":" + ms.toFixed(0).padStart(precisionMs, "0");
   }
 
   if (precisionHigh >= 1) {
-    let s = Math.ceil(time / 1000);
+    let s = Math.floor(time / 1000);
     if (precisionHigh > 1) {
       s = s % 60;
     }
@@ -53,7 +53,7 @@ function formatMMSSMS(
   }
 
   if (precisionHigh >= 2) {
-    let m = Math.ceil(time / (1000 * 60));
+    let m = Math.floor(time / (1000 * 60));
     if (precisionHigh > 2) {
       m = m % 60;
     }
@@ -61,7 +61,7 @@ function formatMMSSMS(
   }
 
   if (precisionHigh >= 3) {
-    let h = Math.ceil(time / (1000 * 60 * 60));
+    let h = Math.floor(time / (1000 * 60 * 60));
     str = h.toFixed(0).padStart(2, "0") + ":" + str;
   }
 
