@@ -10,8 +10,7 @@ export let DB: Scope = null as unknown as Scope;
 
 const INDEXES = [
     'CREATE PRIMARY INDEX ON `%bucket`',
-    'CREATE INDEX idx_events ON `%bucket` (meta().id, type) WHERE meta().id LIKE "Event::%"',
-    "CREATE INDEX idx_event_team_ids ON `%bucket`(home_team.id, away_team.id) WHERE (meta().id like 'Event::%')",
+    'CREATE INDEX idx_events ON `%bucket` (meta().id, type) WHERE meta().id LIKE "Event/%"',
 ];
 
 export async function connect() {
