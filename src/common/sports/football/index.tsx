@@ -156,8 +156,8 @@ export function RenderScore(props: {
       <h2>Goals</h2>
       <ul>
         {props.value.halves
-          .flatMap((x) => x.goals.slice().reverse())
-          // .reverse()
+          .flatMap((x) => x.goals.slice())
+          .reverse()
           .map((goal) => {
             const player = props.value.players[goal.side as any].find(
               (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
@@ -165,6 +165,7 @@ export function RenderScore(props: {
             return (
               <li key={goal.time}>
                 {player.name} ({player.number}) at{" "}
+                {/* TODO: This needs to handle stoppage time (e.g. 47th minute should show as 45+2) */}
                 {Math.floor(goal.time / 60 / 1000).toFixed(0)} minutes
               </li>
             );
