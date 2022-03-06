@@ -3,6 +3,7 @@ import React from "react";
 import { useOnlyReplicantValue } from "common/useReplicant";
 import "./global.css";
 import { Scoreboard } from "./rugby/Scoreboard/Scoreboard";
+import { Scoreboard as DartsScoreboard } from "./darts/Scoreboard";
 import { Lineup } from "./rugby/Lineup/Lineup";
 import { Bug } from "./rugby/Bug/Bug";
 import { LineupSubs } from "./rugby/Lineup/LineupSubs";
@@ -19,6 +20,15 @@ function AllGraphics() {
   });
 
   //
+
+  const showDartsScoreboard = useOnlyReplicantValue(
+    "showDartsScoreboard",
+    undefined,
+    {
+      defaultValue: false,
+    }
+  );
+
   const showScoreboard = useOnlyReplicantValue("showScoreboard", undefined, {
     defaultValue: false,
   });
@@ -91,6 +101,15 @@ function AllGraphics() {
           team1Name={team1ID}
           team2Name={team2ID}
           // matchOver={matchOver}
+        />
+      </GraphicContainer>
+      <GraphicContainer>
+        <DartsScoreboard
+          isVisible={showDartsScoreboard}
+          team1Score={team1Score}
+          team2Score={team2Score}
+          team1Name={team1ID}
+          team2Name={team2ID}
         />
       </GraphicContainer>
       <GraphicContainer>

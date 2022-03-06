@@ -73,6 +73,13 @@ function Dashboard() {
   });
 
   //
+  const [showDartsScoreboard, setShowDartsScoreboard] = useReplicantValue(
+    "showDartsScoreboard",
+    undefined,
+    {
+      defaultValue: false,
+    }
+  );
   const [showScoreboard, setShowScoreboard] = useReplicantValue(
     "showScoreboard",
     undefined,
@@ -225,7 +232,14 @@ function Dashboard() {
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
         {/* ////////////////////// */}
         <LiveKillButtons
-          name="Scoreboard"
+          name="DARTS Scoreboard"
+          live={showDartsScoreboard}
+          callback={setShowDartsScoreboard}
+        >
+          <p>(Use rugby score changer)</p>
+        </LiveKillButtons>
+        <LiveKillButtons
+          name="RUGBY Scoreboard"
           live={showScoreboard}
           callback={setShowScoreboard}
         >
