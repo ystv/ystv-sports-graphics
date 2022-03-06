@@ -41,4 +41,10 @@ export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
     secondaryColor: "#151515",
     teamShort: "ntb",
   },
+  durham: {
+    teamName: "Durham",
+    primaryColor: "#67236e",
+    // secondaryColor: "#151515",
+    teamShort: "drm",
+  },
 };
