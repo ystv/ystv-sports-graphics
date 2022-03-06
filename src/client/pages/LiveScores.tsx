@@ -12,6 +12,7 @@ import {
 import { Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
+import { startCase } from "lodash"
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENTS;
@@ -40,6 +41,9 @@ function EventActionModal(props: {
 
   return (
     <Modal show onHide={() => props.onClose()}>
+      <Modal.Header>
+        {startCase(props.actionType)}
+      </Modal.Header>
       <Modal.Body>
         <Formik
           initialValues={{}}
@@ -49,7 +53,11 @@ function EventActionModal(props: {
           {({ handleReset, handleSubmit, isSubmitting, isValid }) => (
             <BootstrapForm onReset={handleReset} onSubmit={handleSubmit}>
               <ActionForm currentState={props.currentState} />
-              <Button type="submit" variant="primary" disabled={isSubmitting || !isValid}>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isSubmitting || !isValid}
+              >
                 Submit
               </Button>
               {submitError !== null && (
@@ -69,7 +77,7 @@ export function LiveScores() {
   const { type, id } = useParams();
   invariant(typeof type === "string", "no type");
   invariant(typeof id === "string", "no id");
-  const [data, ready, error] = useLiveData(`Event/${type}/${id}`);
+  const [data, status, error] = useLiveData(`Event/${type}/${id}`);
   const RenderScore = EVENTS[type!].RenderScore;
   const actions = EVENTS[type].actions;
 
@@ -77,60 +85,72 @@ export function LiveScores() {
     null
   );
 
-  if (!ready) {
-    if (error != null) {
-      return <Alert variant="danger">{error}</Alert>;
+  if (status === "READY" || status === "POSSIBLY_DISCONNECTED") {
+    if (!data) {
+      return (
+        <div>
+          <b>Loading data from server, please wait...</b>
+        </div>
+      );
     }
-    return (
-      <div>
-        <b>Connecting to server, please wait...</b>
-      </div>
-    );
-  }
 
-  if (!data) {
     return (
-      <div>
-        <b>Loading data from server, please wait...</b>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      {error !== null && <Alert variant="warning">{error}</Alert>}
-      <RenderScore
-        value={data}
-        actions={
-          <ButtonGroup>
-            {Object.keys(actions)
-              .filter((type) => {
-                const validFn = actions[type].valid;
-                if (!validFn) {
-                  return true;
-                }
-                return validFn(data);
-              })
-              .map((actionType) => (
-                <Button
-                  key={actionType}
-                  onClick={() => setActiveAction(actionType)}
-                >
-                  {actionType}
-                </Button>
-              ))}
-          </ButtonGroup>
-        }
-      />
-      {activeAction !== null && (
-        <EventActionModal
-          eventType={type}
-          eventId={id}
-          actionType={activeAction}
-          currentState={data}
-          onClose={() => setActiveAction(null)}
+      <>
+        <RenderScore
+          value={data}
+          actions={
+            <ButtonGroup>
+              {Object.keys(actions)
+                .filter((type) => {
+                  const validFn = actions[type].valid;
+                  if (!validFn) {
+                    return true;
+                  }
+                  return validFn(data);
+                })
+                .map((actionType) => (
+                  <Button
+                    key={actionType}
+                    onClick={() => setActiveAction(actionType)}
+                  >
+                    {startCase(actionType)}
+                  </Button>
+                ))}
+            </ButtonGroup>
+          }
         />
-      )}
-    </>
+        {error !== null && <Alert variant="warning">{error}</Alert>}
+        {status === "POSSIBLY_DISCONNECTED" && (
+          <Alert variant="warning">
+            Possible connection issues, reconnecting...
+          </Alert>
+        )}
+        {activeAction !== null && (
+          <EventActionModal
+            eventType={type}
+            eventId={id}
+            actionType={activeAction}
+            currentState={data}
+            onClose={() => setActiveAction(null)}
+          />
+        )}
+      </>
+    );
+  }
+
+  let msg = "";
+  switch (status) {
+    case "NOT_CONNECTED":
+      msg = "Connecting to server...";
+      break;
+    case "CONNECTED":
+      msg = "Synchronising...";
+      break;
+  }
+  return (
+    <div>
+      {error && <Alert variant="warning">{error}</Alert>}
+      <b>{msg}</b>
+    </div>
   );
 }

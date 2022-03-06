@@ -224,11 +224,7 @@ export const actionFuncs: EventActionFunctions<
       goals: [],
       stoppageTime: 0,
     });
-    // Round the clock time to the nearest 45m, even if there was stoppage time
-    const fourtyFiveMinutesInMs = 45 * 60 * 1000;
-    val.clock.timeLastStartedOrStopped =
-      Math.floor(val.clock.timeLastStartedOrStopped / fourtyFiveMinutesInMs) *
-      fourtyFiveMinutesInMs;
+    val.clock.timeLastStartedOrStopped = (val.halves.length - 1) * (45 * 60 * 1000);
   },
   async restartCurrentHalf(val) {
     startClock(val.clock);
@@ -252,7 +248,7 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     },
     startHalf: {
       ...actionTypes.startHalf,
-      Form: () => null,
+      Form: () => null as any,
     },
     restartCurrentHalf: {
       ...actionTypes.restartCurrentHalf,
@@ -272,7 +268,7 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     },
     endHalf: {
       ...actionTypes.endHalf,
-      Form: () => null,
+      Form: () => null as any,
     },
   },
 };

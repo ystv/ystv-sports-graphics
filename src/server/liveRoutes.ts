@@ -27,7 +27,11 @@ export function createLiveRouter() {
   const router = new Router();
   router.get(`${config.pathPrefix}/updates/stream/v2`, async function (ctx: WSContext) {
     function send(msg: LiveServerMessage) {
-      ctx.websocket.send(JSON.stringify(msg));
+      ctx.websocket.send(JSON.stringify(msg), err => {
+        if (err) {
+          logger.warn("WS send error", err);
+        }
+      });
     }
 
     let sid: string;
@@ -155,7 +159,7 @@ export function createLiveRouter() {
     let lastMid = "$";
 
     while (true) {
-      const data = await getEventChanges(lastMid, 10_000);
+      const data = await getEventChanges(lastMid, 5_000);
       if (ctx.websocket.readyState === ctx.websocket.CLOSED) {
         logger.info("WebSocket state is CLOSED, ending Redis loop.");
         return;
