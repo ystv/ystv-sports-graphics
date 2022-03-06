@@ -6,6 +6,7 @@ import {
   FieldArray,
   getIn,
   FastField,
+  FieldProps as FormikFieldProps,
 } from "formik";
 import { useEffect } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
@@ -48,7 +49,7 @@ export function Field(props: FieldProps) {
   const FieldComponent = props.independent ? FastField : FormikField;
   return (
     <FieldComponent name={props.name}>
-      {({ field, meta }) => (
+      {({ field, meta }: FormikFieldProps<any>) => (
         <FieldWrapper {...props}>
           <Form.Control
             {...field}
@@ -70,7 +71,7 @@ export function Checkbox(props: CheckboxProps) {
   const FieldComponent = props.independent ? FastField : FormikField;
   return (
     <FieldComponent name={props.name} type="checkbox">
-      {({ field, meta }) => (
+      {({ field, meta }: FormikFieldProps<any>) => (
         <FieldWrapper {...props}>
           <Form.Check
             {...field}

@@ -32,7 +32,7 @@ export function stopClock(clock: ClockType) {
   clock.state = "stopped";
 }
 
-function formatMMSSMS(
+export function formatMMSSMS(
   time: number,
   precisionMs = 2,
   precisionHigh = 2
@@ -68,30 +68,3 @@ function formatMMSSMS(
   return str;
 }
 
-export function RenderClock({
-  clock,
-  precisionMs,
-  precisionHigh,
-}: {
-  clock: ClockType;
-  precisionMs: number;
-  precisionHigh: number;
-}) {
-  const [time, setTime] = useState(() => currentTime(clock));
-  useEffect(() => {
-    if (clock.state === "stopped") {
-      setTime(currentTime(clock));
-      return;
-    }
-    function tick() {
-      setTime(currentTime(clock));
-    }
-    const interval = setInterval(tick, 20);
-    return () => clearInterval(interval);
-  }, [clock.state]);
-  return (
-    <span style={{ fontVariantNumeric: "tabular-nums" }}>
-      {formatMMSSMS(time, precisionMs, precisionHigh)}
-    </span>
-  );
-}

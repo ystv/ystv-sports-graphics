@@ -7,7 +7,6 @@ import {
 } from "../../types";
 import {
   ArrayField,
-  Checkbox,
   Field,
   RandomUUIDField,
   SelectField,
@@ -17,10 +16,10 @@ import { useFormikContext } from "formik";
 import {
   Clock,
   currentTime,
-  RenderClock,
   startClock,
   stopClock,
 } from "../../clock";
+import { RenderClock } from "../../components/Clock";
 
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
@@ -132,7 +131,7 @@ export function EditForm() {
 
 export function RenderScore(props: {
   value: ValueType;
-  actions: JSX.Element[];
+  actions: React.ReactNode;
 }) {
   const currentHalf =
     props.value.halves.length > 0
@@ -149,8 +148,8 @@ export function RenderScore(props: {
           precisionMs={0}
           precisionHigh={2}
         />
-        {currentHalf?.stoppageTime > 0 && (
-          <span>+{currentHalf.stoppageTime}</span>
+        {(currentHalf?.stoppageTime || 0) > 0 && (
+          <span>+{currentHalf?.stoppageTime}</span>
         )}
       </div>
       {props.actions}
@@ -160,8 +159,8 @@ export function RenderScore(props: {
           .flatMap((x) => x.goals.slice().reverse())
           // .reverse()
           .map((goal) => {
-            const player = props.value.players[goal.side].find(
-              (x) => x.id === goal.player
+            const player = props.value.players[goal.side as any].find(
+              (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
             );
             return (
               <li key={goal.time}>

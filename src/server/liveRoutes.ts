@@ -79,6 +79,7 @@ export function createLiveRouter() {
       while (true) {
         const data = await getEventChanges(ctx.query.last_mid, 0);
         if (data === null || data.length === 0) {
+          logger.debug("Caught up, continuing");
           break;
         }
         for (const msg of data) {
@@ -105,6 +106,7 @@ export function createLiveRouter() {
               "invalid 'to' type"
             );
             subs.add(payload.to);
+            await REDIS.sAdd(`subscriptions:${sid}`, payload.to);
 
             let current;
             try {
