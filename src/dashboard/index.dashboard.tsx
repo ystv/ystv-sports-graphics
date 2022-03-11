@@ -204,7 +204,9 @@ function Dashboard() {
         >
           {BoxerDictionary.map((e, i) => (
             <option value={i}>
-              {e[0].name.split(" ")[1] + " vs " + e[1].name.split(" ")[1]}
+              {e.redFighter.split(" ")[1] +
+                " vs " +
+                e.blueFighter.split(" ")[1]}
             </option>
           ))}
         </Select>
@@ -231,15 +233,15 @@ function Dashboard() {
         <br />
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
         {/* ////////////////////// */}
+        {/*<LiveKillButtons*/}
+        {/*  name="DARTS Scoreboard"*/}
+        {/*  live={showDartsScoreboard}*/}
+        {/*  callback={setShowDartsScoreboard}*/}
+        {/*>*/}
+        {/*  <p>(Use rugby score changer)</p>*/}
+        {/*</LiveKillButtons>*/}
         <LiveKillButtons
-          name="DARTS Scoreboard"
-          live={showDartsScoreboard}
-          callback={setShowDartsScoreboard}
-        >
-          <p>(Use rugby score changer)</p>
-        </LiveKillButtons>
-        <LiveKillButtons
-          name="RUGBY Scoreboard"
+          name="Scoreboard"
           live={showScoreboard}
           callback={setShowScoreboard}
         >
@@ -273,12 +275,12 @@ function Dashboard() {
             {/*</Grid>*/}
             {/*</form>*/}
             {/*<br />*/}
-            <Checkbox
-              checked={showTimer || false}
-              onChange={(e) => setShowTimer(e.target.checked)}
-            >
-              Include Timer
-            </Checkbox>
+            {/*<Checkbox*/}
+            {/*  checked={showTimer || false}*/}
+            {/*  onChange={(e) => setShowTimer(e.target.checked)}*/}
+            {/*>*/}
+            {/*  Include Timer*/}
+            {/*</Checkbox>*/}
             <Stopwatch updateStopWatchTime={setTimer} time={timer} />
             <>
               <NumberInput

@@ -103,15 +103,6 @@ function AllGraphics() {
         />
       </GraphicContainer>
       <GraphicContainer>
-        <DartsScoreboard
-          isVisible={showDartsScoreboard}
-          team1Score={team1Score}
-          team2Score={team2Score}
-          team1Name={team1ID}
-          team2Name={team2ID}
-        />
-      </GraphicContainer>
-      <GraphicContainer>
         <Lineup isVisible={showLineup} lineupTeam={lineupTeam} />
       </GraphicContainer>
       <GraphicContainer>

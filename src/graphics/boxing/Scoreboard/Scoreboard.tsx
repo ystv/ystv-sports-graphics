@@ -24,8 +24,8 @@ export function Scoreboard({
   timer = 0,
   matchOver = 1,
 }: ScoreboardProps) {
-  const team1 = BoxerDictionary[team1Name][0];
-  const team2 = BoxerDictionary[team1Name][1];
+  const team1 = BoxerDictionary[team1Name];
+  // const team2 = BoxerDictionary[team1Name][1];
 
   const secondToTimeString = (time: number): string =>
     `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(
@@ -176,7 +176,7 @@ export function Scoreboard({
                         //   borderColor: team2.secondaryColor ?? "var(--light)",
                         // }}
                       >
-                        {team1.name.split(" ")[1].toUpperCase()}
+                        {team1.redFighter.split(" ")[1].toUpperCase()}
                       </motion.div>
                     </div>
                   </div>
@@ -231,7 +231,7 @@ export function Scoreboard({
                         className={styles.teamSpan2}
                         variants={textVariants}
                       >
-                        {team2.name.split(" ")[1].toUpperCase()}
+                        {team1.blueFighter.split(" ")[1].toUpperCase()}
                       </motion.div>
                     </div>
                   </div>

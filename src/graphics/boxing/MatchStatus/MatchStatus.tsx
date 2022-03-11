@@ -59,8 +59,8 @@ export const bodyVariants = {
 };
 
 export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
-  const team1 = BoxerDictionary[lineupTeam][0];
-  const team2 = BoxerDictionary[lineupTeam][1];
+  const team1 = BoxerDictionary[lineupTeam];
+  // const team2 = BoxerDictionary[lineupTeam][1];
   return (
     <AnimatePresence>
       {isVisible && (
@@ -97,144 +97,155 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
             </thead>
             <br />
             <tbody>
-              <motion.tr variants={bodyVariants}>
-                <motion.td
-                  variants={columnVariants}
-                  className={styles.groupColumns}
+              {/*<motion.tr variants={bodyVariants}>*/}
+              {/*<motion.td*/}
+              {/*  variants={columnVariants}*/}
+              {/*  className={styles.groupColumns}*/}
+              {/*>*/}
+              <motion.tr
+                variants={cellVariants}
+                className={styles.lineupMicroRow}
+                style={{ backgroundColor: "transparent" }}
+              >
+                <td style={{ backgroundColor: "#ee2222" }}>
+                  {team1.redFighter.split(" ").slice(0, 2).join(" ")}
+                </td>
+                <td
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "transparent",
+                  }}
                 >
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                    style={{ backgroundColor: "#ee2222" }}
-                  >
-                    <td>{team1.name.split(" ").slice(0, 2).join(" ")}</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                    style={{ backgroundColor: "transparent" }}
-                  >
-                    {/* <img src={`../public/local/cutouts/${team1.photo}.png`} /> */}
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team1.age}</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team1.weight} kg</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team1.height}</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team1.reach}"</td>
-                  </motion.tr>
-                </motion.td>
-                {/*<td className={styles.spacerColumn}></td>*/}
-                <motion.td
-                  variants={columnVariants}
-                  className={styles.groupColumns}
-                >
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                    style={{ backgroundColor: "transparent" }}
-                  >
-                    {/*<td>{team1.name}</td>*/}
-                    <td style={{ color: "transparent" }}>
-                      {team1.name.split(" ").slice(0, 2).join(" ")}
-                    </td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                    style={{
-                      backgroundColor: "transparent",
-                      // height: "24vh"
-                    }}
-                  >
-                    {/* <td style={{ color: "transparent" }}>Photo</td> */}
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>Age</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>Weight</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>Height</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>Reach</td>
-                  </motion.tr>
-                </motion.td>
-                <motion.td
-                  variants={columnVariants}
-                  className={styles.groupColumns}
-                >
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                    style={{ backgroundColor: "#2222ee" }}
-                  >
-                    <td>{team2.name.split(" ").slice(0, 2).join(" ")}</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                    style={{ backgroundColor: "transparent" }}
-                  >
-                    {/* <img src={`../public/local/cutouts/${team2.photo}.png`} /> */}
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team2.age}</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team2.weight} kg</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team2.height}</td>
-                  </motion.tr>
-                  <motion.tr
-                    variants={cellVariants}
-                    className={styles.lineupMicroRow}
-                  >
-                    <td>{team2.reach}"</td>
-                  </motion.tr>
-                </motion.td>
+                  {team1.redFighter.split(" ").slice(0, 2).join(" ")}
+                </td>
+                <td style={{ backgroundColor: "#2222ee" }}>
+                  {team1.blueFighter.split(" ").slice(0, 2).join(" ")}
+                </td>
               </motion.tr>
+              {/*<motion.tr*/}
+              {/*  variants={cellVariants}*/}
+              {/*  className={styles.lineupMicroRow}*/}
+              {/*  style={{ backgroundColor: "transparent" }}*/}
+              {/*>*/}
+              {/*  /!* <img src={`../public/local/cutouts/${team1.photo}.png`} /> *!/*/}
+              {/*</motion.tr>*/}
+              <motion.tr
+                variants={cellVariants}
+                className={styles.lineupMicroRow}
+              >
+                <td>{team1.redAge}</td>
+                <td>Age</td>
+                <td>{team1.blueAge}</td>
+              </motion.tr>
+              <motion.tr
+                variants={cellVariants}
+                className={styles.lineupMicroRow}
+              >
+                <td>{team1.weightClass}</td>
+                <td>Class</td>
+                <td>{team1.weightClass}</td>
+              </motion.tr>
+              <motion.tr
+                variants={cellVariants}
+                className={styles.lineupMicroRow}
+              >
+                <td>{team1.redHeight}</td>
+                <td>Height</td>
+                <td>{team1.blueHeight}</td>
+              </motion.tr>
+              <motion.tr
+                variants={cellVariants}
+                className={styles.lineupMicroRow}
+              >
+                <td>{team1.redFighter.split(" ")[2].slice(1, -1)}</td>
+                <td>Club</td>
+                <td>{team1.blueFighter.split(" ")[2].slice(1, -1)}</td>
+              </motion.tr>
+              {/*</motion.td>*/}
+              {/*/!*<td className={styles.spacerColumn}></td>*!/*/}
+              {/*<motion.td*/}
+              {/*  variants={columnVariants}*/}
+              {/*  className={styles.groupColumns}*/}
+              {/*>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*    style={{ backgroundColor: "transparent" }}*/}
+              {/*  >*/}
+              {/*    /!*<td>{team1.name}</td>*!/*/}
+              {/*    <td style={{ color: "transparent" }}>*/}
+              {/*      {team1.redFighter.split(" ").slice(0, 2).join(" ")}*/}
+              {/*    </td>*/}
+              {/*  </motion.tr>*/}
+              {/*  /!*<motion.tr*!/*/}
+              {/*  /!*  variants={cellVariants}*!/*/}
+              {/*  /!*  className={styles.lineupMicroRow}*!/*/}
+              {/*  /!*  style={{*!/*/}
+              {/*  /!*    backgroundColor: "transparent",*!/*/}
+              {/*  /!*    // height: "24vh"*!/*/}
+              {/*  /!*  }}*!/*/}
+              {/*  /!*>*!/*/}
+              {/*  /!*  /!* <td style={{ color: "transparent" }}>Photo</td> *!/*!/*/}
+              {/*  /!*</motion.tr>*!/*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*  >*/}
+              {/*    <td>Age</td>*/}
+              {/*  </motion.tr>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*  >*/}
+              {/*    <td>Weight</td>*/}
+              {/*  </motion.tr>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*  >*/}
+              {/*    <td>Height</td>*/}
+              {/*  </motion.tr>*/}
+              {/*</motion.td>*/}
+              {/*<motion.td*/}
+              {/*  variants={columnVariants}*/}
+              {/*  className={styles.groupColumns}*/}
+              {/*>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*    style={{ backgroundColor: "#2222ee" }}*/}
+              {/*  >*/}
+              {/*    <td>*/}
+              {/*      {team1.blueFighter.split(" ").slice(0, 2).join(" ")}*/}
+              {/*    </td>*/}
+              {/*  </motion.tr>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*    style={{ backgroundColor: "transparent" }}*/}
+              {/*  >*/}
+              {/*    /!* <img src={`../public/local/cutouts/${team2.photo}.png`} /> *!/*/}
+              {/*  </motion.tr>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*  >*/}
+              {/*    <td>{team1.blueAge}</td>*/}
+              {/*  </motion.tr>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*  >*/}
+              {/*    <td>{team1.weightClass} kg</td>*/}
+              {/*  </motion.tr>*/}
+              {/*  <motion.tr*/}
+              {/*    variants={cellVariants}*/}
+              {/*    className={styles.lineupMicroRow}*/}
+              {/*  >*/}
+              {/*    <td>{team1.blueHeight}</td>*/}
+              {/*  </motion.tr>*/}
+              {/*</motion.td>*/}
+              {/*</motion.tr>*/}
             </tbody>
           </table>
         </motion.div>
