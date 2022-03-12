@@ -20,7 +20,7 @@ export const titleVariants = {
     transition: {
       duration: 1,
       type: "tween",
-      delay: 1,
+      delay: 0.2,
     },
   },
   visible: {
@@ -50,11 +50,11 @@ export const bodyVariants = {
   hidden: {
     transition: {
       staggerDirection: -1,
-      staggerChildren: 0.5,
+      staggerChildren: 0.1,
     },
   },
   visible: {
-    transition: { staggerChildren: 0.5, delayChildren: 0.8 },
+    transition: { staggerChildren: 0.2, delayChildren: 0.2 },
   },
 };
 
@@ -96,7 +96,7 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
               </td>
             </thead>
             <br />
-            <tbody>
+            <motion.tbody variants={bodyVariants}>
               {/*<motion.tr variants={bodyVariants}>*/}
               {/*<motion.td*/}
               {/*  variants={columnVariants}*/}
@@ -246,7 +246,7 @@ export function MatchStatus({ isVisible, lineupTeam = 0 }: MatchStatusProps) {
               {/*  </motion.tr>*/}
               {/*</motion.td>*/}
               {/*</motion.tr>*/}
-            </tbody>
+            </motion.tbody>
           </table>
         </motion.div>
       )}
