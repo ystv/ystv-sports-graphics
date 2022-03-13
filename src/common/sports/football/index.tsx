@@ -187,7 +187,7 @@ export const actionTypes: EventActionTypes<typeof schema> = {
     schema: Yup.object({}),
     valid: (val) => val.clock.state === "stopped" && val.halves.length < 2,
   },
-  restartCurrentHalf: {
+  resumeCurrentHalf: {
     schema: Yup.object({}),
     valid: (val) => val.clock.state === "stopped" && val.halves.length > 0,
   },
@@ -227,7 +227,7 @@ export const actionFuncs: EventActionFunctions<
     });
     val.clock.timeLastStartedOrStopped = (val.halves.length - 1) * (45 * 60 * 1000);
   },
-  async restartCurrentHalf(val) {
+  async resumeCurrentHalf(val) {
     startClock(val.clock);
   },
   async addStoppageTime(val, data) {
@@ -251,8 +251,8 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
       ...actionTypes.startHalf,
       Form: () => null as any,
     },
-    restartCurrentHalf: {
-      ...actionTypes.restartCurrentHalf,
+    resumeCurrentHalf: {
+      ...actionTypes.resumeCurrentHalf,
       Form: () => (
         <strong className="text-warning">
           Only use this if you stopped the last half by accident!

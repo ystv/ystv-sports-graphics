@@ -122,7 +122,8 @@ export function LiveScores() {
         {error !== null && <Alert variant="warning">{error}</Alert>}
         {status === "POSSIBLY_DISCONNECTED" && (
           <Alert variant="warning">
-            Possible connection issues, reconnecting...
+            Possible connection issues, reconnecting... (if this doesn't go away after 10 seconds please refresh the page)
+            {import.meta.env.DEV && " (may be caused by HMR weirdness)"}
           </Alert>
         )}
         {activeAction !== null && (
