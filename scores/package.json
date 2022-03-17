@@ -1,4 +1,6 @@
 {
+  "name": "scores",
+  "version": "0.0.0",
   "scripts": {
     "cfg": "node-config-ts",
     "dev": "concurrently -n server,client npm:dev:server npm:dev:server:typecheck npm:dev:client",
