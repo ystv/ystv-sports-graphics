@@ -1,0 +1,7 @@
+{
+    "logLevel": "debug",
+    "pathPrefix": "/api",
+    "redis": {
+        "connectionString": "redis://redis"
+    }
+}

@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index 962b515c1a1d463f38d047eff7377873f028b1a9..a0509ae94406c60154990d2401a9fa2f3067e5d2 100644
+--- a/package.json
++++ b/package.json
+@@ -31,6 +31,7 @@
+   "module": "dist/formik.esm.js",
+   "typings": "dist/index.d.ts",
+   "files": ["dist"],
++  "sideEffects": false,
+   "peerDependencies": {
+     "react": ">=16.8.0"
+   },

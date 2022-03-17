@@ -1,0 +1,14 @@
+{
+    "db": {
+        "connectionString": "DB_CONNECTION_STRING",
+        "username": "DB_USERNAME",
+        "password": "DB_PASSWORD",
+        "bucket": "DB_BUCKET",
+        "scope": "DB_SCOPE"
+    },
+    "port": "PORT",
+    "logLevel": "LOG_LEVEL",
+    "redis": {
+        "connectionString": "REDIS_CONNECTION_STRING"
+    }
+}
