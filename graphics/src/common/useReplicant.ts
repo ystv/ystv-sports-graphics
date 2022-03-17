@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Replicant, ReplicantOptions } from "../../../../types/browser";
+import type { Replicant, ReplicantOptions } from "../../../../../types/browser";
 
 export function useOnlyReplicantValue<T>(
   name: string,

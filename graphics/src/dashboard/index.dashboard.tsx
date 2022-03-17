@@ -284,7 +284,6 @@ function Dashboard() {
             <Stopwatch updateStopWatchTime={setTimer} time={timer} />
             <>
               <NumberInput
-                type="number"
                 value={matchOver || 1}
                 onChange={(e) => setMatchOver(Number(e))}
               >
@@ -404,7 +403,7 @@ function Stopwatch({
         }}
       >
         <Heading size="md">Set Time</Heading>
-        <Grid templateColumns="repeat(2, 1fr)" spacing={8}>
+        <Grid templateColumns="repeat(2, 1fr)">
           <Heading size="sm">Minutes</Heading>
           <Heading size="sm">Seconds</Heading>
           <NumberInput
@@ -418,7 +417,6 @@ function Stopwatch({
             </NumberInputStepper>
           </NumberInput>
           <NumberInput
-            type="number"
             value={seconds | 0}
             onChange={(e) => setSeconds(Number(e))}
           >

@@ -14,31 +14,6 @@
     "schema": "json2ts -i schemas/ -o src/common/types/ && json2ts -i configschema.json -o src/common/types/config.d.ts",
     "generate": "graphql-codegen --config codegen.yml"
   },
-  "nodecg": {
-    "compatibleRange": "^1.1.1",
-    "dashboardPanels": [
-      {
-        "name": "sports-graphics-controller",
-        "title": "SportsGraphicsController",
-        "file": "dashboard.html",
-        "headerColor": "#FAAF18",
-        "fullbleed": true
-      }
-    ],
-    "graphics": [
-      {
-        "file": "graphics.html",
-        "width": 1920,
-        "height": 1080
-      }
-    ],
-    "mount": [
-      {
-        "directory": "public",
-        "endpoint": "public"
-      }
-    ]
-  },
   "repository": "https://github.com/ystv/ystv-sports-graphics.git",
   "private": true,
   "devDependencies": {

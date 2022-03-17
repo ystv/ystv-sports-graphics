@@ -1,4 +1,4 @@
-import type { NodeCG } from "../../../../types/server";
+import type { NodeCG } from "../../../../../types/server";
 // import fetch from "cross-fetch";
 // import {
 //   split,
