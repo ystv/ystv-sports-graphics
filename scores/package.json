@@ -10,7 +10,7 @@
     "build": "rm -rf dist && yarn build:client && yarn build:server",
     "build:server": "esbuild --platform=node --target=node16 --tree-shaking=true --bundle --outfile=dist/index.server.js src/server/index.server.ts && mkdir -p addon-build/release/install-root && cp ./node_modules/couchbase/build/Release/couchbase_impl.node addon-build/release/install-root/couchbase_impl.node",
     "build:client": "vite build",
-    "postinstall": "patch-package && mkdir -p addon-build/release/install-root && cp node_modules/couchbase/build/Release/couchbase_impl.node addon-build/release/install-root/couchbase_impl.node"
+    "postinstall": "mkdir -p addon-build/release/install-root && cp node_modules/couchbase/build/Release/couchbase_impl.node addon-build/release/install-root/couchbase_impl.node"
   },
   "private": true,
   "devDependencies": {

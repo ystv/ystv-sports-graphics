@@ -3,5 +3,8 @@
   "workspaces": [
     "./graphics",
     "./scores"
-  ]
+  ],
+  "scripts": {
+    "postinstall": "patch-package"
+  }
 }
