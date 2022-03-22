@@ -4,6 +4,7 @@
     "./graphics",
     "./scores"
   ],
+  "version": "0.0.0",
   "scripts": {
     "postinstall": "patch-package"
   },
