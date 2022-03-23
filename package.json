@@ -15,7 +15,7 @@
     {
       "name": "sports-graphics-controller",
       "title": "SportsGraphicsController",
-      "file": "graphics/dashboard.html",
+      "file": "../graphics/dashboard/dashboard.html",
       "headerColor": "#FAAF18",
       "fullbleed": true
     }
