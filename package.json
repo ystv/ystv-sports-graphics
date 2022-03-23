@@ -10,34 +10,28 @@
   },
   "name": "ystv-sports-graphics",
   "nodecg": {
-    "compatibleRange": "^1.1.1",
-    "dashboardPanels": [
-      {
-        "name": "sports-graphics-controller",
-        "title": "SportsGraphicsController",
-        "file": "../graphics/dashboard/dashboard.html",
-        "headerColor": "#FAAF18",
-        "fullbleed": true
-      }
-    ],
-    "graphics": [
-      {
-        "file": "graphics/graphics.html",
-        "width": 1920,
-        "height": 1080
-      }
-    ],
-    "mount": [
-      {
-        "directory": "graphics/public",
-        "endpoint": "public"
-      }
-    ]
-  },
-  "eslintConfig": {
-    "rules": {
-      "react/react-in-jsx-scope": "off",
-      "react/jsx-filename-extension": [1, { "extensions": [".ts", ".tsx"] }]
+  "compatibleRange": "^1.1.1",
+  "dashboardPanels": [
+    {
+      "name": "sports-graphics-controller",
+      "title": "SportsGraphicsController",
+      "file": "graphics/dashboard.html",
+      "headerColor": "#FAAF18",
+      "fullbleed": true
     }
-  }
+  ],
+  "graphics": [
+    {
+      "file": "graphics/graphics.html",
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "mount": [
+    {
+      "directory": "graphics/public",
+      "endpoint": "public"
+    }
+  ]
+}
 }
