@@ -98,7 +98,7 @@ function makeConfig(kind, name) {
       `./src/${kind}/index.${name}.tsx`,
     ],
     output: {
-      path: path.join(__dirname, kind),
+      path: path.join(__dirname, "../", kind),
       filename: `${name}.bundle.js`,
       uniqueName: name,
     },

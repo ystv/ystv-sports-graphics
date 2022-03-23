@@ -1,7 +1,7 @@
 {
   "private": true,
   "workspaces": [
-    "./graphics",
+    "./nodecg-bundle",
     "./scores"
   ],
   "version": "0.0.0",
@@ -15,14 +15,14 @@
     {
       "name": "sports-graphics-controller",
       "title": "SportsGraphicsController",
-      "file": "../graphics/dashboard/dashboard.html",
+      "file": "dashboard.html",
       "headerColor": "#FAAF18",
       "fullbleed": true
     }
   ],
   "graphics": [
     {
-      "file": "graphics/graphics.html",
+      "file": "graphics.html",
       "width": 1920,
       "height": 1080
     }

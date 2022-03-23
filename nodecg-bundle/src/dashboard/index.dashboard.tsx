@@ -64,6 +64,10 @@ const LiveKillButtons = ({
   </>
 );
 
+// function Dashboard() {
+//   return <h1>Hi</h1>;
+// }
+
 function Dashboard() {
   const [team1ID, setTeam1ID] = useReplicantValue("team1ID", undefined, {
     defaultValue: "york",
