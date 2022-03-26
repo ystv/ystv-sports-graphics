@@ -23,6 +23,7 @@ import {
 } from "@chakra-ui/react";
 
 import { Event as SportsEvent } from "../common/generated/graphql";
+import { ScoresServiceConnectionState } from "common/types/scoresServiceConnectionState";
 
 const LiveButton = ({ callback }: { callback: Function }) => (
   <Button onClick={() => callback(true)} colorScheme={"green"}>
@@ -69,6 +70,10 @@ const LiveKillButtons = ({
 // }
 
 function Dashboard() {
+  const connectionState = useOnlyReplicantValue<ScoresServiceConnectionState>("scoresServiceConnectionState", undefined, {
+    defaultValue: "<nodecg is having a moment...>" as any
+  });
+
   const [team1ID, setTeam1ID] = useReplicantValue("team1ID", undefined, {
     defaultValue: "york",
   });
@@ -198,6 +203,9 @@ function Dashboard() {
   return (
     <div style={{ margin: "1rem 4rem" }}>
       <ChakraProvider>
+        <Heading as="h2" size="md">
+          Scores service: {connectionState}
+        </Heading>
         <Heading as="h2" size="lg">
           Set Teams
         </Heading>

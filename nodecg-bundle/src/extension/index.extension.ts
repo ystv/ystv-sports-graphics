@@ -1,191 +1,140 @@
+import type { Configschema } from "common/types/config";
 import type { NodeCG } from "../../../../../types/server";
-// import fetch from "cross-fetch";
-// import {
-//   split,
-//   HttpLink,
-//   ApolloProvider,
-//   ApolloClient,
-//   InMemoryCache,
-//   from,
-//   gql,
-//   Observable,
-//   FetchResult,
-// } from "@apollo/client";
-// import { WebSocketLink } from "@apollo/client/link/ws";
-// import { onError } from "@apollo/client/link/error";
-// import { getMainDefinition } from "@apollo/client/utilities";
-// import { w3cwebsocket } from "websocket";
-// import { Event as SportsEvent } from "../common/generated/graphql";
-//
-export = (nodecg: NodeCG) => {};
-// export = (nodecg: NodeCG) => {
-//   console.log("Using data", nodecg.bundleConfig);
-//
-//   // SETUP APOLLO
-//   const httpLink = new HttpLink({
-//     uri: `https://${nodecg.bundleConfig.API}/graphql`,
-//     fetch,
-//   });
-//
-//   const wsLink = new WebSocketLink({
-//     uri: `wss://${nodecg.bundleConfig.API}/graphql`,
-//     options: {
-//       reconnect: true,
-//     },
-//     webSocketImpl: w3cwebsocket,
-//   });
-//
-//   const splitLink = split(
-//     ({ query }) => {
-//       const definition = getMainDefinition(query);
-//       return (
-//         definition.kind === "OperationDefinition" &&
-//         definition.operation === "subscription"
-//       );
-//     },
-//     wsLink,
-//     httpLink
-//   );
-//
-//   const link = onError(({ graphQLErrors, networkError }) => {
-//     if (graphQLErrors)
-//       graphQLErrors.map(({ message, locations, path }) =>
-//         console.log(
-//           `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-//         )
-//       );
-//     if (networkError) console.log(`[Network error]: ${networkError}`);
-//   });
-//
-//   const masterLink = from([link, splitLink]);
-//
-//   const client = new ApolloClient({
-//     link: masterLink,
-//     cache: new InMemoryCache(),
-//     credentials: "include",
-//   });
-//
-//   // SETUP BASIC REPLICANT & MESSAGES
-//
-//   const allEvents = nodecg.Replicant("allEvents", { defaultValue: [] });
-//   const currentEvent = nodecg.Replicant("currentEvent", {
-//     defaultValue: {} as SportsEvent,
-//   });
-//
-//   // callback handles switching events
-//   nodecg.listenFor("currentEventChanged", (value, ack) => {
-//     console.log(`currentEvent changed to ${value}`);
-//
-//     dataSubscription = client.subscribe({
-//       query: DataSubscriptionQuery,
-//       variables: {
-//         id: value,
-//       },
-//     });
-//
-//     dataSubscription.subscribe({
-//       start() {
-//         console.log("Subscription started");
-//       },
-//       next(e) {
-//         console.log("Event data received");
-//
-//         currentEvent.value = e.data;
-//       },
-//       error(e) {
-//         console.log("Error");
-//
-//         console.error(e);
-//       },
-//       complete() {
-//         console.log("Subscription completed");
-//       },
-//     });
-//   });
-//
-//   // GQL QUERIES
-//   let dataSubscription: Observable<
-//     FetchResult<any, Record<string, any>, Record<string, any>>
-//   >;
-//
-//   client.query({ query: AllEventsQuery }).then((e) => {
-//     allEvents.value = JSON.parse(JSON.stringify(e.data.allEvents));
-//   });
-// };
-//
-// const FootballScoresFragment = gql`
-//   fragment FootballLiveScores on FootballEvent {
-//     homeTeam {
-//       id
-//       name
-//       abbreviation
-//       players {
-//         id
-//         name
-//         designation
-//         role
-//       }
-//     }
-//     awayTeam {
-//       id
-//       name
-//       abbreviation
-//       players {
-//         id
-//         name
-//         designation
-//         role
-//       }
-//     }
-//     halves {
-//       timer {
-//         state
-//         timeClockStarted
-//         timeWhenStarted
-//       }
-//       addedTime
-//       score {
-//         home
-//         away
-//       }
-//       keyEvents {
-//         footballType: type
-//         team
-//         player
-//         time
-//         incomingPlayer
-//       }
-//     }
-//   }
-// `;
-//
-// const DataSubscriptionQuery = gql`
-//   subscription LiveScores_Data($id: ID!) {
-//     eventChanges(eventId: $id) {
-//       id
-//       title
-//       time
-//       venue
-//       type
-//       #      ... on RugbyUnionEvent {
-//       #        ...RugbyUnionLiveScores
-//       #      }
-//       ... on FootballEvent {
-//         ...FootballLiveScores
-//       }
-//     }
-//   }
-//   ${FootballScoresFragment}
-// `;
-//
-// const AllEventsQuery = gql`
-//   {
-//     allEvents {
-//       id
-//       title
-//       time
-//       venue
-//       type
-//     }
-//   }
-// `;
+import { WebSocket } from "ws";
+import type { ScoresServiceConnectionState } from "common/types/scoresServiceConnectionState";
+import invariant from "tiny-invariant";
+import type { LiveClientMessage, LiveServerMessage } from "@ystv/scores/src/common/liveTypes";
+import type { EventID } from "common/types/eventID";
+import qs from "qs";
+
+export = (nodecg: NodeCG) => {
+    const config: Configschema = nodecg.bundleConfig;
+    if (!config.scoresService) {
+        nodecg.log.warn("Scores service not configured!");
+        return;
+    }
+
+    const stateRep = nodecg.Replicant<ScoresServiceConnectionState>("scoresServiceConnectionState", {
+        defaultValue: "NOT_CONNECTED"
+    });
+    const eventIDRep = nodecg.Replicant<EventID>("eventID", {
+        defaultValue: "Event/football/dcbb2e1d-b372-4cc7-acce-972501435cbf"
+    });
+    const eventStateRep = nodecg.Replicant("eventState", {
+        defaultValue: null as any
+    });
+
+    let sid = "";
+    let lastMID = "";
+
+    let ws: WebSocket | null = null;
+    let subscribedId: string | null = null;
+
+    function send(data: LiveClientMessage) {
+        invariant(ws !== null, "tried to send with null WebSocket");
+        invariant(ws.readyState === ws.OPEN, "tried to send with a closed WebSocket");
+        nodecg.log.debug("WebSocket sending", data.kind);
+        ws.send(JSON.stringify(data), err => {
+            if (err) {
+                nodecg.log.error("WebSocket failed to send", data.kind, err);
+            }
+        });
+    }
+    
+    function maybeResubscribe() {
+        if (subscribedId === eventIDRep.value) {
+            nodecg.log.debug("MR: Already subscribed to correct ID");
+            return;
+        }
+        if (subscribedId !== null && eventIDRep.value !== subscribedId) {
+            nodecg.log.debug("MR: Want unsubscribe");
+            send({
+                kind: "UNSUBSCRIBE",
+                to: subscribedId
+            });
+        }
+        if (eventIDRep.value !== null && eventIDRep.value !== subscribedId) {
+            nodecg.log.debug("MR: want subscribe", eventIDRep.value);
+            send({
+                kind: "SUBSCRIBE",
+                to: eventIDRep.value
+            });
+        }
+    }
+
+    function connect() {
+        invariant(config.scoresService, "tried to connect with no scores service config");
+        const params: Record<string, string> = {};
+        if (sid.length > 0) {
+            params.sid = sid;
+        }
+        if (lastMID.length > 0) {
+            params.last_mid = lastMID;
+        }
+        const apiURL = config.scoresService.apiURL.replace(/^http(s?):\/\//, "ws$1://") + "/updates/stream/v2" + qs.stringify(params, {
+            addQueryPrefix: true
+        });
+        nodecg.log.debug("Connecting WebSocket on", apiURL);
+        ws = new WebSocket(apiURL);
+        ws.onopen = () => {
+            nodecg.log.debug("WebSocket Open");
+            stateRep.value = "WAITING";
+        };
+        ws.onclose = () => {
+            nodecg.log.debug("WebSocket Close");
+            stateRep.value = "DISCONNECTED";
+            const reconnectIn = (Math.random() * 3000) + 3000;
+            nodecg.log.debug("Reconnecting in", reconnectIn);
+            setTimeout(() => connect, reconnectIn);
+        };
+        ws.onerror = (e: unknown) => {
+            nodecg.log.error("WebSocket Error", e);
+        };
+        ws.onmessage = e => {
+            invariant(typeof e.data === "string", "non-string message from websocket");
+            const payload: LiveServerMessage = JSON.parse(e.data);
+            nodecg.log.debug("WebSocket Message", payload.kind);
+            switch (payload.kind) {
+                case "HELLO":
+                    sid = payload.sid;
+                    stateRep.value = "SYNCHRONISING";
+                    if (payload.subs.length > 0) {
+                        subscribedId = payload.subs[0];
+                    } else {
+                        subscribedId = null;
+                    }
+                    maybeResubscribe();
+                    break;
+                case "SUBSCRIBE_OK":
+                    stateRep.value = "READY";
+                    subscribedId = payload.to;
+                    eventStateRep.value = payload.current;
+                    break;
+                case "UNSUBSCRIBE_OK":
+                    if (payload.to !== subscribedId) {
+                        nodecg.log.warn("Received UNSUBSCRIBE_OK for unexpected ID - expected", subscribedId, "actual", payload.to);
+                    }
+                    subscribedId = null;
+                    break;
+                case "CHANGE":
+                    eventStateRep.value = payload.data;
+                    lastMID = payload.mid;
+                    break;
+                case "ERROR":
+                    nodecg.log.warn("Server-side error", payload.error);
+                    break;
+                case "PING":
+                    send({
+                        kind: "PONG"
+                    });
+                    break;
+                case "PONG":
+                    break;
+                default:
+                    // @ts-expect-error
+                    nodecg.log.warn("Unhandled WS message kind", payload.kind);
+            }
+        }
+    }
+    connect();
+};

@@ -1,5 +1,5 @@
 {
-  "name": "scores",
+  "name": "@ystv/scores",
   "version": "0.0.0",
   "scripts": {
     "cfg": "node-config-ts",

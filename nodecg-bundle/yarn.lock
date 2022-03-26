@@ -5907,6 +5907,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ws@npm:^8.5.3":
+  version: 8.5.3
+  resolution: "@types/ws@npm:8.5.3"
+  dependencies:
+    "@types/node": "*"
+  checksum: 0ce46f850d41383fcdc2149bcacc86d7232fa7a233f903d2246dff86e31701a02f8566f40af5f8b56d1834779255c04ec6ec78660fe0f9b2a69cf3d71937e4ae
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 20.2.0
   resolution: "@types/yargs-parser@npm:20.2.0"
@@ -18156,6 +18165,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tiny-invariant@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "tiny-invariant@npm:1.2.0"
+  checksum: e09a718a7c4a499ba592cdac61f015d87427a0867ca07f50c11fd9b623f90cdba18937b515d4a5e4f43dac92370498d7bdaee0d0e7a377a61095e02c4a92eade
+  languageName: node
+  linkType: hard
+
 "title-case@npm:^3.0.3":
   version: 3.0.3
   resolution: "title-case@npm:3.0.3"
@@ -19587,6 +19603,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ws@npm:^8.5.0":
+  version: 8.5.0
+  resolution: "ws@npm:8.5.0"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ^5.0.2
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 76f2f90e40344bf18fd544194e7067812fb1372b2a37865678d8f12afe4b478ff2ebc0c7c0aff82cd5e6b66fc43d889eec0f1865c2365d8f7a66d92da7744a77
+  languageName: node
+  linkType: hard
+
 "xtend@npm:^4.0.0, xtend@npm:^4.0.1, xtend@npm:~4.0.1":
   version: 4.0.2
   resolution: "xtend@npm:4.0.2"
@@ -19759,6 +19790,7 @@ __metadata:
     "@storybook/react": ^6.2.2
     "@types/react": ^17.0.3
     "@types/react-dom": ^17.0.3
+    "@types/ws": ^8.5.3
     babel-loader: ^8.2.2
     cross-env: ^7.0.3
     cross-fetch: ^3.1.4
@@ -19775,6 +19807,7 @@ __metadata:
     react-refresh: ^0.10.0
     storybook-css-modules-preset: ^1.1.1
     style-loader: ^3.3.0
+    tiny-invariant: ^1.2.0
     ts-loader: ^8.1.0
     typescript: ^4.2.3
     webpack: ^5.30.0
@@ -19784,6 +19817,7 @@ __metadata:
     webpack-hot-middleware: ^2.25.0
     webpack-merge: ^5.7.3
     websocket: ^1.0.34
+    ws: ^8.5.0
   languageName: unknown
   linkType: soft
 
