@@ -5,6 +5,10 @@ addon-build/
 extension.js
 *hot-update*
 *.bundle.js*
+graphics/*
+!graphics/.gitkeep
+dashboard/*
+!dashboard/.gitkeep
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -12,5 +16,6 @@ extension.js
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+*.local
 
 docker-compose.override.yml
