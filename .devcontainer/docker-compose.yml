@@ -6,11 +6,11 @@ services:
       context: .
       dockerfile: .devcontainer/Dockerfile
     volumes:
-      - .:/workspaces/sports-scores
+      - .:/nodecg/bundles/ystv-sports-graphics:cached
       - vscode-cache:/home/vscode/.vscode-server/extensions
       - vscode-insiders-cache:/home/vscode/.vscode-server-insiders/extensions
-      - yarn-cache:/workspaces/sports-scores/.yarn/cache
-    working_dir: /workspaces/sports-scores
+      - yarn-cache:/nodecg/bundles/ystv-sports-graphics/.yarn/cache
+    working_dir: /nodecg/bundles/ystv-sports-graphics
     command: sleep 9999999999
     ports:
       - 9090:9090

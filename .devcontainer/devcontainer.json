@@ -4,11 +4,12 @@
 	"name": "Node",
 	"dockerComposeFile": [
 		"../docker-compose.yml",
+		"../docker-compose.override.yml",
 		"docker-compose.yml"
 	],
 
 	"service": "server",
-	"workspaceFolder": "/workspaces/sports-scores",
+	"workspaceFolder": "/nodecg/bundles/ystv-sports-graphics",
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [

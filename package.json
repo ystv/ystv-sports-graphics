@@ -6,6 +6,7 @@
   ],
   "version": "0.0.0",
   "scripts": {
+    "nodecg": "concurrently -n nodecg,builder 'cd ../.. && npm start' 'cd nodecg-bundle && yarn start'",
     "postinstall": "patch-package"
   },
   "name": "ystv-sports-graphics",
@@ -36,6 +37,7 @@
   },
   "packageManager": "yarn@3.2.0",
   "devDependencies": {
+    "concurrently": "^7.0.0",
     "patch-package": "^6.4.7"
   }
 }
