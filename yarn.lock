@@ -4995,6 +4995,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ury1350/prettier-config@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@ury1350/prettier-config@npm:1.0.1"
+  checksum: 9ced5f2639bde1a365d15d4c300daa04bd475b173fc0a4522d6cfdfa24304a7014e0ea878719d0a7616bb35c4601595b7a5ead83a14aa3fdbaf27c5b3c046572
+  languageName: node
+  linkType: hard
+
 "@vitejs/plugin-react@npm:^1.2.0":
   version: 1.2.0
   resolution: "@vitejs/plugin-react@npm:1.2.0"
@@ -14879,6 +14886,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier@npm:^2.6.1":
+  version: 2.6.1
+  resolution: "prettier@npm:2.6.1"
+  bin:
+    prettier: bin-prettier.js
+  checksum: 78be1f8a3ddfad7c3d8a854b6c8941a3bb1ddfca4225c38d778e0fe1029a55368f71b3bbefff82c689015fbb4d391ec44add957f01308ad2725e01a7c1f37cb6
+  languageName: node
+  linkType: hard
+
 "pretty-error@npm:^2.1.1":
   version: 2.1.2
   resolution: "pretty-error@npm:2.1.2"
@@ -19385,7 +19401,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ystv-sports-graphics@workspace:."
   dependencies:
+    "@ury1350/prettier-config": ^1.0.1
     patch-package: ^6.4.7
+    prettier: ^2.6.1
   languageName: unknown
   linkType: soft
 

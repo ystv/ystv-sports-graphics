@@ -2,27 +2,23 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { useOnlyReplicantValue, useReplicantValue } from "common/useReplicant";
 import { TeamDictionary } from "common/teamDictionary";
-// import { BoxerDictionary } from "common/boxerDictionary";
 import {
   ChakraProvider,
   ButtonGroup,
   Button,
   Checkbox,
   Heading,
-  Select,
   FormLabel,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  SimpleGrid,
   Grid,
   Box,
   Input,
 } from "@chakra-ui/react";
 
-import { Event as SportsEvent } from "../common/generated/graphql";
 import { ScoresServiceConnectionState } from "common/types/scoresServiceConnectionState";
 
 const LiveButton = ({ callback }: { callback: Function }) => (
@@ -70,9 +66,13 @@ const LiveKillButtons = ({
 // }
 
 function Dashboard() {
-  const connectionState = useOnlyReplicantValue<ScoresServiceConnectionState>("scoresServiceConnectionState", undefined, {
-    defaultValue: "<nodecg is having a moment...>" as any
-  });
+  const connectionState = useOnlyReplicantValue<ScoresServiceConnectionState>(
+    "scoresServiceConnectionState",
+    undefined,
+    {
+      defaultValue: "<nodecg is having a moment...>" as any,
+    }
+  );
 
   const [team1ID, setTeam1ID] = useReplicantValue("team1ID", undefined, {
     defaultValue: "york",
