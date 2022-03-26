@@ -30,7 +30,7 @@
     ],
     "mount": [
       {
-        "directory": "graphics/public",
+        "directory": "bundle-src/public",
         "endpoint": "public"
       }
     ]
