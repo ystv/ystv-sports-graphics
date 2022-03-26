@@ -5775,12 +5775,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^17.0.3":
-  version: 17.0.3
-  resolution: "@types/react-dom@npm:17.0.3"
+"@types/react-dom@npm:^17.0.14":
+  version: 17.0.14
+  resolution: "@types/react-dom@npm:17.0.14"
   dependencies:
     "@types/react": "*"
-  checksum: 102a3ee9ecf96fdd82d37d90860d0b80e160a368117e4e84512c801f8c7f381d7a2b9305f155670f42eab4784d036375cbf16c9905839dd0857e7031ff966803
+  checksum: b54cd0ef573236b3d87fe7493e6d1c36d8b4ca37a3b46364272a5c91ac178e3296b68ea1aeb299ce68f12ad663c5720ee890d0539b14881c6754bdcbdb0befa0
   languageName: node
   linkType: hard
 
@@ -5793,7 +5793,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^17.0.3":
+"@types/react@npm:*":
   version: 17.0.3
   resolution: "@types/react@npm:17.0.3"
   dependencies:
@@ -5801,6 +5801,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: d29f2a33ed69fae9d9f42f8b39b40352e3209eb821f827d566330adfdffb48d2dc730982356cd50a7fda6171e6bc7deca793f7b105c95fce615a45ab313ecf41
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^17.0.43":
+  version: 17.0.43
+  resolution: "@types/react@npm:17.0.43"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 981b0993f5b3ea9d3488b8cc883201e8ae47ba7732929f788f450a79fd72829e658080d5084e67caa008e58d989b0abc1d5f36ff0a1cda09315ea3a3c0c9dc11
   languageName: node
   linkType: hard
 
@@ -6344,6 +6355,12 @@ __metadata:
   checksum: 8ed0d477ce3bc9c6fe2bf6a6a2cc316bb9c4127c5a7827bae947fa8ec34c7092395c5a283cc300c05b5fa01cbbfa1f938f410a7bf75db7c7846fea41949989ec
   languageName: node
   linkType: hard
+
+"@ystv/scores@link:../scores::locator=ystv-sports-graphics-nodecg%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@ystv/scores@link:../scores::locator=ystv-sports-graphics-nodecg%40workspace%3A."
+  languageName: node
+  linkType: soft
 
 "abbrev@npm:1":
   version: 1.1.1
@@ -19788,9 +19805,10 @@ __metadata:
     "@storybook/addon-essentials": ^6.2.2
     "@storybook/addon-links": ^6.2.2
     "@storybook/react": ^6.2.2
-    "@types/react": ^17.0.3
-    "@types/react-dom": ^17.0.3
+    "@types/react": ^17.0.43
+    "@types/react-dom": ^17.0.14
     "@types/ws": ^8.5.3
+    "@ystv/scores": "link:../scores"
     babel-loader: ^8.2.2
     cross-env: ^7.0.3
     cross-fetch: ^3.1.4
