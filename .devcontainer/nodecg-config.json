@@ -1,0 +1,9 @@
+{
+    "logging": {
+        "console": {
+            "enabled": true,
+            "timestamps": true,
+            "level": "debug"
+        }
+    }
+}

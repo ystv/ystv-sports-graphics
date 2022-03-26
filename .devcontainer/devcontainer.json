@@ -25,5 +25,17 @@
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "node",
 
-	"forwardPorts": [3000, 8000]
+	"forwardPorts": [3000, 8000],
+
+	"postStartCommand": [
+		"sudo",
+		"chown",
+		"-R",
+		"node",
+		"/nodecg"
+	],
+
+	"postAttachCommand": [
+		"yarn"
+	]
 }

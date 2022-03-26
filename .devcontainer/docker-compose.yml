@@ -8,6 +8,7 @@ services:
     volumes:
       - .:/nodecg/bundles/ystv-sports-graphics:cached
       - .devcontainer/bundle-config.json:/nodecg/cfg/ystv-sports-graphics.json
+      - .devcontainer/nodecg-config.json:/nodecg/cfg/nodecg.json
       - vscode-cache:/home/vscode/.vscode-server/extensions
       - vscode-insiders-cache:/home/vscode/.vscode-server-insiders/extensions
       - yarn-cache:/nodecg/bundles/ystv-sports-graphics/.yarn/cache
