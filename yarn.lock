@@ -6013,9 +6013,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ystv/scores@link:../scores::locator=ystv-sports-graphics-nodecg%40workspace%3Anodecg-bundle":
+"@ystv/scores@link:../scores::locator=ystv-sports-graphics-nodecg%40workspace%3Abundle-src":
   version: 0.0.0-use.local
-  resolution: "@ystv/scores@link:../scores::locator=ystv-sports-graphics-nodecg%40workspace%3Anodecg-bundle"
+  resolution: "@ystv/scores@link:../scores::locator=ystv-sports-graphics-nodecg%40workspace%3Abundle-src"
   languageName: node
   linkType: soft
 
@@ -21382,9 +21382,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ystv-sports-graphics-nodecg@workspace:nodecg-bundle":
+"ystv-sports-graphics-nodecg@workspace:bundle-src":
   version: 0.0.0-use.local
-  resolution: "ystv-sports-graphics-nodecg@workspace:nodecg-bundle"
+  resolution: "ystv-sports-graphics-nodecg@workspace:bundle-src"
   dependencies:
     "@apollo/client": ^3.4.16
     "@babel/core": ^7.13.14
