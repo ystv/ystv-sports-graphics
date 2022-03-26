@@ -27,6 +27,7 @@
     "vite": "^2.8.4"
   },
   "dependencies": {
+    "@koa/cors": "^3.2.0",
     "@popperjs/core": "^2.11.2",
     "@types/config": "^0.0.41",
     "@types/http-errors": "^1.8.2",
@@ -35,6 +36,7 @@
     "@types/koa-logger": "^3.1.2",
     "@types/koa-router": "^7.4.4",
     "@types/koa-websocket": "^5.0.7",
+    "@types/koa__cors": "^3.1.1",
     "@types/qs": "^6.9.7",
     "@types/react": "^17.0.43",
     "@types/react-dom": "^17.0.14",

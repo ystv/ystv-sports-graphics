@@ -10,5 +10,6 @@
     "logLevel": "LOG_LEVEL",
     "redis": {
         "connectionString": "REDIS_CONNECTION_STRING"
-    }
+    },
+    "allowedOrigins": "ALLOWED_ORIGINS"
 }

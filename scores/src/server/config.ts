@@ -13,7 +13,8 @@ const config = {
     pathPrefix: cfg.get<string>("pathPrefix"),
     redis: {
         connectionString: cfg.get<string>("redis.connectionString")
-    }
+    },
+    allowedOrigins: cfg.get<string[]>("allowedOrigins")
 };
 
 export default config;

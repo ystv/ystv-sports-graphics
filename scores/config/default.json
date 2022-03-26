@@ -11,5 +11,6 @@
     "port": 8000,
     "redis": {
         "connectionString": "redis://localhost"
-    }
+    },
+    "allowedOrigins": []
 }

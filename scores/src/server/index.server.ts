@@ -7,6 +7,7 @@ import bodyParser from "koa-bodyparser";
 import Router from "koa-router";
 import Logger from "koa-logger";
 import websockify from "koa-websocket";
+import cors from "@koa/cors";
 import { makeEventAPI } from "./eventTypeRoutes";
 import * as db from "./db";
 import * as redis from "./redis";
@@ -32,6 +33,20 @@ import { createLiveRouter } from "./liveRoutes";
   });
 
   const app = websockify(new koa());
+  app.use(cors({
+    origin: ctx => {
+      const requestOrigin = ctx.headers["origin"];
+      if (!requestOrigin) {
+        return "";
+      }
+      for (const origin of config.allowedOrigins) {
+        if (requestOrigin.startsWith(origin)) {
+          return requestOrigin;
+        }
+      }
+      return "";
+    }
+  }))
   const httpLogger = getLogger("http");
   const indexlogger = getLogger("index.server");
   app.use(

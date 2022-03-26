@@ -3,5 +3,6 @@
     "pathPrefix": "/api",
     "redis": {
         "connectionString": "redis://redis"
-    }
+    },
+    "allowedOrigins": ["http://localhost:3000", "http://localhost:8000"]
 }

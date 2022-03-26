@@ -28,11 +28,11 @@ export function useLiveData<T>(eventId: string) {
   const pingInterval = useRef<number | null>(null);
 
   function maybePing() {
-    const PING_THRESHOLD_MS = 5_000;
+    const PING_THRESHOLD_MS = 7_500;
     if (new Date().valueOf() - lastPingAt.current > PING_THRESHOLD_MS) {
       logger.info("Last ping was at", lastPingAt.current, "pinging now");
       setStatus("POSSIBLY_DISCONNECTED");
-      sendOrEnqueue({ kind: "PING" });
+      send({ kind: "PING" });
     }
   }
 
@@ -45,6 +45,7 @@ export function useLiveData<T>(eventId: string) {
 
   function send(data: LiveClientMessage) {
     invariant(wsRef.current !== null, "tried to send with a null websocket");
+    invariant(wsRef.current.readyState === WebSocket.OPEN, "tried to send with a non-open websocket");
     wsRef.current.send(JSON.stringify(data));
   }
   function sendOrEnqueue(data: LiveClientMessage) {
@@ -103,8 +104,10 @@ export function useLiveData<T>(eventId: string) {
       case "PING":
         send({ kind: "PONG" });
         break;
+      case "PONG":
+        break;
       default:
-        invariant(false, "Unhandled message KIND" + (payload as any).kind);
+        invariant(false, "Unhandled message KIND " + (payload as any).kind);
     }
   };
 
