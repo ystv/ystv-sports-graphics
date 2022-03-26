@@ -2,7 +2,7 @@
   "private": true,
   "workspaces": [
     "./bundle-src",
-    "./scores"
+    "./scores-src"
   ],
   "version": "0.0.0",
   "scripts": {

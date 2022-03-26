@@ -10,6 +10,7 @@ graphics/*
 dashboard/*
 !dashboard/.gitkeep
 .pnp.*
+**/.yarn/*
 .yarn/*
 !.yarn/patches
 !.yarn/plugins

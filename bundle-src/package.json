@@ -32,7 +32,7 @@
     "@storybook/addon-essentials": "^6.2.2",
     "@storybook/addon-links": "^6.2.2",
     "@storybook/react": "^6.2.2",
-    "@ystv/scores": "link:../scores",
+    "@ystv/scores": "link:../scores-src",
     "babel-loader": "^8.2.2",
     "cross-env": "^7.0.3",
     "css-loader": "^6.3.0",
