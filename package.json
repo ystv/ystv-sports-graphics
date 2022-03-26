@@ -7,7 +7,7 @@
   "version": "0.0.0",
   "scripts": {
     "nodecg": "cd ../.. && npm start",
-    "postinstall": "patch-package && mkdir -p scores/addon-build/release/install-root && cp node_modules/couchbase/build/Release/couchbase_impl.node scores/addon-build/release/install-root/ && touch nodecg-bundle/extension.js && ln -s nodecg-bundle/extension.js extension.js"
+    "postinstall": "patch-package && mkdir -p scores/addon-build/release/install-root && cp node_modules/couchbase/build/Release/couchbase_impl.node scores/addon-build/release/install-root/ && touch nodecg-bundle/extension.js && rm extension.js || ln -s nodecg-bundle/extension.js extension.js"
   },
   "name": "ystv-sports-graphics",
   "nodecg": {

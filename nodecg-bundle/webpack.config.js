@@ -98,13 +98,13 @@ function makeConfig(kind, name) {
       `./src/${kind}/index.${name}.tsx`,
     ],
     output: {
-      path: path.join(__dirname, "../", kind),
+      path: path.resolve(__dirname, "..", kind),
       filename: `${name}.bundle.js`,
       uniqueName: name,
     },
     plugins: [
       new HtmlWebpackPlugin({
-        filename: path.join(__dirname, kind, `${name}.html`),
+        filename: path.resolve(__dirname, "..", kind, `${name}.html`),
         template: htmlTemplate,
       }),
     ],
@@ -156,7 +156,7 @@ const config = [
     },
     devtool: false,
     output: {
-      path: __dirname,
+      path: path.resolve(__dirname, ".."),
       filename: "extension.js",
       library: {
         type: "commonjs2",
