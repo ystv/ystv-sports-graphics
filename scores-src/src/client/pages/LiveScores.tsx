@@ -12,7 +12,7 @@ import {
 import { Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
-import { startCase } from "lodash"
+import { startCase } from "lodash";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENTS;
@@ -41,9 +41,7 @@ function EventActionModal(props: {
 
   return (
     <Modal show onHide={() => props.onClose()}>
-      <Modal.Header>
-        {startCase(props.actionType)}
-      </Modal.Header>
+      <Modal.Header>{startCase(props.actionType)}</Modal.Header>
       <Modal.Body>
         <Formik
           initialValues={{}}
@@ -122,7 +120,8 @@ export function LiveScores() {
         {error !== null && <Alert variant="warning">{error}</Alert>}
         {status === "POSSIBLY_DISCONNECTED" && (
           <Alert variant="warning">
-            Possible connection issues, reconnecting... (if this doesn't go away after 10 seconds please refresh the page)
+            Possible connection issues, reconnecting... (if this doesn't go away
+            after 10 seconds please refresh the page)
             {import.meta.env.DEV && " (may be caused by HMR weirdness)"}
           </Alert>
         )}

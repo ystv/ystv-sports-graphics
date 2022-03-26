@@ -1,9 +1,4 @@
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ListEvents } from "./pages/ListEvents";
 import { Wrapper } from "./components/Wrapper";
 
@@ -16,7 +11,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Wrapper />}>
-      <Route path="events/:type/:id" element={<LiveScores />} />
+        <Route path="events/:type/:id" element={<LiveScores />} />
         <Route path="events" element={<ListEvents />}>
           <Route path=":type/:id/edit" element={<EditEventModal />} />
           <Route path="new" element={<CreateEventModal />} />

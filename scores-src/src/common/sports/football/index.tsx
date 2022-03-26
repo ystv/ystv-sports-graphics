@@ -13,12 +13,7 @@ import {
 } from "../../formFields";
 import type { EventActionFunctions } from "../../types";
 import { useFormikContext } from "formik";
-import {
-  Clock,
-  currentTime,
-  startClock,
-  stopClock,
-} from "../../clock";
+import { Clock, currentTime, startClock, stopClock } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 
 const playerSchema = Yup.object({
@@ -61,8 +56,9 @@ export const schema = BaseEvent.shape({
 type ValueType = Yup.InferType<typeof schema>;
 
 export function GoalForm(props: ActionFormProps<typeof schema>) {
-  const { values } =
-    useFormikContext<Yup.InferType<typeof actionTypes.goal.schema>>();
+  const { values } = useFormikContext<
+    Yup.InferType<typeof actionTypes.goal.schema>
+  >();
   const players =
     values.side === "home"
       ? props.currentState.players.home
@@ -226,7 +222,8 @@ export const actionFuncs: EventActionFunctions<
       goals: [],
       stoppageTime: 0,
     });
-    val.clock.timeLastStartedOrStopped = (val.halves.length - 1) * (45 * 60 * 1000);
+    val.clock.timeLastStartedOrStopped =
+      (val.halves.length - 1) * (45 * 60 * 1000);
   },
   async resumeCurrentHalf(val) {
     startClock(val.clock);
