@@ -1,6 +1,6 @@
 version = 1
 
-exclude_patterns = ["/**/*.stories.tsx", "/scores/**"]
+exclude_patterns = ["/**/*.stories.tsx"]
 
 [[analyzers]]
 name = "shell"
