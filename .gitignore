@@ -5,3 +5,11 @@ addon-build/
 extension.js
 *hot-update*
 *.bundle.js*
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+

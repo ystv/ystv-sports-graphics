@@ -122,6 +122,6 @@ import { createLiveRouter } from "./liveRoutes";
   const port = config.port;
 
   app.listen(port, () => {
-    indexlogger.log(`Server listening on port ${port}.`);
+    indexlogger.info(`Server listening on port ${port}.`);
   });
 })();

@@ -4,6 +4,7 @@
   "scripts": {
     "cfg": "node-config-ts",
     "dev": "concurrently -n server,client npm:dev:server npm:dev:server:typecheck npm:dev:client",
+    "scores:dev": "yarn dev",
     "dev:server": "node startDevServer.js",
     "dev:server:typecheck": "cd src/server && tsc -w --preserveWatchOutput",
     "dev:client": "vite dev",

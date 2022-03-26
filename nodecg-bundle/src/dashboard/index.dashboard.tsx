@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { useOnlyReplicantValue, useReplicantValue } from "common/useReplicant";
 import { TeamDictionary } from "common/teamDictionary";
-import { BoxerDictionary } from "common/boxerDictionary";
+// import { BoxerDictionary } from "common/boxerDictionary";
 import {
   ChakraProvider,
   ButtonGroup,
@@ -201,7 +201,7 @@ function Dashboard() {
         <Heading as="h2" size="lg">
           Set Teams
         </Heading>
-        <FormLabel>Fight</FormLabel>
+        {/* <FormLabel>Fight</FormLabel>
         <Select
           value={team1ID || "york"}
           onChange={(e) => setTeam1ID(e.target.value)}
@@ -213,7 +213,7 @@ function Dashboard() {
                 e.blueFighter.split(" ")[1]}
             </option>
           ))}
-        </Select>
+        </Select> */}
         {/*<Select*/}
         {/*  value={team1ID || "york"}*/}
         {/*  onChange={(e) => setTeam1ID(e.target.value)}*/}

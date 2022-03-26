@@ -10,28 +10,32 @@
   },
   "name": "ystv-sports-graphics",
   "nodecg": {
-  "compatibleRange": "^1.1.1",
-  "dashboardPanels": [
-    {
-      "name": "sports-graphics-controller",
-      "title": "SportsGraphicsController",
-      "file": "dashboard.html",
-      "headerColor": "#FAAF18",
-      "fullbleed": true
-    }
-  ],
-  "graphics": [
-    {
-      "file": "graphics.html",
-      "width": 1920,
-      "height": 1080
-    }
-  ],
-  "mount": [
-    {
-      "directory": "graphics/public",
-      "endpoint": "public"
-    }
-  ]
-}
+    "compatibleRange": "^1.1.1",
+    "dashboardPanels": [
+      {
+        "name": "sports-graphics-controller",
+        "title": "SportsGraphicsController",
+        "file": "dashboard.html",
+        "headerColor": "#FAAF18",
+        "fullbleed": true
+      }
+    ],
+    "graphics": [
+      {
+        "file": "graphics.html",
+        "width": 1920,
+        "height": 1080
+      }
+    ],
+    "mount": [
+      {
+        "directory": "graphics/public",
+        "endpoint": "public"
+      }
+    ]
+  },
+  "packageManager": "yarn@3.2.0",
+  "devDependencies": {
+    "patch-package": "^6.4.7"
+  }
 }

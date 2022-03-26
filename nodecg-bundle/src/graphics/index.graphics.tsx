@@ -1,13 +1,13 @@
 import ReactDOM from "react-dom";
 import React from "react";
 import { useOnlyReplicantValue } from "common/useReplicant";
-import { Scoreboard } from "./boxing/Scoreboard/Scoreboard";
+// import { Scoreboard } from "./boxing/Scoreboard/Scoreboard";
 import "./global.css";
 import { Lineup } from "./rugby/Lineup/Lineup";
 import { Bug } from "./rugby/Bug/Bug";
 import { LineupSubs } from "./rugby/Lineup/LineupSubs";
 import { LowerThird } from "./generic/LowerThird/LowerThird";
-import { MatchStatus } from "./boxing/MatchStatus/MatchStatus";
+// import { MatchStatus } from "./boxing/MatchStatus/MatchStatus";
 import { HoldingCard } from "./generic/HoldingCard/HoldingCard";
 
 function AllGraphics() {
@@ -90,7 +90,7 @@ function AllGraphics() {
   );
   return (
     <>
-      <GraphicContainer>
+      {/* <GraphicContainer>
         <Scoreboard
           isVisible={showScoreboard}
           isTimerShown={showTimer}
@@ -101,7 +101,7 @@ function AllGraphics() {
           team2Name={team2ID}
           matchOver={matchOver}
         />
-      </GraphicContainer>
+      </GraphicContainer> */}
       <GraphicContainer>
         <Lineup isVisible={showLineup} lineupTeam={lineupTeam} />
       </GraphicContainer>
@@ -114,9 +114,9 @@ function AllGraphics() {
       <GraphicContainer zIndex={50}>
         <Bug state={showBug} />
       </GraphicContainer>
-      <GraphicContainer>
+      {/* <GraphicContainer>
         <MatchStatus lineupTeam={team1ID} isVisible={showStatus} />
-      </GraphicContainer>
+      </GraphicContainer> */}
       <GraphicContainer zIndex={100}>
         <HoldingCard
           isVisible={showHoldingCard}

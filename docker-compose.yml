@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+
+  couchbase:
+    image: couchbase/server:community-7.0.2
+    volumes:
+      - cbdata:/cbdata
+      - ./scripts/couchbase-entrypoint.sh:/entrypoint.sh:ro
+    ports:
+      - "8091-8097:8091-8097"
+      - "11210-11211:11210-11211"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-u", "Administrator:password", "http://localhost:8091/pools/default"]
+      interval: 10s
+      timeout: 10s
+      start_period: 1m30s
+      retries: 5
+  
+  redis:
+    image: redis:6-alpine
+  
+  server:
+    build: server/
+    init: true
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_CONNECTION_STRING=couchbase://couchbase
+      - DB_USER=sports-scores
+      - DB_PASSWORD=password
+      - DB_BUCKET=sports-scores
+      - REDIS_CONNECTION_STRING=redis://redis
+      - NODE_ENV=development
+    depends_on:
+      redis: 
+        condition: service_started
+      # couchbase:
+      #   condition: service_healthy
+
+  nodecg:
+    image: nodecg/nodecg
+    volumes:
+    - .:/usr/src/app/bundles/ystv-sports-graphics
+    ports: 
+    - 9090:9090
+    - 8082:8082
+
+volumes:
+  cbdata:

@@ -1,5 +1,5 @@
 {
-  "name": "ystv-sports-graphics",
+  "name": "ystv-sports-graphics-nodecg",
   "version": "0.0.0",
   "description": "",
   "homepage": "",
@@ -7,6 +7,7 @@
     "name": "Ben Allen"
   },
   "scripts": {
+    "bundle:dev": "yarn start",
     "start": "cross-env NODE_ENV=development node startDevServer.js",
     "build": "cross-env NODE_ENV=production webpack",
     "storybook": "start-storybook -p 6006",
@@ -67,5 +68,6 @@
   "browserslist": [
     "defaults",
     "Chrome >= 75"
-  ]
+  ],
+  "packageManager": "yarn@3.2.0"
 }

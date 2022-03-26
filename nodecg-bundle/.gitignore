@@ -7,3 +7,11 @@ extension.js
 public/local
 src/common/boxerDictionary.ts
 .DS_Store
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

@@ -185,6 +185,7 @@ export const actionTypes: EventActionTypes<typeof schema> = {
   },
   startHalf: {
     schema: Yup.object({}),
+    // TODO what about extra time?
     valid: (val) => val.clock.state === "stopped" && val.halves.length < 2,
   },
   resumeCurrentHalf: {
