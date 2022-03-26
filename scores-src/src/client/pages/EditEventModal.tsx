@@ -2,6 +2,7 @@ import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { Button, Modal, Form as BootstrapForm, Alert } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
+import { Field } from "../../common/formFields";
 import { EVENTS } from "../eventTypes";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
@@ -41,6 +42,7 @@ export function EditEventForm() {
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
             <BootstrapForm onSubmit={handleSubmit} onReset={handleReset}>
+              <Field type="number" name="worthPoints" title="Points" helper="How many Roses points will the winner get?" />
               <EditForm />
               <Button variant="primary" type="submit" disabled={isSubmitting}>
                 Save
@@ -48,6 +50,7 @@ export function EditEventForm() {
               {submitError !== null && (
                 <Alert variant="danger">Could not save! {submitError}</Alert>
               )}
+              {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
             </BootstrapForm>
           )}
         </Formik>

@@ -8,6 +8,7 @@ import {
   Alert,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { Field } from "../../common/formFields";
 import { EVENTS } from "../eventTypes";
 import { usePOSTEvents } from "../lib/apiClient";
 
@@ -55,6 +56,7 @@ export function CreateEventModal() {
         >
           {({ handleReset, handleSubmit, isSubmitting, errors }) => (
             <BootstrapForm onReset={handleReset} onSubmit={handleSubmit}>
+              <Field type="number" name="worthPoints" title="Points" helper="How many Roses points will the winner get?" />
               <EditForm />
               <Button type="submit" variant="primary" disabled={isSubmitting}>
                 Create
@@ -62,6 +64,7 @@ export function CreateEventModal() {
               {submitError !== null && (
                 <Alert variant="danger">Could not create! {submitError}</Alert>
               )}
+              {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
             </BootstrapForm>
           )}
         </Formik>

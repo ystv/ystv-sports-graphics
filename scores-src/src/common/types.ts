@@ -5,6 +5,9 @@ export const BaseEvent = Yup.object().shape({
   id: Yup.string().uuid().required(),
   type: Yup.string().required(),
   name: Yup.string().required(),
+  notCovered: Yup.boolean().default(false),
+  winner: Yup.string().oneOf(["home", "away", null]).nullable(true).default(null).notRequired(),
+  worthPoints: Yup.number().integer().required().min(0),
 });
 
 export interface EventActionTypes<TEventSchema extends Yup.AnySchema> {
