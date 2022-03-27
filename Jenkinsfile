@@ -27,7 +27,7 @@ pipeline {
 
         stage('Push') {
             steps {
-                withDockerRegistry(credentialsId: 'docker-registry', url: 'registry.comp.ystv.co.uk') {
+                withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
                     sh 'docker push registry.comp.ystv.co.uk/sports-scores/client'
                     sh 'docker push registry.comp.ystv.co.uk/sports-scores/server'
                 }
