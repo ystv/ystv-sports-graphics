@@ -28,7 +28,9 @@ export function ListEvents() {
       <h1>All Events</h1>
       <Col xs="2">
         {/* @ts-expect-error */}
-      <Button as={Link} to="new">Create New</Button>
+        <Button as={Link} to="new">
+          Create New
+        </Button>
       </Col>
       {events.map((evt) => (
         <Card key={evt.id}>
@@ -37,10 +39,14 @@ export function ListEvents() {
           </Card.Header>
           <Card.Footer>
             <ButtonGroup>
-                {/* @ts-expect-error */}
-              <Button as={Link} to={`${evt.type}/${evt.id}/edit`}>Edit</Button>
               {/* @ts-expect-error */}
-              <Button as={Link} to={`${evt.type}/${evt.id}`} variant="info">Live Scores</Button>
+              <Button as={Link} to={`${evt.type}/${evt.id}/edit`}>
+                Edit
+              </Button>
+              {/* @ts-expect-error */}
+              <Button as={Link} to={`${evt.type}/${evt.id}`} variant="info">
+                Live Scores
+              </Button>
             </ButtonGroup>
           </Card.Footer>
         </Card>

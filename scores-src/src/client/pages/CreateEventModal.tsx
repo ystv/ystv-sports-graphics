@@ -56,7 +56,12 @@ export function CreateEventModal() {
         >
           {({ handleReset, handleSubmit, isSubmitting, errors }) => (
             <BootstrapForm onReset={handleReset} onSubmit={handleSubmit}>
-              <Field type="number" name="worthPoints" title="Points" helper="How many Roses points will the winner get?" />
+              <Field
+                type="number"
+                name="worthPoints"
+                title="Points"
+                helper="How many Roses points will the winner get?"
+              />
               <EditForm />
               <Button type="submit" variant="primary" disabled={isSubmitting}>
                 Create

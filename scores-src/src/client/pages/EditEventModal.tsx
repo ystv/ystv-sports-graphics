@@ -42,7 +42,12 @@ export function EditEventForm() {
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
             <BootstrapForm onSubmit={handleSubmit} onReset={handleReset}>
-              <Field type="number" name="worthPoints" title="Points" helper="How many Roses points will the winner get?" />
+              <Field
+                type="number"
+                name="worthPoints"
+                title="Points"
+                helper="How many Roses points will the winner get?"
+              />
               <EditForm />
               <Button variant="primary" type="submit" disabled={isSubmitting}>
                 Save
