@@ -27,8 +27,10 @@ pipeline {
 
         stage('Push') {
             steps {
-                sh 'docker push registry.comp.ystv.co.uk/sports-scores/client'
-                sh 'docker push registry.comp.ystv.co.uk/sports-scores/server'
+                withDockerRegistry(credentialsId: 'docker-registry', url: 'registry.comp.ystv.co.uk') {
+                    sh 'docker push registry.comp.ystv.co.uk/sports-scores/client'
+                    sh 'docker push registry.comp.ystv.co.uk/sports-scores/server'
+                }
             }
         }
     }
