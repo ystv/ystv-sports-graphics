@@ -1,0 +1,28 @@
+FROM node:16-slim AS build
+RUN apt-get update && apt-get install build-essential python3 -y
+
+WORKDIR /app
+COPY .yarnrc.yml /app/
+COPY .yarn /app/.yarn
+
+COPY package.json /app/
+COPY scores-src/package.json /app/scores-src/
+COPY bundle-src/package.json /app/bundle-src/
+COPY yarn.lock /app/
+
+RUN yarn --immutable --inline-builds && rm .yarn/cache/*
+# Everything up to here *must* be identical to Dockerfile.common
+
+COPY scores-src/ /app/scores-src/
+RUN yarn build:server
+
+FROM node:16-slim
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+# needed for libcouchbase
+COPY --from=build /app/node_modules/couchbase/build/Release/couchbase_impl.node /app/addon-build/release/install-root/couchbase_impl.node
+COPY --from=build /app/scores-src/config /app/config
+COPY --from=build /app/scores-src/package.json /app/
+COPY --from=build /app/scores-src/dist/index.server.js /app/
+WORKDIR /app
+CMD ["index.server.js"]

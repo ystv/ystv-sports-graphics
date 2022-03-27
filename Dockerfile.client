@@ -1,0 +1,21 @@
+FROM node:16-slim AS build
+RUN apt-get update && apt-get install build-essential python3 -y
+
+WORKDIR /app
+COPY .yarnrc.yml /app/
+COPY .yarn /app/.yarn
+
+COPY package.json /app/
+COPY scores-src/package.json /app/scores-src/
+COPY bundle-src/package.json /app/bundle-src/
+COPY yarn.lock /app/
+
+RUN yarn --immutable --inline-builds && rm .yarn/cache/*
+# Everything up to here *must* be identical to Dockerfile.common
+
+COPY scores-src/ /app/scores-src/
+RUN yarn build:client
+
+FROM dragas/thttpd
+COPY --from=build /app/scores-src/dist/ /var/www/http/
+EXPOSE 80
