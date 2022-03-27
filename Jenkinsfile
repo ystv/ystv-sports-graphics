@@ -14,12 +14,12 @@ pipeline {
             parallel {
                 stage('Server') {
                     steps {
-                        sh 'docker build -t registry.comp.ystv.co.uk/sports-scores/server -f Dockerfile.server .'
+                        sh "docker build -t registry.comp.ystv.co.uk/sports-scores/server:${env.BUILD_NUMBER} -f Dockerfile.server ."
                     }
                 }
                 stage('Client') {
                     steps {
-                        sh 'docker build -t registry.comp.ystv.co.uk/sports-scores/client -f Dockerfile.client .'
+                        sh "docker build -t registry.comp.ystv.co.uk/sports-scores/client:${env.BUILD_NUMBER} -f Dockerfile.client ."
                     }
                 }
             }
@@ -28,8 +28,12 @@ pipeline {
         stage('Push') {
             steps {
                 withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
-                    sh 'docker push registry.comp.ystv.co.uk/sports-scores/client'
-                    sh 'docker push registry.comp.ystv.co.uk/sports-scores/server'
+                    sh "docker push registry.comp.ystv.co.uk/sports-scores/client:${env.BUILD_NUMBER}"
+                    sh "docker push registry.comp.ystv.co.uk/sports-scores/server:${env.BUILD_NUMBER}"
+                    sh "docker tag registry.comp.ystv.co.uk/sports-scores/client:${env.BUILD_NUMBER} registry.comp.ystv.co.uk/sports-scores/client:latest"
+                    sh "docker tag registry.comp.ystv.co.uk/sports-scores/server:${env.BUILD_NUMBER} registry.comp.ystv.co.uk/sports-scores/server:latest"
+                    sh 'docker push registry.comp.ystv.co.uk/sports-scores/client:latest'
+                    sh 'docker push registry.comp.ystv.co.uk/sports-scores/server:latest'
                 }
             }
         }
