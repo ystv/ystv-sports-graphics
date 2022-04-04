@@ -48,7 +48,7 @@ job "sports-scores-dev" {
                 DB_PASSWORD = "devpassword"
                 DB_BUCKET = "sports-scores-dev"
                 DB_SCOPE = "_default"
-                PORT = "5001"
+                PORT = "8000"
                 REDIS_CONNECTION_STRING = "redis://moss.ystv.york.ac.uk:6379"
                 LOG_LEVEL = "trace"
             }
