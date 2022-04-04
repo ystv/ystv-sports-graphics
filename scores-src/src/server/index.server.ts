@@ -24,8 +24,20 @@ import {
 import { createLiveRouter } from "./liveRoutes";
 
 (async () => {
-  await db.connect();
-  await redis.connect();
+  const indexlogger = getLogger("index.server");
+
+  try {
+    await db.connect();
+  } catch (e) {
+    indexlogger.error("Failed to connect to Couchbase!", e);
+    process.exit(10);
+  }
+  try {
+    await redis.connect();
+  } catch (e) {
+    indexlogger.error("Failed to connect to Redis!", e);
+    process.exit(11);
+  }
 
   process.on("exit", async () => {
       await db.disconnect();
@@ -48,7 +60,6 @@ import { createLiveRouter } from "./liveRoutes";
     }
   }))
   const httpLogger = getLogger("http");
-  const indexlogger = getLogger("index.server");
   app.use(
     Logger({
       transporter: (str, args) => {

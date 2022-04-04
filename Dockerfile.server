@@ -25,4 +25,5 @@ COPY --from=build /app/scores-src/config /app/config
 COPY --from=build /app/scores-src/package.json /app/
 COPY --from=build /app/scores-src/dist/index.server.js /app/
 WORKDIR /app
+EXPOSE 8000
 CMD ["index.server.js"]
