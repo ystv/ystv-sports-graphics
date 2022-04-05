@@ -49,6 +49,7 @@ job "sports-scores-dev" {
                 DB_BUCKET = "sports-scores-dev"
                 DB_SCOPE = "_default"
                 PORT = "8000"
+                PATH_PREFIX = "/api"
                 REDIS_CONNECTION_STRING = "redis://moss.ystv.york.ac.uk:6379"
                 LOG_LEVEL = "trace"
             }
