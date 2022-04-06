@@ -45,7 +45,7 @@
     "conf": "^10.1.1",
     "config": "^3.3.7",
     "convict": "^6.2.1",
-    "couchbase": "^4.0.0",
+    "couchbase": "3.2.4",
     "dotenv": "^16.0.0",
     "fastify": "^3.27.2",
     "formik": "^2.2.9",
