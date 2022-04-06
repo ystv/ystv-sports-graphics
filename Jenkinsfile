@@ -37,5 +37,14 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to development') {
+            when {
+                branch 'master'
+            }
+            steps {
+                build job: 'Deploy Nomad Job', parameters: [string(name: 'JOB_FILE', value: 'sports-graphics.nomad')]
+            }
+        }
     }
 }
