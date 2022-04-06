@@ -40,7 +40,7 @@ pipeline {
 
         stage('Deploy to development') {
             when {
-                branch 'master'
+                branch 'main'
             }
             steps {
                 build job: 'Deploy Nomad Job', parameters: [string(name: 'JOB_FILE', value: 'sports-graphics.nomad')]
