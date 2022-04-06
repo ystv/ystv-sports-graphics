@@ -14,7 +14,7 @@ const config = {
     redis: {
         connectionString: cfg.get<string>("redis.connectionString")
     },
-    allowedOrigins: cfg.get<string[]>("allowedOrigins")
+    allowedOrigins: typeof cfg.get("allowedOrigins") === "string" ? cfg.get<string>("allowedOrigins").split(',') : cfg.get<string[]>("allowedOrigins")
 };
 
 export default config;
