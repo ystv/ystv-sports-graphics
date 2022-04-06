@@ -2,13 +2,6 @@ import { useParams } from "react-router-dom";
 import { EVENTS } from "../eventTypes";
 import { useLiveData } from "../lib/liveData";
 import invariant from "tiny-invariant";
-import {
-  Alert,
-  Button,
-  Modal,
-  Form as BootstrapForm,
-  ButtonGroup,
-} from "react-bootstrap";
 import { Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";

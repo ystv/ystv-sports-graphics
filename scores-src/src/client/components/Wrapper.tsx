@@ -1,6 +1,15 @@
-import { Container, Nav } from "react-bootstrap";
 import { Outlet, NavLink, NavLinkProps } from "react-router-dom";
-import { Navbar } from "react-bootstrap";
+import { useState } from "react";
+
+import {
+  AppShell,
+  Navbar,
+  Header,
+  Text,
+  MediaQuery,
+  Burger,
+  Title,
+} from "@mantine/core";
 
 function NavbarLink(props: NavLinkProps) {
   return (
@@ -11,22 +20,43 @@ function NavbarLink(props: NavLinkProps) {
 }
 
 export function Wrapper() {
+  const [opened, setOpened] = useState(false);
   return (
     <>
-      <Navbar expand="lg">
-        <Container>
-          <Navbar.Brand>YSTV Sports Scores</Navbar.Brand>
-          <Navbar.Toggle aria-controls="topNav" />
-          <Navbar.Collapse id="topNav">
-            <Nav className="me-auto">
-              <NavbarLink to="/events">Events</NavbarLink>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      <Container>
+      <AppShell
+        navbarOffsetBreakpoint="sm"
+        asideOffsetBreakpoint="sm"
+        fixed
+        navbar={
+          <Navbar
+            p="md"
+            hiddenBreakpoint="sm"
+            hidden={!opened}
+            width={{ sm: 150, lg: 200 }}
+          >
+            <NavbarLink to="/events">Events</NavbarLink>
+          </Navbar>
+        }
+        header={
+          <Header height={70} p="md">
+            <div
+              style={{ display: "flex", alignItems: "center", height: "100%" }}
+            >
+              <MediaQuery largerThan="sm" styles={{ display: "none" }}>
+                <Burger
+                  opened={opened}
+                  onClick={() => setOpened((o) => !o)}
+                  size="sm"
+                  mr="xl"
+                />
+              </MediaQuery>
+              <Title order={2}>YSTV Sports Scores</Title>
+            </div>
+          </Header>
+        }
+      >
         <Outlet />
-      </Container>
+      </AppShell>
     </>
   );
 }
