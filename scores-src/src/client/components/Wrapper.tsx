@@ -107,5 +107,5 @@ const data = [
     label: "Events",
     link: "/events",
   },
-  { icon: <Shirt size={16} />, color: "red", label: "Clubs", link: "/" },
+  // { icon: <Shirt size={16} />, color: "red", label: "Clubs", link: "/" },
 ];
