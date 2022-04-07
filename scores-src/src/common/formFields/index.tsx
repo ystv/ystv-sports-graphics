@@ -60,9 +60,11 @@ export function Field(props: FieldProps) {
   const FieldInput = props.type == "number" ? NumberInput : TextInput;
   return (
     <FieldComponent name={props.name}>
-      {({ field, meta }: FormikFieldProps<any>) => (
+      {({ field, meta, form }: FormikFieldProps<any>) => (
         <FieldInput
           {...field}
+          /* necessary to properly handle NumberInput onChange having a different param type */
+          onChange={value => form.setFieldValue(props.name, value)}
           error={meta.touched && meta.error}
           label={props.title}
         />
