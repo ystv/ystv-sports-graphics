@@ -5,7 +5,6 @@ import { Wrapper } from "./components/Wrapper";
 import { CreateEventModal } from "./pages/CreateEventModal";
 import { EditEventForm, EditEventModal } from "./pages/EditEventModal";
 import { LiveScores } from "./pages/LiveScores";
-import { useState } from "react";
 
 import { MantineProvider } from "@mantine/core";
 
