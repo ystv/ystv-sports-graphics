@@ -9,6 +9,7 @@ import {
   ArrayField,
   Field,
   RandomUUIDField,
+  SegmentedSelectField,
   SelectField,
 } from "../../formFields";
 import type { EventActionFunctions } from "../../types";
@@ -66,7 +67,7 @@ export function GoalForm(props: ActionFormProps<typeof schema>) {
       : [];
   return (
     <div>
-      <SelectField
+      <SegmentedSelectField
         name="side"
         title="Side"
         values={[
