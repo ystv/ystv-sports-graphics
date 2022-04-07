@@ -13,10 +13,10 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Wrapper />}>
-        {/*<Route path="events/:type/:id" element={<LiveScores />} />*/}
+        <Route path="events/:type/:id" element={<LiveScores />} />
         <Route path="events" element={<ListEvents />}>
           <Route path=":type/:id/edit" element={<EditEventModal />} />
-          {/*  <Route path="new" element={<CreateEventModal />} />*/}
+          <Route path="new" element={<CreateEventModal />} />
         </Route>
 
         <Route path="/" element={<Navigate replace to="/events" />} />

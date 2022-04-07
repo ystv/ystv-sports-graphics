@@ -2,10 +2,11 @@ import { useParams } from "react-router-dom";
 import { EVENTS } from "../eventTypes";
 import { useLiveData } from "../lib/liveData";
 import invariant from "tiny-invariant";
-import { Formik, FormikHelpers } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
 import { startCase } from "lodash";
+import { Alert, Button, Grid, Group, Modal, Title } from "@mantine/core";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENTS;
@@ -33,33 +34,29 @@ function EventActionModal(props: {
   }
 
   return (
-    <Modal show onHide={() => props.onClose()}>
-      <Modal.Header>{startCase(props.actionType)}</Modal.Header>
-      <Modal.Body>
-        <Formik
-          initialValues={{}}
-          onSubmit={submit}
-          validationSchema={actionSchema}
-        >
-          {({ handleReset, handleSubmit, isSubmitting, isValid }) => (
-            <BootstrapForm onReset={handleReset} onSubmit={handleSubmit}>
+    <Modal opened onClose={() => props.onClose()}>
+      <Title>{startCase(props.actionType)}</Title>
+      <Formik
+        initialValues={{}}
+        onSubmit={submit}
+        validationSchema={actionSchema}
+      >
+        {({ handleReset, handleSubmit, isSubmitting, isValid }) => (
+          <>
+            <Form onReset={handleReset} onSubmit={handleSubmit}>
               <ActionForm currentState={props.currentState} />
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={isSubmitting || !isValid}
-              >
+              <Button type="submit" disabled={isSubmitting || !isValid}>
                 Submit
               </Button>
               {submitError !== null && (
-                <Alert variant="danger">
+                <Alert>
                   Could not perform {props.actionType}! {submitError}
                 </Alert>
               )}
-            </BootstrapForm>
-          )}
-        </Formik>
-      </Modal.Body>
+            </Form>
+          </>
+        )}
+      </Formik>
     </Modal>
   );
 }
@@ -90,7 +87,7 @@ export function LiveScores() {
         <RenderScore
           value={data}
           actions={
-            <ButtonGroup>
+            <Group>
               {Object.keys(actions)
                 .filter((type) => {
                   const validFn = actions[type].valid;
@@ -107,12 +104,12 @@ export function LiveScores() {
                     {startCase(actionType)}
                   </Button>
                 ))}
-            </ButtonGroup>
+            </Group>
           }
         />
-        {error !== null && <Alert variant="warning">{error}</Alert>}
+        {error !== null && <Alert>{error}</Alert>}
         {status === "POSSIBLY_DISCONNECTED" && (
-          <Alert variant="warning">
+          <Alert>
             Possible connection issues, reconnecting... (if this doesn't go away
             after 10 seconds please refresh the page)
             {import.meta.env.DEV && " (may be caused by HMR weirdness)"}
@@ -142,7 +139,7 @@ export function LiveScores() {
   }
   return (
     <div>
-      {error && <Alert variant="warning">{error}</Alert>}
+      {error && <Alert>{error}</Alert>}
       <b>{msg}</b>
     </div>
   );

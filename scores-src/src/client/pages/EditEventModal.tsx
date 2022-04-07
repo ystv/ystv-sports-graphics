@@ -1,3 +1,4 @@
+import { Alert, Button, Modal, Title } from "@mantine/core";
 import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -40,7 +41,7 @@ export function EditEventForm() {
           onSubmit={submit}
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
-            <BootstrapForm onSubmit={handleSubmit} onReset={handleReset}>
+            <FormikForm onSubmit={handleSubmit} onReset={handleReset}>
               <Field
                 type="number"
                 name="worthPoints"
@@ -48,14 +49,14 @@ export function EditEventForm() {
                 helper="How many Roses points will the winner get?"
               />
               <EditForm />
-              <Button variant="primary" type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting}>
                 Save
               </Button>
               {submitError !== null && (
-                <Alert variant="danger">Could not save! {submitError}</Alert>
+                <Alert>Could not save! {submitError}</Alert>
               )}
               {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
-            </BootstrapForm>
+            </FormikForm>
           )}
         </Formik>
       )}
@@ -68,11 +69,9 @@ export function EditEventModal() {
   const { type, id } = useParams();
   const { loading, error, data } = useGETEvent(type!, id!);
   return (
-    <Modal show onHide={() => nav("/events")}>
-      <Modal.Header closeButton>Editing {data?.name || id}</Modal.Header>
-      <Modal.Body>
-        <EditEventForm />
-      </Modal.Body>
+    <Modal opened onClose={() => nav("/events")}>
+      <Title>Editing {data?.name || id}</Title>
+      <EditEventForm />
     </Modal>
   );
 }
