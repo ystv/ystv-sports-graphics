@@ -115,12 +115,12 @@ export function SelectField(props: SelectFieldProps) {
 }
 
 export function SegmentedSelectField(props: SelectFieldProps) {
-  const [field, meta] = useField(props.name);
+  const [field, meta, helpers] = useField(props.name);
   return (
     <SegmentedControl
       data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
       {...field}
-      // error={meta.touched && meta.error}
+      onChange={value => helpers.setValue(value)}
     />
   );
 }
