@@ -11,6 +11,16 @@ import {
 import { useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 
+import {
+  TextInput,
+  Checkbox as Check,
+  Select,
+  Button,
+  NumberInput,
+  Stack,
+  Title,
+} from "@mantine/core";
+
 interface BaseFieldProps {
   name: string;
   title: string;
@@ -21,23 +31,23 @@ interface FieldWrapperProps extends BaseFieldProps {
   children: JSX.Element;
 }
 
-function FieldWrapper(props: FieldWrapperProps) {
-  const [field, meta] = useField(props.name);
-  return (
-    <Form.Group>
-      <Form.Label>{props.title}</Form.Label>
-      {props.children}
-      {meta.touched && meta.error && (
-        <Form.Control.Feedback type="invalid">
-          {meta.error}
-        </Form.Control.Feedback>
-      )}
-      {props.helper && (
-        <Form.Text className="text-muted">{props.helper}</Form.Text>
-      )}
-    </Form.Group>
-  );
-}
+// function FieldWrapper(props: FieldWrapperProps) {
+//   const [field, meta] = useField(props.name);
+//   return (
+//     <Form.Group>
+//       <Form.Label>{props.title}</Form.Label>
+//       {props.children}
+//       {meta.touched && meta.error && (
+//         <Form.Control.Feedback type="invalid">
+//           {meta.error}
+//         </Form.Control.Feedback>
+//       )}
+//       {props.helper && (
+//         <Form.Text className="text-muted">{props.helper}</Form.Text>
+//       )}
+//     </Form.Group>
+//   );
+// }
 
 interface FieldProps extends BaseFieldProps {
   type?: JSX.IntrinsicElements["input"]["type"];
@@ -46,17 +56,15 @@ interface FieldProps extends BaseFieldProps {
 
 export function Field(props: FieldProps) {
   const FieldComponent = props.independent ? FastField : FormikField;
+  const FieldInput = props.type == "number" ? NumberInput : TextInput;
   return (
     <FieldComponent name={props.name}>
       {({ field, meta }: FormikFieldProps<any>) => (
-        <FieldWrapper {...props}>
-          <Form.Control
-            {...field}
-            type={props.type}
-            isValid={meta.touched && !meta.error}
-            isInvalid={meta.touched && !!meta.error}
-          />
-        </FieldWrapper>
+        <FieldInput
+          {...field}
+          error={meta.touched && meta.error}
+          label={props.title}
+        />
       )}
     </FieldComponent>
   );
@@ -71,14 +79,17 @@ export function Checkbox(props: CheckboxProps) {
   return (
     <FieldComponent name={props.name} type="checkbox">
       {({ field, meta }: FormikFieldProps<any>) => (
-        <FieldWrapper {...props}>
-          <Form.Check
-            {...field}
-            type="checkbox"
-            isValid={meta.touched && !meta.error}
-            isInvalid={meta.touched && !!meta.error}
-          />
-        </FieldWrapper>
+        <Check {...field} label={props.title} />
+        //  DON'T HAVE AN ERROR STATE CURRENTLY
+
+        // <FieldWrapper {...props}>
+        //   <Form.Check
+        //     {...field}
+        //     type="checkbox"
+        //     isValid={meta.touched && !meta.error}
+        //     isInvalid={meta.touched && !!meta.error}
+        //   />
+        // </FieldWrapper>
       )}
     </FieldComponent>
   );
@@ -92,28 +103,28 @@ interface SelectFieldProps extends BaseFieldProps {
 export function SelectField(props: SelectFieldProps) {
   const [field, meta] = useField(props.name);
   return (
-    <FieldWrapper {...props}>
-      <Form.Select
-        {...field}
-        isValid={meta.touched && !meta.error}
-        isInvalid={meta.touched && !!meta.error}
-      >
-        {typeof props.initialValue !== "string" && (
-          <option
-            value={undefined}
-            disabled
-            selected={typeof field.value === "undefined"}
-          >
-            Please select
-          </option>
-        )}
-        {props.values.map(([name, label]) => (
-          <option key={name} value={name}>
-            {label}
-          </option>
-        ))}
-      </Form.Select>
-    </FieldWrapper>
+    // <FieldWrapper {...props}>
+    <Select
+      data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
+      {...field}
+      error={meta.touched && meta.error}
+    >
+      {/*{typeof props.initialValue !== "string" && (*/}
+      {/*  <option*/}
+      {/*    value={undefined}*/}
+      {/*    disabled*/}
+      {/*    selected={typeof field.value === "undefined"}*/}
+      {/*  >*/}
+      {/*    Please select*/}
+      {/*  </option>*/}
+      {/*)}*/}
+      {/*{props.values.map(([name, label]) => (*/}
+      {/*  <option key={name} value={name}>*/}
+      {/*    {label}*/}
+      {/*  </option>*/}
+      {/*))}*/}
+    </Select>
+    // </FieldWrapper>
   );
 }
 
@@ -143,8 +154,8 @@ export function ArrayField(props: ArrayFieldProps) {
     <FieldArray
       name={props.name}
       render={(arrayHelpers) => (
-        <Form.Group style={{ margin: "auto 1em" }}>
-          {props.title && <Form.Label>{props.title}</Form.Label>}
+        <Stack>
+          {props.title && <Title order={4}>{props.title}</Title>}
           {field.value?.map((_: any, idx: number) => {
             const namespace = `${props.name}[${idx}]`;
             const errorMaybe = getIn(formik.errors, namespace);
@@ -181,7 +192,7 @@ export function ArrayField(props: ArrayFieldProps) {
           {typeof meta.error === "string" && (
             <div className="text-danger">{meta.error}</div>
           )}
-        </Form.Group>
+        </Stack>
       )}
     />
   );

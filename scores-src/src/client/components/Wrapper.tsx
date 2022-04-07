@@ -9,18 +9,48 @@ import {
   MediaQuery,
   Burger,
   Title,
+  UnstyledButton,
+  Group,
+  ThemeIcon,
 } from "@mantine/core";
 
-function NavbarLink(props: NavLinkProps) {
-  return (
-    <NavLink {...props} className="nav-link">
-      {props.children}
-    </NavLink>
-  );
-}
+import { CalendarEvent, Shirt } from "tabler-icons-react";
 
 export function Wrapper() {
   const [opened, setOpened] = useState(false);
+
+  function MainLink({ icon, color, label, link }: MainLinkProps) {
+    return (
+      <NavLink to={link}>
+        <UnstyledButton
+          onClick={() => setOpened(false)}
+          sx={(theme) => ({
+            display: "block",
+            width: "100%",
+            padding: theme.spacing.xs,
+            borderRadius: theme.radius.sm,
+            color:
+              theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
+
+            "&:hover": {
+              backgroundColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[6]
+                  : theme.colors.gray[0],
+            },
+          })}
+        >
+          <Group>
+            <ThemeIcon color={color} variant="light">
+              {icon}
+            </ThemeIcon>
+
+            <Text size="sm">{label}</Text>
+          </Group>
+        </UnstyledButton>
+      </NavLink>
+    );
+  }
   return (
     <>
       <AppShell
@@ -34,7 +64,9 @@ export function Wrapper() {
             hidden={!opened}
             width={{ sm: 150, lg: 200 }}
           >
-            <NavbarLink to="/events">Events</NavbarLink>
+            {data.map((link) => (
+              <MainLink {...link} key={link.label} />
+            ))}
           </Navbar>
         }
         header={
@@ -50,7 +82,7 @@ export function Wrapper() {
                   mr="xl"
                 />
               </MediaQuery>
-              <Title order={2}>YSTV Sports Scores</Title>
+              <Title order={2}>YSTV Sports Scores 3</Title>
             </div>
           </Header>
         }
@@ -60,3 +92,20 @@ export function Wrapper() {
     </>
   );
 }
+
+interface MainLinkProps {
+  icon: React.ReactNode;
+  color: string;
+  label: string;
+  link: string;
+}
+
+const data = [
+  {
+    icon: <CalendarEvent size={16} />,
+    color: "blue",
+    label: "Events",
+    link: "/events",
+  },
+  { icon: <Shirt size={16} />, color: "red", label: "Clubs", link: "/" },
+];
