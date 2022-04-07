@@ -1,12 +1,13 @@
 import * as Yup from "yup";
-import Router from "koa-router";
 import { DB } from "./db";
 import { v4 as uuidv4 } from "uuid";
 import { DocumentExistsError } from "couchbase";
 import { EventActionFunctions, EventActionTypes } from "../common/types";
 import { REDIS } from "./redis";
 import { dispatchChangeToEvent } from "./updatesRepo";
-import { PreconditionFailed } from "http-errors";
+import { PreconditionFailed, NotAcceptable } from "http-errors";
+import { Router } from "express";
+import "express-ws";
 
 export function makeEventAPI<
   TEventSchema extends Yup.AnyObjectSchema,
@@ -17,31 +18,27 @@ export function makeEventAPI<
   actionTypes: TActions,
   actionFuncs: EventActionFunctions<TEventSchema, TActions>
 ) {
-  const router = new Router({ prefix: `/events/${typeName}` });
+  const router = Router();
 
   const key = (id: string) => `Event/${typeName}/${id}`;
 
-  router.get("/", async (ctx) => {
+  router.get("/", async (req, res) => {
     const result = await DB.query(
       `SELECT RAW e FROM _default e WHERE meta(e).id LIKE 'Event/${typeName}/%'`
     );
-    ctx.response.body = JSON.stringify(result.rows);
+    res.json(result.rows);
   });
 
-  router.get("/:id", async (ctx) => {
-    const id = ctx.params.id;
+  router.get("/:id", async (req, res) => {
+    const id = req.params.id;
     const data = await DB.collection("_default").get(key(id));
-    ctx.response.body = JSON.stringify(data.content);
+    res.json(data.content);
   });
 
-  router.post("/", async (ctx) => {
-    if (!ctx.is("application/json")) {
-      ctx.throw(406);
-    }
-    const data = ctx.request.body;
+  router.post("/", async (req, res) => {
     const val: Yup.InferType<TEventSchema> = await schema
       .omit(["id", "type"])
-      .validate(data, { abortEarly: false });
+      .validate(req.body, { abortEarly: false });
     val.type = typeName;
     while (true) {
       try {
@@ -56,37 +53,31 @@ export function makeEventAPI<
       }
     }
     await dispatchChangeToEvent(key(val.id), val);
-    ctx.response.body = JSON.stringify(val);
-    ctx.response.status = 201;
+    res.statusCode = 201;
+    res.json(val);
   });
 
-  router.put("/:id", async (ctx) => {
-    if (!ctx.is("application/json")) {
-      ctx.throw(406);
-    }
-    const id = ctx.params.id;
+  router.put("/:id", async (req, res) => {
+    const id = req.params.id;
     const data = await DB.collection("_default").get(key(id));
-    const inputData = ctx.request.body;
+    const inputData = req.body;
     const val: Yup.InferType<TEventSchema> = await schema
       .omit(["id", "type"])
       .validate(inputData, { abortEarly: false, stripUnknown: true });
     const result = Object.assign({}, data.content, val);
     await DB.collection("_default").replace(key(id), result);
     await dispatchChangeToEvent(key(id), result);
-    ctx.response.body = JSON.stringify(result);
+    res.json(result);
   });
 
   for (const action of Object.keys(actionTypes)) {
-    router.post(`/:id/${action}`, async (ctx) => {
-      if (!ctx.is("application/json")) {
-        ctx.throw(406);
-      }
+    router.post(`/:id/${action}`, async (req, res) => {
       const data: Yup.InferType<TActions[typeof action]["schema"]> =
-        await actionTypes[action].schema.validate(ctx.request.body, {
+        await actionTypes[action].schema.validate(req.body, {
           abortEarly: false,
           stripUnknown: true,
         });
-      const result = await DB.collection("_default").get(key(ctx.params.id));
+      const result = await DB.collection("_default").get(key(req.params.id));
       let val = result.content;
 
       const validFn = actionTypes[action].valid;
@@ -97,11 +88,11 @@ export function makeEventAPI<
       }
 
       actionFuncs[action](val, data);
-      await DB.collection("_default").replace(key(ctx.params.id), val, {
+      await DB.collection("_default").replace(key(req.params.id), val, {
         cas: result.cas,
       });
-      await dispatchChangeToEvent(key(ctx.params.id), val);
-      ctx.response.body = JSON.stringify(val);
+      await dispatchChangeToEvent(key(req.params.id), val);
+      res.json(val);
     });
   }
 
