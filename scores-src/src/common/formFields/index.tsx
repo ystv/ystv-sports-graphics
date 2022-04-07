@@ -19,6 +19,7 @@ import {
   NumberInput,
   Stack,
   Title,
+  SegmentedControl,
 } from "@mantine/core";
 
 interface BaseFieldProps {
@@ -103,28 +104,22 @@ interface SelectFieldProps extends BaseFieldProps {
 export function SelectField(props: SelectFieldProps) {
   const [field, meta] = useField(props.name);
   return (
-    // <FieldWrapper {...props}>
     <Select
       data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
       {...field}
       error={meta.touched && meta.error}
-    >
-      {/*{typeof props.initialValue !== "string" && (*/}
-      {/*  <option*/}
-      {/*    value={undefined}*/}
-      {/*    disabled*/}
-      {/*    selected={typeof field.value === "undefined"}*/}
-      {/*  >*/}
-      {/*    Please select*/}
-      {/*  </option>*/}
-      {/*)}*/}
-      {/*{props.values.map(([name, label]) => (*/}
-      {/*  <option key={name} value={name}>*/}
-      {/*    {label}*/}
-      {/*  </option>*/}
-      {/*))}*/}
-    </Select>
-    // </FieldWrapper>
+    />
+  );
+}
+
+export function SegmentedSelectField(props: SelectFieldProps) {
+  const [field, meta] = useField(props.name);
+  return (
+    <SegmentedControl
+      data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
+      {...field}
+      // error={meta.touched && meta.error}
+    />
   );
 }
 
