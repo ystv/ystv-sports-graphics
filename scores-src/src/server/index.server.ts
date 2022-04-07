@@ -1,13 +1,13 @@
 import "dotenv/config";
 import "./loggingSetup";
 import config from "./config";
-import { getLogger } from "loglevel";
-import koa from "koa";
-import bodyParser from "koa-bodyparser";
-import Router from "koa-router";
-import Logger from "koa-logger";
-import websockify from "koa-websocket";
-import cors from "@koa/cors";
+import { getLogger, Logger } from "loglevel";
+
+import Express, { NextFunction, Request, Response, Router } from "express";
+import ExpressWS from "express-ws";
+import cors from "cors";
+import {json as jsonParser} from "body-parser";
+
 import { makeEventAPI } from "./eventTypeRoutes";
 import * as db from "./db";
 import * as redis from "./redis";
@@ -22,6 +22,42 @@ import {
     schema as footballSchema,
   } from "../common/sports/football";
 import { createLiveRouter } from "./liveRoutes";
+
+const errorHandler: (log: Logger) => (err: any, req: Request, res: Response, next: NextFunction) => any = (httpLogger) => (err, req, res, next) => {
+  let code: number;
+  let message: string;
+  let extra = {};
+  if (err instanceof DocumentNotFoundError) {
+    code = 404;
+    message = "entity not found";
+  } else if (isHttpError(err)) {
+    code = err.statusCode;
+    message = err.message;
+  } else if (err instanceof ValidationError) {
+    code = 422;
+    message = "invalid payload: " + err.errors.join("; ");
+    extra = {
+      errors: err.inner.map((err) => ({
+        path: err.path,
+        type: err.type,
+        message: err.message,
+      })),
+    };
+  } else {
+    httpLogger.error(
+      `Uncaught handler error:\npath = ${req.path}\nerror =`,
+      err
+    );
+    code = 500;
+    message = "internal server error, sorry";
+  }
+  res.statusCode = code;
+  res.json(({
+    ...extra,
+    error: message,
+    cat: `https://http.cat/${code}.jpg`,
+  }))
+};
 
 (async () => {
   const indexlogger = getLogger("index.server");
@@ -44,106 +80,44 @@ import { createLiveRouter } from "./liveRoutes";
       await redis.close();
   });
 
-  const app = websockify(new koa());
-  app.use(cors({
-    origin: ctx => {
-      const requestOrigin = ctx.headers["origin"];
-      if (!requestOrigin) {
-        return "";
-      }
-      for (const origin of config.allowedOrigins) {
-        if (requestOrigin.startsWith(origin)) {
-          return requestOrigin;
-        }
-      }
-      return "";
-    }
-  }))
+  const app = Express();
+  const ws = ExpressWS(app);
+
   const httpLogger = getLogger("http");
-  app.use(
-    Logger({
-      transporter: (str, args) => {
-        if (args.length < 4) {
-          return;
-        }
-        httpLogger.info(
-          `${args[1]} "${args[2]}" ${args[3]} ${args[4]} ${args[5]}`
-        );
-      },
-    })
-  );
-  app.use(
-    bodyParser({
-      enableTypes: ["json"],
-    })
-  );
+  app.use((req, res, next) => {
+    const start = process.hrtime();
+    next();
+    const diff = process.hrtime(start);
+    httpLogger.log(req.method, req.url, res.statusCode, (diff[0] + "ms"));
+  });
+
+  app.use(cors({
+    origin: config.allowedOrigins
+  }));
+
+  app.use(jsonParser());
 
   // Error handler
-  app.use(async (ctx, next) => {
-    try {
-      await next();
-      if (ctx.response.status === 404 && !ctx.response.body) {
-        ctx.throw(404);
-      }
-    } catch (e) {
-      let code: number;
-      let message: string;
-      let extra = {};
-      if (e instanceof DocumentNotFoundError) {
-        code = 404;
-        message = "entity not found";
-      } else if (isHttpError(e)) {
-        code = e.statusCode;
-        message = e.message;
-      } else if (e instanceof ValidationError) {
-        code = 422;
-        message = "invalid payload: " + e.errors.join("; ");
-        extra = {
-          errors: e.inner.map((err) => ({
-            path: err.path,
-            type: err.type,
-            message: err.message,
-          })),
-        };
-      } else {
-        httpLogger.error(
-          `Uncaught handler error:\npath = ${ctx.request.path}\nerror =`,
-          e
-        );
-        code = 500;
-        message = "internal server error, sorry";
-      }
-      ctx.body = JSON.stringify({
-        ...extra,
-        error: message,
-        cat: `https://http.cat/${code}.jpg`,
-      });
-      ctx.status = code;
-    }
-  });
+  app.use(errorHandler(httpLogger));
 
-  const baseRouter = new Router({
-    prefix: config.pathPrefix,
-  });
+  const baseRouter = Router();
 
-  for (const router of [
-    makeEventAPI(
+  for (const [name, router] of [
+    ["football", makeEventAPI(
       "football",
       footballSchema,
       footballActionTypes,
       footballActionFuncs
-    ),
-  ]) {
-    baseRouter.use(router.routes(), router.allowedMethods());
+    )]
+  ] as const) {
+    baseRouter.use("/events/" + name, router);
   }
 
-  const eventsRouter = createEventsRouter();
-  baseRouter.use(eventsRouter.routes(), eventsRouter.allowedMethods());
+  baseRouter.use("/events", createEventsRouter());
 
-  app.use(baseRouter.routes()).use(baseRouter.allowedMethods());
+  app.use(config.pathPrefix, baseRouter);
 
-  const liveRouter = createLiveRouter();
-  app.ws.use(liveRouter.routes() as any).use(liveRouter.allowedMethods() as any);
+  app.use(createLiveRouter());
 
   const port = config.port;
 

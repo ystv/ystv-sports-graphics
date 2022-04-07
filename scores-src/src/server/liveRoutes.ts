@@ -1,4 +1,4 @@
-import Router from "koa-router";
+import "express-ws";
 import type * as ws from "ws";
 import type { Context } from "koa";
 import { REDIS } from "./redis";
@@ -11,6 +11,7 @@ import { DB } from "./db";
 import { DocumentNotFoundError } from "couchbase";
 import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
+import { Request, Router } from "express";
 
 interface WSContext extends Context {
   websocket: ws;
@@ -24,10 +25,10 @@ function generateSid(): string {
 class UserError extends Error {}
 
 export function createLiveRouter() {
-  const router = new Router();
-  router.get(`${config.pathPrefix}/updates/stream/v2`, async function (ctx: WSContext) {
+  const router = Router();
+  router.ws(`${config.pathPrefix}/updates/stream/v2`, async function (ws: ws, req: Request) {
     function send(msg: LiveServerMessage) {
-      ctx.websocket.send(JSON.stringify(msg), err => {
+      ws.send(JSON.stringify(msg), err => {
         if (err) {
           logger.warn("WS send error", err);
         }
@@ -35,9 +36,9 @@ export function createLiveRouter() {
     }
 
     let sid: string;
-    if ("sid" in ctx.query) {
-      ensure(typeof ctx.query.sid === "string", BadRequest, "invalid sid type");
-      sid = ctx.query.sid;
+    if ("sid" in req.query) {
+      ensure(typeof req.query.sid === "string", BadRequest, "invalid sid type");
+      sid = req.query.sid;
     } else {
       sid = "INVALID";
     }
@@ -50,11 +51,11 @@ export function createLiveRouter() {
 
     const logger = logging.getLogger(`live:${sid}`);
 
-    ctx.websocket.on("close", (code: number) => {
+    ws.on("close", (code: number) => {
       logger.info("WebSocket closed", code);
     });
 
-    ctx.websocket.on("error", err => {
+    ws.on("error", err => {
       logger.warn("WebSocket error", err);
     })
 
@@ -74,14 +75,14 @@ export function createLiveRouter() {
       });
     }
 
-    if ("last_mid" in ctx.query) {
+    if ("last_mid" in req.query) {
       ensure(
-        typeof ctx.query.last_mid === "string",
+        typeof req.query.last_mid === "string",
         BadRequest,
         "invalid last_mid type"
       );
       while (true) {
-        const data = await getEventChanges(ctx.query.last_mid, 0);
+        const data = await getEventChanges(req.query.last_mid, 0);
         if (data === null || data.length === 0) {
           logger.debug("Caught up, continuing");
           break;
@@ -94,7 +95,7 @@ export function createLiveRouter() {
       }
     }
 
-    ctx.websocket.on("message", async (msg) => {
+    ws.on("message", async (msg) => {
       try {
         let payload: LiveClientMessage;
         ensure(typeof msg === "string", UserError, "non-string message");
@@ -160,7 +161,7 @@ export function createLiveRouter() {
 
     while (true) {
       const data = await getEventChanges(lastMid, 5_000);
-      if (ctx.websocket.readyState === ctx.websocket.CLOSED) {
+      if (ws.readyState === ws.CLOSED) {
         logger.info("WebSocket state is CLOSED, ending Redis loop.");
         return;
       }
