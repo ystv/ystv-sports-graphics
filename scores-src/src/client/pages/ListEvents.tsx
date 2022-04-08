@@ -14,11 +14,21 @@ export function ListEvents() {
   }
 
   if (error) {
-    console.log(error);
+    console.dir(error);
+    let message;
+    if (error instanceof Error) {
+      message = error.message;
+      if ("status" in error) {
+        message += ` [status: ${(error as any).status}]`;
+      }
+    } else {
+      message = JSON.stringify(error);
+    }
     return (
       <div>
-        <h1>Oopsie woopsie owo we made a fucky wucky!</h1>
-        <code>{JSON.stringify(error)}</code>
+        <h1>Sorry, something went wrong!</h1>
+        <p>Please check your network connection and try again. If you still have problems, please send a screenshot of this screen to the Graphics Team.</p>
+        <code>{message}</code>
       </div>
     );
   }

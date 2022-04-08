@@ -4658,6 +4658,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/on-finished@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "@types/on-finished@npm:2.3.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: 2cb10af2585657cd6d14d91e4319b62482c1485237f4923f24ba14737fcd2320c363c51f2271339cb5b6c17b4332c89779cdc11296de57763953f8ad18958a95
+  languageName: node
+  linkType: hard
+
 "@types/overlayscrollbars@npm:^1.12.0":
   version: 1.12.1
   resolution: "@types/overlayscrollbars@npm:1.12.1"
@@ -5319,6 +5328,7 @@ __metadata:
     "@types/express-ws": ^3.0.1
     "@types/http-errors": ^1.8.2
     "@types/node": ^17.0.18
+    "@types/on-finished": ^2.3.1
     "@types/qs": ^6.9.7
     "@types/react": ^17.0.43
     "@types/react-dom": ^17.0.14
@@ -5335,6 +5345,7 @@ __metadata:
     dotenv: ^16.0.0
     esbuild: ^0.14.23
     express: ^4.17.3
+    express-async-handler: ^1.2.0
     express-ws: ^5.0.2
     fastify: ^3.27.2
     formik: ^2.2.9
@@ -5344,6 +5355,7 @@ __metadata:
     loglevel: ^1.8.0
     loglevel-plugin-prefix: ^0.8.4
     nodemon: ^2.0.15
+    on-finished: ^2.4.1
     patch-package: ^6.4.7
     qs: ^6.10.3
     react: ^17.0.2
@@ -9111,6 +9123,13 @@ __metadata:
   version: 2.0.3
   resolution: "expand-template@npm:2.0.3"
   checksum: 588c19847216421ed92befb521767b7018dc88f88b0576df98cb242f20961425e96a92cbece525ef28cc5becceae5d544ae0f5b9b5e2aa05acb13716ca5b3099
+  languageName: node
+  linkType: hard
+
+"express-async-handler@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "express-async-handler@npm:1.2.0"
+  checksum: ab9ebba8b8366954cb06ab87cf91fc974428993a97940c499114134ce33144f5d1ffad380e60a53a1569c3cd9501cb209e1fb57b1845a4fc8ff449937598f2f1
   languageName: node
   linkType: hard
 
@@ -13452,7 +13471,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"on-finished@npm:2.4.1":
+"on-finished@npm:2.4.1, on-finished@npm:^2.4.1":
   version: 2.4.1
   resolution: "on-finished@npm:2.4.1"
   dependencies:
