@@ -16,6 +16,9 @@ import type { EventActionFunctions } from "../../types";
 import { useFormikContext } from "formik";
 import { currentTime, startClock, stopClock, UpwardClock } from "../../clock";
 import { RenderClock } from "../../components/Clock";
+import { Mark, Stack, Title, Text, Table, Button } from "@mantine/core";
+import { Pencil } from "tabler-icons-react";
+import { ReactNode } from "react";
 
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
@@ -89,10 +92,10 @@ export function GoalForm(props: ActionFormProps<typeof schema>) {
 
 export function EditForm() {
   return (
-    <div>
+    <>
       <Field name="name" title="Name" independent />
       <fieldset>
-        <label>Home Side</label>
+        <Title order={3}>Home Side</Title>
         <ArrayField
           name="players.home"
           title="Players"
@@ -107,7 +110,7 @@ export function EditForm() {
         />
       </fieldset>
       <fieldset>
-        <label>Away Side</label>
+        <Title order={3}>Away Side</Title>
         <ArrayField
           name="players.away"
           title="Players"
@@ -121,23 +124,20 @@ export function EditForm() {
           )}
         />
       </fieldset>
-    </div>
+    </>
   );
 }
 
-export function RenderScore(props: {
-  value: ValueType;
-  actions: React.ReactNode;
-}) {
+export function RenderScore(props: { value: ValueType; actions: ReactNode }) {
   const currentHalf =
     props.value.halves.length > 0
       ? props.value.halves[props.value.halves.length - 1]
       : null;
   return (
-    <div>
-      <h1>
+    <Stack align={"center"}>
+      <Title>
         Home {props.value.scoreHome} - Away {props.value.scoreAway}
-      </h1>
+      </Title>
       <div>
         <RenderClock
           clock={props.value.clock}
@@ -149,8 +149,16 @@ export function RenderScore(props: {
         )}
       </div>
       {props.actions}
-      <h2>Goals</h2>
-      <ul>
+      <Title order={3}>Events</Title>
+      <Table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Event</th>
+            <th>Player</th>
+            <th>Edit</th>
+          </tr>
+        </thead>
         {props.value.halves
           .flatMap((x) => x.goals.slice())
           .reverse()
@@ -159,15 +167,23 @@ export function RenderScore(props: {
               (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
             );
             return (
-              <li key={goal.time}>
-                {player.name} ({player.number}) at{" "}
+              <tr key={goal.time}>
+                <td>{Math.floor(goal.time / 60 / 1000).toFixed(0)} minutes</td>
+                <td>GOAL</td>
+                <td>
+                  {player.name} ({player.number})
+                </td>
+                <td>
+                  <Button disabled leftIcon={<Pencil />}>
+                    Edit
+                  </Button>
+                </td>
                 {/* TODO: This needs to handle stoppage time (e.g. 47th minute should show as 45+2) */}
-                {Math.floor(goal.time / 60 / 1000).toFixed(0)} minutes
-              </li>
+              </tr>
             );
           })}
-      </ul>
-    </div>
+      </Table>
+    </Stack>
   );
 }
 
@@ -252,9 +268,11 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     resumeCurrentHalf: {
       ...actionTypes.resumeCurrentHalf,
       Form: () => (
-        <strong className="text-warning">
-          Only use this if you stopped the last half by accident!
-        </strong>
+        <Text weight={900}>
+          <Mark color={"red"}>
+            Only use this if you stopped the last half by accident!
+          </Mark>
+        </Text>
       ),
     },
     addStoppageTime: {

@@ -6,7 +6,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
 import { startCase } from "lodash";
-import { Alert, Button, Grid, Group, Modal, Title } from "@mantine/core";
+import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENTS;
@@ -44,15 +44,17 @@ function EventActionModal(props: {
         {({ handleReset, handleSubmit, isSubmitting, isValid }) => (
           <>
             <Form onReset={handleReset} onSubmit={handleSubmit}>
-              <ActionForm currentState={props.currentState} />
-              <Button type="submit" disabled={isSubmitting || !isValid}>
-                Submit
-              </Button>
-              {submitError !== null && (
-                <Alert>
-                  Could not perform {props.actionType}! {submitError}
-                </Alert>
-              )}
+              <Stack>
+                <ActionForm currentState={props.currentState} />
+                <Button type="submit" disabled={isSubmitting || !isValid}>
+                  Submit
+                </Button>
+                {submitError !== null && (
+                  <Alert>
+                    Could not perform {props.actionType}! {submitError}
+                  </Alert>
+                )}
+              </Stack>
             </Form>
           </>
         )}

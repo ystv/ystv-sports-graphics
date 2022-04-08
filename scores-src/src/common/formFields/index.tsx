@@ -64,7 +64,7 @@ export function Field(props: FieldProps) {
         <FieldInput
           {...field}
           /* necessary to properly handle NumberInput onChange having a different param type */
-          onChange={value => form.setFieldValue(props.name, value)}
+          onChange={(value) => form.setFieldValue(props.name, value)}
           error={meta.touched && meta.error}
           label={props.title}
         />
@@ -107,6 +107,7 @@ export function SelectField(props: SelectFieldProps) {
   const [field, meta] = useField(props.name);
   return (
     <Select
+      label={props.title}
       data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
       {...field}
       error={meta.touched && meta.error}
@@ -118,9 +119,10 @@ export function SegmentedSelectField(props: SelectFieldProps) {
   const [field, meta, helpers] = useField(props.name);
   return (
     <SegmentedControl
+      fullWidth
       data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
       {...field}
-      onChange={value => helpers.setValue(value)}
+      onChange={(value) => helpers.setValue(value)}
     />
   );
 }

@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Title } from "@mantine/core";
+import { Alert, Button, Modal, Stack, Title } from "@mantine/core";
 import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -42,20 +42,22 @@ export function EditEventForm() {
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
             <FormikForm onSubmit={handleSubmit} onReset={handleReset}>
-              <Field
-                type="number"
-                name="worthPoints"
-                title="Points"
-                helper="How many Roses points will the winner get?"
-              />
-              <EditForm />
-              <Button type="submit" disabled={isSubmitting}>
-                Save
-              </Button>
-              {submitError !== null && (
-                <Alert>Could not save! {submitError}</Alert>
-              )}
-              {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
+              <Stack>
+                <Field
+                  type="number"
+                  name="worthPoints"
+                  title="Points"
+                  helper="How many Roses points will the winner get?"
+                />
+                <EditForm />
+                <Button type="submit" disabled={isSubmitting}>
+                  Save
+                </Button>
+                {submitError !== null && (
+                  <Alert>Could not save! {submitError}</Alert>
+                )}
+                {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
+              </Stack>
             </FormikForm>
           )}
         </Formik>
