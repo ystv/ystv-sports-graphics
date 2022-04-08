@@ -47,7 +47,7 @@ export function CreateEventModal() {
         validationSchema={EVENTS[type].schema.omit(["id", "type"])}
       >
         {({ handleReset, handleSubmit, isSubmitting, errors }) => (
-          <>
+          <Stack>
             {/*<BootstrapForm onReset={handleReset} onSubmit={handleSubmit}>*/}
             <Field
               type="number"
@@ -64,7 +64,7 @@ export function CreateEventModal() {
             )}
             {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
             {/*  </BootstrapForm>*/}
-          </>
+          </Stack>
         )}
       </Formik>
     </Modal>
