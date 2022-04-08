@@ -58,7 +58,7 @@ export const actionTypes: EventActionTypes<typeof schema> = {
   goal: {
     schema: Yup.object({
       side: Yup.string().oneOf(["home", "away"]).required(),
-      player: Yup.string().required().min(1), // can be "UNKNOWN"
+      player: Yup.string().required().min(1).nullable(),
     }).required(),
     valid: (val) => val.clock.state === "running",
   },
