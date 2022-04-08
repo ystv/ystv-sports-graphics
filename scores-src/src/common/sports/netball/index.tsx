@@ -58,7 +58,7 @@ export const actionTypes: EventActionTypes<typeof schema> = {
   goal: {
     schema: Yup.object({
       side: Yup.string().oneOf(["home", "away"]).required(),
-      player: Yup.string().required(), // can be "UNKNOWN"
+      player: Yup.string().required().min(1), // can be "UNKNOWN"
     }).required(),
     valid: (val) => val.clock.state === "running",
   },
@@ -108,6 +108,7 @@ export const actionFuncs: EventActionFunctions<
     val.quarters.push({
       goals: [],
     });
+    // TODO: last two quarters need to be 7m
     startClock(val.clock, FIFTEEN_MINUTES_AS_MS);
   },
   pauseClock(val, data) {
