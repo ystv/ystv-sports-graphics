@@ -52,7 +52,7 @@ export async function connect() {
     await cluster.queryIndexes().buildDeferredIndexes(bucket.name);
   }
 
-  logger.debug("Database setup complete.");
+  logger.info("Database setup complete.");
 }
 
 export async function disconnect() {

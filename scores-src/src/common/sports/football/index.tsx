@@ -13,7 +13,7 @@ import {
 } from "../../formFields";
 import type { EventActionFunctions } from "../../types";
 import { useFormikContext } from "formik";
-import { Clock, currentTime, startClock, stopClock } from "../../clock";
+import { currentTime, startClock, stopClock, UpwardClock } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 
 const playerSchema = Yup.object({
@@ -31,7 +31,7 @@ export const schema = BaseEvent.shape({
     home: Yup.array().of(playerSchema).required().default([]),
     away: Yup.array().of(playerSchema).required().default([]),
   }).required(),
-  clock: Clock,
+  clock: UpwardClock,
   halves: Yup.array()
     .of(
       Yup.object({

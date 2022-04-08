@@ -22,6 +22,11 @@ import {
   actionTypes as footballActionTypes,
   schema as footballSchema,
 } from "../common/sports/football";
+import {
+  actionFuncs as netballActionFuncs,
+  actionTypes as netballActionTypes,
+  schema as netballSchema,
+} from "../common/sports/netball";
 import { createLiveRouter } from "./liveRoutes";
 import {
   httpRequestDurationSeconds,
@@ -129,6 +134,8 @@ const errorHandler: (
       }
     });
     next();
+    const diff = process.hrtime(start);
+    httpLogger.log(req.method, req.url, res.statusCode, diff[0] + "ms");
   });
 
   app.use(
@@ -149,6 +156,15 @@ const errorHandler: (
         footballSchema,
         footballActionTypes,
         footballActionFuncs
+      ),
+    ],
+    [
+      "netball",
+      makeEventAPI(
+        "netball",
+        netballSchema,
+        netballActionTypes,
+        netballActionFuncs
       ),
     ],
   ] as const) {
