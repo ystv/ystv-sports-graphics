@@ -27,7 +27,11 @@ export function ListEvents() {
     return (
       <div>
         <h1>Sorry, something went wrong!</h1>
-        <p>Please check your network connection and try again. If you still have problems, please send a screenshot of this screen to the Graphics Team.</p>
+        <p>
+          Please check your network connection and try again. If you still have
+          problems, please send a screenshot of this screen to the Graphics
+          Team.
+        </p>
         <code>{message}</code>
       </div>
     );

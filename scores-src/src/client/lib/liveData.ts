@@ -45,7 +45,10 @@ export function useLiveData<T>(eventId: string) {
 
   function send(data: LiveClientMessage) {
     invariant(wsRef.current !== null, "tried to send with a null websocket");
-    invariant(wsRef.current.readyState === WebSocket.OPEN, "tried to send with a non-open websocket");
+    invariant(
+      wsRef.current.readyState === WebSocket.OPEN,
+      "tried to send with a non-open websocket"
+    );
     wsRef.current.send(JSON.stringify(data));
   }
   function sendOrEnqueue(data: LiveClientMessage) {
