@@ -1,13 +1,13 @@
 import * as Yup from "yup";
 import { DB } from "./db";
 import { v4 as uuidv4 } from "uuid";
+import { Router } from "express";
+import asyncHandler from "express-async-handler";
+import { PreconditionFailed } from "http-errors";
 import { DocumentExistsError } from "couchbase";
 import { EventActionFunctions, EventActionTypes } from "../common/types";
 import { REDIS } from "./redis";
 import { dispatchChangeToEvent } from "./updatesRepo";
-import { PreconditionFailed, NotAcceptable } from "http-errors";
-import { Router } from "express";
-import "express-ws";
 
 export function makeEventAPI<
   TEventSchema extends Yup.AnyObjectSchema,
@@ -22,20 +22,20 @@ export function makeEventAPI<
 
   const key = (id: string) => `Event/${typeName}/${id}`;
 
-  router.get("/", async (req, res) => {
+  router.get("/", asyncHandler(async (req, res) => {
     const result = await DB.query(
       `SELECT RAW e FROM _default e WHERE meta(e).id LIKE 'Event/${typeName}/%'`
     );
     res.json(result.rows);
-  });
+  }));
 
-  router.get("/:id", async (req, res) => {
+  router.get("/:id", asyncHandler(async (req, res) => {
     const id = req.params.id;
     const data = await DB.collection("_default").get(key(id));
     res.json(data.content);
-  });
+  }));
 
-  router.post("/", async (req, res) => {
+  router.post("/", asyncHandler(async (req, res) => {
     const val: Yup.InferType<TEventSchema> = await schema
       .omit(["id", "type"])
       .validate(req.body, { abortEarly: false });
@@ -55,9 +55,9 @@ export function makeEventAPI<
     await dispatchChangeToEvent(key(val.id), val);
     res.statusCode = 201;
     res.json(val);
-  });
+  }));
 
-  router.put("/:id", async (req, res) => {
+  router.put("/:id", asyncHandler(async (req, res) => {
     const id = req.params.id;
     const data = await DB.collection("_default").get(key(id));
     const inputData = req.body;
@@ -68,10 +68,10 @@ export function makeEventAPI<
     await DB.collection("_default").replace(key(id), result);
     await dispatchChangeToEvent(key(id), result);
     res.json(result);
-  });
+  }));
 
   for (const action of Object.keys(actionTypes)) {
-    router.post(`/:id/${action}`, async (req, res) => {
+    router.post(`/:id/${action}`, asyncHandler(async (req, res) => {
       const data: Yup.InferType<TActions[typeof action]["schema"]> =
         await actionTypes[action].schema.validate(req.body, {
           abortEarly: false,
@@ -93,7 +93,7 @@ export function makeEventAPI<
       });
       await dispatchChangeToEvent(key(req.params.id), val);
       res.json(val);
-    });
+    }));
   }
 
   return router;

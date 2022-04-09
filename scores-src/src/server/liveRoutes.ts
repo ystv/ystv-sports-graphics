@@ -1,6 +1,5 @@
 import "express-ws";
 import type * as ws from "ws";
-import type { Context } from "koa";
 import { REDIS } from "./redis";
 import logging from "loglevel";
 import { BadRequest } from "http-errors";
@@ -12,11 +11,6 @@ import { DocumentNotFoundError } from "couchbase";
 import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
 import { Request, Router } from "express";
-
-interface WSContext extends Context {
-  websocket: ws;
-  path: string;
-}
 
 function generateSid(): string {
   return randomUUID();
