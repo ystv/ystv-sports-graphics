@@ -19,6 +19,23 @@
         "file": "dashboard.html",
         "headerColor": "#FAAF18",
         "fullbleed": true
+      },
+      {
+        "name": "select-event",
+        "title": "Select Event",
+        "file": "select-event.html",
+        "dialog": true,
+        "width": 6,
+        "dialogButtons": [
+          {
+            "name": "confirm",
+            "type": "confirm"
+          },
+          {
+            "name": "dismiss",
+            "type": "dismiss"
+          }
+        ]
       }
     ],
     "graphics": [

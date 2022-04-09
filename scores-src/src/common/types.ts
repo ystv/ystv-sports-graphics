@@ -14,6 +14,8 @@ export const BaseEvent = Yup.object().shape({
   worthPoints: Yup.number().integer().required().min(0),
 });
 
+export type BaseEventType = Yup.InferType<typeof BaseEvent>;
+
 export interface EventActionTypes<TEventSchema extends Yup.AnySchema> {
   readonly [K: string]: {
     schema: Yup.AnyObjectSchema;
