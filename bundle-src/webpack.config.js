@@ -102,11 +102,6 @@ function makeConfig(kind, name) {
       filename: `${name}.bundle.js`,
       uniqueName: name,
     },
-    resolve: {
-      alias: {
-        react: path.resolve('./node_modules/react')
-      },
-    },
     plugins: [
       new HtmlWebpackPlugin({
         filename: path.resolve(__dirname, "..", kind, `${name}.html`),
