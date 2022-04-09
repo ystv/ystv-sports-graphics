@@ -74,6 +74,10 @@ export = (nodecg: NodeCG) => {
       nodecg.log.warn("MR: called when ws was still null!");
       return;
     }
+    if (ws.readyState !== ws.OPEN) {
+      nodecg.log.warn("MR: called when ws was not open!");
+      return;
+    }
     if (subscribedId === eventIDRep.value) {
       nodecg.log.debug("MR: Already subscribed to correct ID");
       // To avoid confusing users, set state to READY if we don't want an event
@@ -132,7 +136,7 @@ export = (nodecg: NodeCG) => {
       stateRep.value = "DISCONNECTED";
       const reconnectIn = Math.random() * 3000 + 3000;
       nodecg.log.debug("Reconnecting in", reconnectIn);
-      setTimeout(() => connect, reconnectIn);
+      setTimeout(() => connect(), reconnectIn);
     };
     ws.onerror = (e: unknown) => {
       nodecg.log.error("WebSocket Error", e);
