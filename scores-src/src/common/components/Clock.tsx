@@ -24,6 +24,8 @@ export function RenderClock({
     return () => clearInterval(interval);
   }, [clock.state]);
   return (
-    <Title order={3}>{formatMMSSMS(time, precisionMs, precisionHigh)}</Title>
+    <Title order={3} style={{ fontVariantNumeric: "tabular-nums" }}>
+      {formatMMSSMS(time, precisionMs, precisionHigh)}
+    </Title>
   );
 }
