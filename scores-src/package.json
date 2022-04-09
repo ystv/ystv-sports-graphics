@@ -3,14 +3,17 @@
   "version": "0.0.0",
   "scripts": {
     "cfg": "node-config-ts",
-    "dev": "concurrently -n server,client npm:dev:server npm:dev:server:typecheck npm:dev:client",
+    "dev": "concurrently -n server,ts,client npm:dev:server npm:dev:server:typecheck npm:dev:client",
     "scores:dev": "yarn dev",
     "dev:server": "node startDevServer.js",
     "dev:server:typecheck": "cd src/server && tsc -w --preserveWatchOutput",
     "dev:client": "vite dev",
     "build": "rm -rf dist && yarn build:client && yarn build:server",
     "build:server": "esbuild --platform=node --target=node16 --tree-shaking=true --bundle --outfile=dist/index.server.js src/server/index.server.ts",
-    "build:client": "vite build"
+    "build:client": "vite build",
+    "prod": "concurrently -n server,client npm:prod:server npm:prod:client",
+    "prod:server": "node dist/index.server.js",
+    "prod:client": "node serveBuiltClient.js"
   },
   "private": true,
   "devDependencies": {
@@ -20,8 +23,10 @@
     "@vitejs/plugin-react": "^1.2.0",
     "concurrently": "^7.0.0",
     "esbuild": "^0.14.23",
+    "http-proxy": "^1.18.1",
     "nodemon": "^2.0.15",
     "patch-package": "^6.4.7",
+    "serve-handler": "^6.1.3",
     "ts-node": "^10.5.0",
     "typescript": "^4.5.5",
     "vite": "^2.8.4"
