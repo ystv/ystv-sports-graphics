@@ -43,7 +43,10 @@ pipeline {
                 branch 'main'
             }
             steps {
-                build job: 'Deploy Nomad Job', parameters: [string(name: 'JOB_FILE', value: 'sports-graphics.nomad')]
+                build job: 'Deploy Nomad Job', parameters: [
+                    string(name: 'JOB_FILE', value: 'sports-graphics.nomad'),
+                    text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/server:${env.BUILD_NUMBER} registry.comp.ystv.co.uk/sports-scores/client:${env.BUILD_NUMBER}")
+                ]
             }
         }
     }
