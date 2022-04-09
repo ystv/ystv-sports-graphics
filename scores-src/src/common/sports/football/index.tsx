@@ -56,9 +56,8 @@ export const schema = BaseEvent.shape({
 type ValueType = Yup.InferType<typeof schema>;
 
 export function GoalForm(props: ActionFormProps<typeof schema>) {
-  const { values } = useFormikContext<
-    Yup.InferType<typeof actionTypes.goal.schema>
-  >();
+  const { values } =
+    useFormikContext<Yup.InferType<typeof actionTypes.goal.schema>>();
   const players =
     values.side === "home"
       ? props.currentState.players.home
