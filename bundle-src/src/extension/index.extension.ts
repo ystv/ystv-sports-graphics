@@ -9,6 +9,8 @@ import type {
 } from "@ystv/scores/src/common/liveTypes";
 import type { EventID } from "common/types/eventID";
 import qs from "qs";
+import axios from "axios";
+import { UnhandledListenForCb } from "../../../../../types/lib/nodecg-instance";
 
 export = (nodecg: NodeCG) => {
   const config: Configschema = nodecg.bundleConfig;
@@ -24,7 +26,7 @@ export = (nodecg: NodeCG) => {
     }
   );
   const eventIDRep = nodecg.Replicant<EventID>("eventID", {
-    defaultValue: "Event/football/dcbb2e1d-b372-4cc7-acce-972501435cbf",
+    defaultValue: null,
   });
   const eventStateRep = nodecg.Replicant("eventState", {
     defaultValue: null as any,
@@ -32,6 +34,23 @@ export = (nodecg: NodeCG) => {
 
   let sid = "";
   let lastMID = "";
+
+  const apiClient = axios.create({
+    baseURL: config.scoresService.apiURL,
+  });
+
+  nodecg.listenFor("list-events", async (_, cb_) => {
+    nodecg.log.info("list-events");
+    const cb = cb_ as UnhandledListenForCb;
+    try {
+      const result = await apiClient.get("/events");
+      nodecg.log.trace("LE response", result.data);
+      cb(null, result.data);
+    } catch (e) {
+      nodecg.log.error("LE error", e);
+      cb!(e);
+    }
+  });
 
   let ws: WebSocket | null = null;
   let subscribedId: string | null = null;
@@ -51,8 +70,16 @@ export = (nodecg: NodeCG) => {
   }
 
   function maybeResubscribe() {
+    if (ws === null) {
+      nodecg.log.warn("MR: called when ws was still null!");
+      return;
+    }
     if (subscribedId === eventIDRep.value) {
       nodecg.log.debug("MR: Already subscribed to correct ID");
+      // To avoid confusing users, set state to READY if we don't want an event
+      if (subscribedId === null) {
+        stateRep.value = "READY";
+      }
       return;
     }
     if (subscribedId !== null && eventIDRep.value !== subscribedId) {
@@ -70,6 +97,11 @@ export = (nodecg: NodeCG) => {
       });
     }
   }
+
+  eventIDRep.on("change", (val) => {
+    nodecg.log.debug("eventID change", val);
+    maybeResubscribe();
+  });
 
   function connect() {
     invariant(
