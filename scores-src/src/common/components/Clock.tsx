@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ClockType, currentTime, formatMMSSMS } from "../clock";
+import { Text, Title } from "@mantine/core";
 
 export function RenderClock({
   clock,
@@ -23,8 +24,6 @@ export function RenderClock({
     return () => clearInterval(interval);
   }, [clock.state]);
   return (
-    <span style={{ fontVariantNumeric: "tabular-nums" }}>
-      {formatMMSSMS(time, precisionMs, precisionHigh)}
-    </span>
+    <Title order={3}>{formatMMSSMS(time, precisionMs, precisionHigh)}</Title>
   );
 }
