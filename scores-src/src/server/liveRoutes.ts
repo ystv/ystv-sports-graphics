@@ -20,9 +20,12 @@ class UserError extends Error {}
 
 export function createLiveRouter() {
   const router = Router();
-  router.ws(`${config.pathPrefix}/updates/stream/v2`, async function (ws: ws, req: Request) {
+  router.ws(`${config.pathPrefix}/updates/stream/v2`, async function (
+    ws: ws,
+    req: Request
+  ) {
     function send(msg: LiveServerMessage) {
-      ws.send(JSON.stringify(msg), err => {
+      ws.send(JSON.stringify(msg), (err) => {
         if (err) {
           logger.warn("WS send error", err);
         }
@@ -49,9 +52,9 @@ export function createLiveRouter() {
       logger.info("WebSocket closed", code);
     });
 
-    ws.on("error", err => {
+    ws.on("error", (err) => {
       logger.warn("WebSocket error", err);
-    })
+    });
 
     logger.debug("hello");
     send({
@@ -131,12 +134,10 @@ export function createLiveRouter() {
               "invalid 'to' type"
             );
             subs.delete(payload.to);
-            send(
-              {
-                kind: "UNSUBSCRIBE_OK",
-                to: payload.to,
-              }
-            );
+            send({
+              kind: "UNSUBSCRIBE_OK",
+              to: payload.to,
+            });
             break;
         }
       } catch (e) {
