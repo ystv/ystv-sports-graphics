@@ -58,8 +58,5 @@
     "patch-package": "^6.4.7",
     "prettier": "^2.6.1"
   },
-  "prettier": "@ury1350/prettier-config",
-  "dependencies": {
-    "prom-client": "^14.0.1"
-  }
+  "prettier": "@ury1350/prettier-config"
 }

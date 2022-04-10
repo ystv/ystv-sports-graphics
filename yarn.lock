@@ -5567,6 +5567,7 @@ __metadata:
     nodemon: ^2.0.15
     on-finished: ^2.4.1
     patch-package: ^6.4.7
+    prom-client: ^14.0.1
     qs: ^6.10.3
     react: ^17.0.2
     react-bootstrap: ^2.1.2
@@ -19033,7 +19034,6 @@ __metadata:
     "@ury1350/prettier-config": ^1.0.1
     patch-package: ^6.4.7
     prettier: ^2.6.1
-    prom-client: ^14.0.1
   languageName: unknown
   linkType: soft
 
