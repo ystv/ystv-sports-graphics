@@ -52,7 +52,7 @@ export const schema = BaseEvent.shape({
     .default([]),
 });
 
-type ValueType = Yup.InferType<typeof schema>;
+export type ValueType = Yup.InferType<typeof schema>;
 
 export const actionTypes: EventActionTypes<typeof schema> = {
   goal: {
@@ -143,7 +143,9 @@ export function RenderScore(props: {
       <h2>Goals</h2>
       <ul>
         {props.value.quarters
-          .flatMap((x) => x.goals.slice())
+          .flatMap((x, q) =>
+            x.goals.slice().map((goal) => ({ ...goal, quarter: q + 1 }))
+          )
           .reverse()
           .map((goal) => {
             const player = props.value.players[goal.side as any].find(
@@ -160,7 +162,7 @@ export function RenderScore(props: {
                 {Math.floor(
                   (FIFTEEN_MINUTES_AS_MS - goal.time) / 60 / 1000
                 ).toFixed(0)}{" "}
-                minutes
+                minutes (Q{goal.quarter})
               </li>
             );
           })}
