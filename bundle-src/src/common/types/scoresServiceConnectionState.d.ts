@@ -5,9 +5,4 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type ScoresServiceConnectionState =
-  | "NOT_CONNECTED"
-  | "WAITING"
-  | "SYNCHRONISING"
-  | "READY"
-  | "DISCONNECTED";
+export type ScoresServiceConnectionState = "NOT_CONNECTED" | "WAITING" | "SYNCHRONISING" | "READY" | "DISCONNECTED";
