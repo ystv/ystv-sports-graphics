@@ -1,3 +1,4 @@
+/* eslint-disable */
 const http = require("http");
 const httpProxy = require("http-proxy");
 const serveHandler = require("serve-handler");

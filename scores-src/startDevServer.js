@@ -1,3 +1,4 @@
+/* eslint-disable */
 const esbuild = require("esbuild");
 const child_process = require("child_process");
 
