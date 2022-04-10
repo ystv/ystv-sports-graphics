@@ -11,6 +11,7 @@ import { DocumentNotFoundError } from "couchbase";
 import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
 import { Request, Router } from "express";
+import { activeStreamConnections } from "./metrics";
 
 function generateSid(): string {
   return randomUUID();
@@ -24,6 +25,8 @@ export function createLiveRouter() {
     ws: ws,
     req: Request
   ) {
+    activeStreamConnections.inc();
+
     function send(msg: LiveServerMessage) {
       ws.send(JSON.stringify(msg), (err) => {
         if (err) {
@@ -50,6 +53,7 @@ export function createLiveRouter() {
 
     ws.on("close", (code: number) => {
       logger.info("WebSocket closed", code);
+      activeStreamConnections.dec();
     });
 
     ws.on("error", (err) => {
