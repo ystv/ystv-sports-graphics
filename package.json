@@ -7,7 +7,7 @@
   "version": "0.0.0",
   "scripts": {
     "nodecg": "cd ../.. && npm start",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package && husky install"
   },
   "name": "ystv-sports-graphics",
   "nodecg": {
@@ -55,8 +55,13 @@
   "packageManager": "yarn@3.2.0",
   "devDependencies": {
     "@ury1350/prettier-config": "^1.0.1",
+    "husky": ">=6",
+    "lint-staged": ">=10",
     "patch-package": "^6.4.7",
     "prettier": "^2.6.1"
   },
-  "prettier": "@ury1350/prettier-config"
+  "prettier": "@ury1350/prettier-config",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "prettier --write"
+  }
 }
