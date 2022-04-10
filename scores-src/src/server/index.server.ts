@@ -174,7 +174,6 @@ const errorHandler: (
   baseRouter.use("/bootstrap", createBootstrapRouter());
   baseRouter.use("/auth", createAuthRouter());
   baseRouter.use("/events", createEventTypesRouter());
-  ``;
   baseRouter.use("/events", createEventsRouter());
   baseRouter.use("/users", createUserManagementRouter());
 
