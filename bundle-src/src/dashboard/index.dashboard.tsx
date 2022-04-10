@@ -1,52 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
 import { useOnlyReplicantValue, useReplicantValue } from "common/useReplicant";
-import { Button, Group, MantineProvider, Title } from "@mantine/core";
+import { Button, MantineProvider, Title } from "@mantine/core";
 
 import { ScoresServiceConnectionState } from "common/types/scoresServiceConnectionState";
 import { EventID } from "common/types/eventID";
+import { BaseEventType } from "@ystv/scores/src/common/types";
 
-const LiveButton = ({ callback }: { callback: Function }) => (
-  <Button onClick={() => callback(true)} color="green">
-    LIVE
-  </Button>
-);
-
-const KillButton = ({ callback }: { callback: Function }) => (
-  <Button onClick={() => callback(false)} color="red">
-    KILL
-  </Button>
-);
-
-const LiveKillButtons = ({
-  name,
-  live,
-  callback,
-  children,
-}: {
-  name: string;
-  live: boolean;
-  callback: Function;
-  children?: JSX.Element;
-}) => (
-  <>
-    <Title order={2}>{name}</Title>
-    <strong>Status: {live ? "LIVE" : "HIDDEN"}</strong>
-    <br />
-    <Group>
-      <LiveButton callback={callback} />
-      <KillButton callback={callback} />
-    </Group>
-    {children}
-    <br />
-    <br />
-    <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
-  </>
-);
-
-// function Dashboard() {
-//   return <h1>Hi</h1>;
-// }
+const SportControllers: Record<string, React.ComponentType> = {};
 
 function Dashboard() {
   const connectionState = useOnlyReplicantValue<ScoresServiceConnectionState>(
@@ -64,6 +25,19 @@ function Dashboard() {
       defaultValue: null,
     }
   );
+  const eventState = useOnlyReplicantValue<BaseEventType | null>(
+    "eventState",
+    undefined,
+    {
+      defaultValue: null,
+    }
+  );
+
+  const EventController = eventState
+    ? SportControllers[eventState.type] ?? (
+        <b>no controller for {eventState.type} ?!</b>
+      )
+    : () => null;
 
   return (
     <div style={{ margin: "1rem 4rem" }}>
@@ -75,6 +49,7 @@ function Dashboard() {
         <Button nodecg-dialog="select-event">Select Event</Button>
         <br />
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
+        <EventController />
       </MantineProvider>
     </div>
   );
