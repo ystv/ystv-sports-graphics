@@ -8,7 +8,8 @@
   "scripts": {
     "nodecg": "cd ../.. && npm start",
     "postinstall": "patch-package && husky install",
-    "lint": "yarn eslint '{bundle,scores}-src/**/*.{js,jsx,ts,tsx}'"
+    "lint": "yarn eslint '{bundle,scores}-src/**/*.{js,jsx,ts,tsx}'",
+    "prettier:fix": "yarn prettier --write '{bundle,scores}-src/**/*.{js,jsx,ts,tsx}'"
   },
   "name": "ystv-sports-graphics",
   "nodecg": {

@@ -19,6 +19,11 @@ export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
     primaryColor: "#e80708",
   },
   york: { teamName: "York", primaryColor: "#faaf18", teamShort: "yrk" },
+  lancaster: {
+    teamName: "Lancaster",
+    primaryColor: "#c21313",
+    teamShort: "lan",
+  },
   glasgow: {
     teamName: "Glasgow",
     primaryColor: "#ffdd1a",
