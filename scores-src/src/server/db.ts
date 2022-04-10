@@ -1,4 +1,4 @@
-import logging from "loglevel";
+import * as logging from "./loggingSetup";
 import {
   Bucket,
   Cluster,
@@ -20,14 +20,16 @@ const INDEXES = [
 ];
 
 export async function connect() {
-  logger.debug("Connecting to DB", config.db.connectionString);
+  logger.debug("Connecting to DB", {
+    connectionString: config.db.connectionString,
+  });
   cluster = await cbConnect(config.db.connectionString, {
     username: config.db.username,
     password: config.db.password,
   });
   logger.debug("DB connection established, pinging...");
   const pingResult = await cluster.ping();
-  logger.debug("Ping successful.", pingResult);
+  logger.debug("Ping successful.", { pingResult });
   bucket = cluster.bucket(config.db.bucket);
   DB = bucket.scope(config.db.scope);
 

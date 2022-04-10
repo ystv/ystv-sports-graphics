@@ -1,7 +1,7 @@
 import "express-ws";
 import type * as ws from "ws";
 import { REDIS } from "./redis";
-import logging from "loglevel";
+import * as logging from "./loggingSetup";
 import { BadRequest } from "http-errors";
 import { randomUUID } from "crypto";
 import { getEventChanges, UpdatesMessage } from "./updatesRepo";
@@ -21,16 +21,16 @@ class UserError extends Error {}
 
 export function createLiveRouter() {
   const router = Router();
-  router.ws(`${config.pathPrefix}/updates/stream/v2`, async function (
-    ws: ws,
-    req: Request
-  ) {
+  router.ws(`/updates/stream/v2`, async function (ws: ws, req: Request) {
+    logging
+      .getLogger("live")
+      .debug("Received WS connection", { remote: req.ip });
     activeStreamConnections.inc();
 
     function send(msg: LiveServerMessage) {
       ws.send(JSON.stringify(msg), (err) => {
         if (err) {
-          logger.warn("WS send error", err);
+          logger.warn("WS send error", { error: err });
         }
       });
     }
@@ -49,18 +49,18 @@ export function createLiveRouter() {
       sid = generateSid();
     }
 
-    const logger = logging.getLogger(`live:${sid}`);
+    const logger = logging.getLogger(`live`).child({ sid });
 
     ws.on("close", (code: number) => {
-      logger.info("WebSocket closed", code);
+      logger.info("WebSocket closed", { code: code });
       activeStreamConnections.dec();
     });
 
     ws.on("error", (err) => {
-      logger.warn("WebSocket error", err);
+      logger.warn("WebSocket error", { error: err });
     });
 
-    logger.debug("hello");
+    logger.debug("HELLO");
     send({
       kind: "HELLO",
       sid,
@@ -83,7 +83,7 @@ export function createLiveRouter() {
         "invalid last_mid type"
       );
       while (true) {
-        const data = await getEventChanges(req.query.last_mid, 0);
+        const data = await getEventChanges(logger, req.query.last_mid, 0);
         if (data === null || data.length === 0) {
           logger.debug("Caught up, continuing");
           break;
@@ -159,7 +159,7 @@ export function createLiveRouter() {
     let lastMid = "$";
 
     while (true) {
-      const data = await getEventChanges(lastMid, 5_000);
+      const data = await getEventChanges(logger, lastMid, 5_000);
       if (ws.readyState === ws.CLOSED) {
         logger.info("WebSocket state is CLOSED, ending Redis loop.");
         return;
@@ -173,7 +173,7 @@ export function createLiveRouter() {
           dispatchChangeToSubscribedData(msg.mid, msg.data);
         }
         lastMid = msg.mid;
-        logger.debug("MID is now", msg.mid);
+        logger.debug("MID is now " + msg.mid);
       }
     }
   } as any);

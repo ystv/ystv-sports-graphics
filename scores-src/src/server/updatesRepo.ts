@@ -1,9 +1,10 @@
 import { REDIS } from "./redis";
 import invariant from "tiny-invariant";
-import { getLogger } from "loglevel";
+import * as logging from "./loggingSetup";
 import { commandOptions } from "redis";
+import { Logger } from "winston";
 
-const logger = getLogger("updatesRepo");
+const logger = logging.getLogger("updatesRepo");
 
 export interface UpdatesMessage {
   id: string;
@@ -22,18 +23,16 @@ export async function dispatchChangeToEvent(id: string, data: any) {
     "*",
     msg as unknown as Record<string, string>
   );
-  logger.debug("Dispatched change to", id, ", its MID is", result);
+  logger.debug("Dispatched change to " + id + ", its MID is " + result);
 }
 
 export async function getEventChanges(
+  logger: Logger,
   lastMid: string,
   block?: number
 ): Promise<Array<{ mid: string; data: UpdatesMessage }> | null> {
   logger.debug(
-    "Listening to updates stream with last MID",
-    lastMid,
-    "and block time",
-    block
+    `Listening to updates with lastMID ${lastMid} and block time ${block}`
   );
   const data = await REDIS.xRead(
     commandOptions({

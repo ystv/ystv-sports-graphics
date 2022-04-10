@@ -17,6 +17,7 @@ export const httpRequestDurationSeconds = new Histogram({
   name: "http_request_duration_seconds",
   help: "Histogram of HTTP request duration in seconds",
   labelNames: ["method", "path"],
+  buckets: [0.001, 0.005, 0.01, 0.025, 0.5, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
 });
 reg.registerMetric(httpRequestDurationSeconds);
 

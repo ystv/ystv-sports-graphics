@@ -1,4 +1,4 @@
-import logging from "loglevel";
+import * as logging from "./loggingSetup";
 import { RedisClientType } from "@node-redis/client";
 import { createClient } from "redis";
 import config from "./config";
@@ -13,13 +13,12 @@ export async function connect() {
     url: config.redis.connectionString,
   });
   REDIS.on("error", (err) => {
-    logger.warn("Lost connection!", err);
+    logger.warn("Lost connection!", { error: err });
   });
   await REDIS.connect();
-  logger.debug(
-    "Connected to Redis",
-    (await REDIS.info("server")).split("\n")[1]
-  );
+  logger.debug("Connected to Redis", {
+    version: (await REDIS.info("server")).split("\r\n")[1],
+  });
 }
 
 export async function close() {

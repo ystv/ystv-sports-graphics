@@ -1,7 +1,7 @@
 import "dotenv/config";
 import "./loggingSetup";
 import config from "./config";
-import { getLogger, Logger } from "loglevel";
+import * as logging from "./loggingSetup";
 
 import Express, { NextFunction, Request, Response, Router } from "express";
 import ExpressWS from "express-ws";
@@ -29,6 +29,7 @@ import {
   metricsHandler,
 } from "./metrics";
 import asyncHandler from "express-async-handler";
+import { Logger } from "winston";
 
 const errorHandler: (
   log: Logger
@@ -54,10 +55,10 @@ const errorHandler: (
         })),
       };
     } else {
-      httpLogger.error(
-        `Uncaught handler error:\npath = ${req.path}\nerror =`,
-        err
-      );
+      httpLogger.error(`Uncaught handler error`, {
+        url: req.baseUrl,
+        error: err,
+      });
       code = 500;
       message = "internal server error, sorry";
     }
@@ -70,18 +71,18 @@ const errorHandler: (
   };
 
 (async () => {
-  const indexlogger = getLogger("index.server");
+  const indexlogger = logging.getLogger("index.server");
 
   try {
     await db.connect();
   } catch (e) {
-    indexlogger.error("Failed to connect to Couchbase!", e);
+    indexlogger.error("Failed to connect to Couchbase!", { error: e });
     process.exit(10);
   }
   try {
     await redis.connect();
   } catch (e) {
-    indexlogger.error("Failed to connect to Redis!", e);
+    indexlogger.error("Failed to connect to Redis!", { error: e });
     process.exit(11);
   }
 
@@ -93,7 +94,7 @@ const errorHandler: (
   const app = Express();
   const ws = ExpressWS(app);
 
-  const httpLogger = getLogger("http");
+  const httpLogger = logging.getLogger("http");
 
   // Logger
   app.use((req, res, next) => {
@@ -102,12 +103,12 @@ const errorHandler: (
       // No need to handle the err, as the error-handler middleware will transform it into
       // a response.
       const diff = process.hrtime(start);
-      httpLogger.log(
-        req.method,
-        req.originalUrl,
-        res.statusCode,
-        diff[0] + "ms" + diff[1] + "ns"
-      );
+      httpLogger.info(req.method + " " + req.originalUrl, {
+        method: req.method,
+        url: req.originalUrl,
+        status: res.statusCode,
+        duration: diff[0] + "ms" + diff[1] + "ns",
+      });
       // Don't create metrics for 404s - DoS vector
       if (res.statusCode !== 404) {
         const path = new URL(req.originalUrl, `http://${req.hostname}`)
@@ -157,8 +158,7 @@ const errorHandler: (
   baseRouter.use("/events", createEventsRouter());
 
   app.use(config.pathPrefix, baseRouter);
-
-  app.use(createLiveRouter());
+  app.use(config.pathPrefix, createLiveRouter());
 
   app.get("/metrics", metricsHandler);
 
@@ -176,8 +176,8 @@ const errorHandler: (
   );
 
   // 404 handler
-  app.use("*", (req, res) => {
-    throw new NotFound(`Cannot ${req.method} ${req.path}`);
+  app.use("*", (req, res, next) => {
+    next(new NotFound(`Cannot ${req.method} ${req.path}`));
   });
 
   // Error handler
