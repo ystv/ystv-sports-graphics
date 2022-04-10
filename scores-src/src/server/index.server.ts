@@ -191,6 +191,21 @@ const errorHandler: (
     })
   );
 
+  app.get("/metrics", metricsHandler);
+
+  app.get("/healthz", (_, res) => {
+    res.status(200).send(`{"ok": true}`);
+  });
+
+  app.get(
+    "/readyz",
+    asyncHandler(async (_, res) => {
+      await db.cluster.ping();
+      await redis.REDIS.ping();
+      res.status(200).send(`{"ok": true}`);
+    })
+  );
+
   // 404 handler
   app.use("*", (req, res, next) => {
     next(new NotFound(`Cannot ${req.method} ${req.path}`));
