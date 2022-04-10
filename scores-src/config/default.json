@@ -7,7 +7,7 @@
         "scope": "_default"
     },
     "logLevel": "info",
-    "pathPrefix": "",
+    "pathPrefix": "/api",
     "port": 8000,
     "redis": {
         "connectionString": "redis://localhost"
