@@ -12,6 +12,7 @@ import { BasketballDashboard } from "./events/basketball";
 import { LacrosseDashboard } from "./events/lacrosse";
 import { UltimateDashboard } from "./events/ultimate";
 import { WaterpoloDashboard } from "./events/waterpolo";
+import { RugbyUnionDashboard } from "./events/rugbyUnion";
 
 const SportControllers: Record<string, React.ComponentType> = {
   netball: NetballDashboard,
@@ -20,6 +21,7 @@ const SportControllers: Record<string, React.ComponentType> = {
   lacrosse: LacrosseDashboard,
   ultimate: UltimateDashboard,
   waterpolo: WaterpoloDashboard,
+  rugbyUnion: RugbyUnionDashboard,
 };
 
 function Dashboard() {

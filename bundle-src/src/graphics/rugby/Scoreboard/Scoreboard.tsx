@@ -1,28 +1,23 @@
 import styles from "./Scoreboard.module.css";
 import { TeamDictionary } from "common/teamDictionary";
 import { AnimatePresence, motion } from "framer-motion";
-
 export interface ScoreboardProps {
+  team1Score: number;
+  team2Score: number;
   isVisible: boolean;
   isTimerShown: boolean;
-  team1Name?: string;
-  team2Name?: string;
-  team1Score?: number;
-  team2Score?: number;
   timer?: number;
 }
 
 export function Scoreboard({
   isVisible = false,
   isTimerShown = false,
-  team1Name = "york",
-  team2Name = "glasgow",
-  team1Score = 0,
-  team2Score = 0,
   timer = 0,
+  team1Score,
+  team2Score,
 }: ScoreboardProps) {
-  const team1 = TeamDictionary[team1Name];
-  const team2 = TeamDictionary[team2Name];
+  const team1 = TeamDictionary.lancaster;
+  const team2 = TeamDictionary.york;
 
   const secondToTimeString = (time: number): string =>
     `${String(Math.floor(time / 60)).padStart(2, "0")}:${String(
