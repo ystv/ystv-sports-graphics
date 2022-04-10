@@ -23,6 +23,12 @@ import {
   schema as footballSchema,
 } from "../common/sports/football";
 import { createLiveRouter } from "./liveRoutes";
+import {
+  httpRequestDurationSeconds,
+  httpResponseStatus,
+  metricsHandler,
+} from "./metrics";
+import asyncHandler from "express-async-handler";
 
 const errorHandler: (
   log: Logger
@@ -98,10 +104,28 @@ const errorHandler: (
       const diff = process.hrtime(start);
       httpLogger.log(
         req.method,
-        req.url,
+        req.originalUrl,
         res.statusCode,
         diff[0] + "ms" + diff[1] + "ns"
       );
+      // Don't create metrics for 404s - DoS vector
+      if (res.statusCode !== 404) {
+        const path = new URL(req.originalUrl, `http://${req.hostname}`)
+          .pathname;
+        httpRequestDurationSeconds
+          .labels({
+            method: req.method,
+            path: path,
+          })
+          .observe(diff[0] / 1000 + diff[1] / 1e9);
+        httpResponseStatus
+          .labels({
+            method: req.method,
+            path: path,
+            code: res.statusCode,
+          })
+          .inc();
+      }
     });
     next();
   });
@@ -135,6 +159,21 @@ const errorHandler: (
   app.use(config.pathPrefix, baseRouter);
 
   app.use(createLiveRouter());
+
+  app.get("/metrics", metricsHandler);
+
+  app.get("/healthz", (_, res) => {
+    res.status(200).send(`{"ok": true}`);
+  });
+
+  app.get(
+    "/readyz",
+    asyncHandler(async (_, res) => {
+      await db.cluster.ping();
+      await redis.REDIS.ping();
+      res.status(200).send(`{"ok": true}`);
+    })
+  );
 
   // 404 handler
   app.use("*", (req, res) => {

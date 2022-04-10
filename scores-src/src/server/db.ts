@@ -10,7 +10,7 @@ import config from "./config";
 
 const logger = logging.getLogger("db");
 
-let cluster: Cluster;
+export let cluster: Cluster;
 let bucket: Bucket;
 export let DB: Scope = null as unknown as Scope;
 

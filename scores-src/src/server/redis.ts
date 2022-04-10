@@ -12,6 +12,9 @@ export async function connect() {
   REDIS = createClient({
     url: config.redis.connectionString,
   });
+  REDIS.on("error", (err) => {
+    logger.warn("Lost connection!", err);
+  });
   await REDIS.connect();
   logger.debug(
     "Connected to Redis",

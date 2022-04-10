@@ -134,7 +134,7 @@ export = (nodecg: NodeCG) => {
     ws.onclose = () => {
       nodecg.log.debug("WebSocket Close");
       stateRep.value = "DISCONNECTED";
-      const reconnectIn = Math.random() * 3000 + 3000;
+      const reconnectIn = Math.random() * 3000 + 1000;
       nodecg.log.debug("Reconnecting in", reconnectIn);
       setTimeout(() => connect(), reconnectIn);
     };

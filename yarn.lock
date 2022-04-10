@@ -6511,6 +6511,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bintrees@npm:1.0.1":
+  version: 1.0.1
+  resolution: "bintrees@npm:1.0.1"
+  checksum: 71d00ce450ee7ad080a3c86ae5f05fac841bdf95c0d78f3b3bbf8f754c19d7cb732f0f9213a46ed27cbec47eb124ffe2b686bef870718a4b9918c23210b55c73
+  languageName: node
+  linkType: hard
+
 "bl@npm:^4.0.3":
   version: 4.1.0
   resolution: "bl@npm:4.1.0"
@@ -14676,6 +14683,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prom-client@npm:^14.0.1":
+  version: 14.0.1
+  resolution: "prom-client@npm:14.0.1"
+  dependencies:
+    tdigest: ^0.1.1
+  checksum: 864c19b7086eda8fae652385bc8b8aeb155f85922e58672d07a64918a603341e120e65e08f9d77ccab546518dc18930284da8743c2aac3c968f626d7063d6bba
+  languageName: node
+  linkType: hard
+
 "promise-inflight@npm:^1.0.1":
   version: 1.0.1
   resolution: "promise-inflight@npm:1.0.1"
@@ -17151,6 +17167,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tdigest@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "tdigest@npm:0.1.1"
+  dependencies:
+    bintrees: 1.0.1
+  checksum: 4d05fd70fb0aa70aa101d01557722b7ef9a91b2ebf8dfc274ca9852220397a74e4ed6e59c55335b4b1dd0ac5e1b65d25b8d32ae01278fc3b783c40f6d84303e2
+  languageName: node
+  linkType: hard
+
 "telejson@npm:^5.3.2, telejson@npm:^5.3.3":
   version: 5.3.3
   resolution: "telejson@npm:5.3.3"
@@ -19008,6 +19033,7 @@ __metadata:
     "@ury1350/prettier-config": ^1.0.1
     patch-package: ^6.4.7
     prettier: ^2.6.1
+    prom-client: ^14.0.1
   languageName: unknown
   linkType: soft
 
