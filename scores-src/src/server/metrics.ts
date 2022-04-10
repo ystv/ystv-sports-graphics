@@ -5,6 +5,7 @@ import {
   collectDefaultMetrics,
   Histogram,
   Counter,
+  Gauge,
 } from "prom-client";
 
 const reg = new Registry();
@@ -25,6 +26,12 @@ export const httpResponseStatus = new Counter({
   labelNames: ["method", "path", "code"],
 });
 reg.registerMetric(httpResponseStatus);
+
+export const activeStreamConnections = new Gauge({
+  name: "active_stream_connections",
+  help: "Numer of clients currently connected to the streaming updates endpoint",
+});
+reg.registerMetric(activeStreamConnections);
 
 export const metricsHandler = asyncHandler(
   async (req: Request, res: Response) => {
