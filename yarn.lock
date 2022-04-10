@@ -4824,6 +4824,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/logfmt@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@types/logfmt@npm:1.2.2"
+  dependencies:
+    "@types/node": "*"
+  checksum: 3f75ce7cc79886b6c3a2b7c467c49d72752a494cf316b87315c7609f9d3f29ffc6d400b6ae9e81c3997ef1e8b0a442974b60e86b3e45a8174b9b0415aba40701
+  languageName: node
+  linkType: hard
+
 "@types/mdast@npm:^3.0.0":
   version: 3.0.10
   resolution: "@types/mdast@npm:3.0.10"
@@ -5563,6 +5572,7 @@ __metadata:
     "@types/express": ^4.17.13
     "@types/express-ws": ^3.0.1
     "@types/http-errors": ^1.8.2
+    "@types/logfmt": ^1.2.2
     "@types/node": ^17.0.18
     "@types/on-finished": ^2.3.1
     "@types/qs": ^6.9.7
@@ -5590,6 +5600,7 @@ __metadata:
     http-proxy: ^1.18.1
     http-status-codes: ^2.2.0
     lodash: ^4.17.21
+    logfmt: ^1.3.2
     loglevel: ^1.8.0
     loglevel-plugin-prefix: ^0.8.4
     nodemon: ^2.0.15
@@ -12593,6 +12604,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"logfmt@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "logfmt@npm:1.3.2"
+  dependencies:
+    split: 0.2.x
+    through: 2.3.x
+  bin:
+    logfmt: ./bin/logfmt
+  checksum: 639d327c1ec5c9b4078278c13f2dd4ea6be0c1057a8735e2b066b7c506532d6b7c267bc4b1c9a6ed7e5d2017abaa69dbe8b4bf9eec4c0b69069a2a53d50f24cb
+  languageName: node
+  linkType: hard
+
 "logform@npm:^2.3.2, logform@npm:^2.4.0":
   version: 2.4.0
   resolution: "logform@npm:2.4.0"
@@ -16839,6 +16862,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"split@npm:0.2.x":
+  version: 0.2.10
+  resolution: "split@npm:0.2.10"
+  dependencies:
+    through: 2
+  checksum: 9eb11956085125cfdce524dd671e436f3c52ee1745ec32902e7b290d3809ad9e4fbf5da58b9bd1e20a033ba9050a4e453bf6f49d50362bd98f60bf9b0d5986b4
+  languageName: node
+  linkType: hard
+
 "sprintf-js@npm:~1.0.2":
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
@@ -17476,6 +17508,13 @@ __metadata:
     readable-stream: ~2.3.6
     xtend: ~4.0.1
   checksum: beb0f338aa2931e5660ec7bf3ad949e6d2e068c31f4737b9525e5201b824ac40cac6a337224856b56bd1ddd866334bbfb92a9f57cd6f66bc3f18d3d86fc0fe50
+  languageName: node
+  linkType: hard
+
+"through@npm:2, through@npm:2.3.x":
+  version: 2.3.8
+  resolution: "through@npm:2.3.8"
+  checksum: a38c3e059853c494af95d50c072b83f8b676a9ba2818dcc5b108ef252230735c54e0185437618596c790bbba8fcdaef5b290405981ffa09dce67b1f1bf190cbd
   languageName: node
   linkType: hard
 
