@@ -1,12 +1,9 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import { AllNetballGraphics } from "./netball";
 import { BaseEventType } from "@ystv/scores/src/common/types";
 import { useOnlyReplicantValue } from "common/useReplicant";
 
-const SportGraphics: Record<string, React.ComponentType> = {
-  netball: AllNetballGraphics,
-};
+const SportGraphics: Record<string, React.ComponentType> = {};
 
 function AllGraphics() {
   const state = useOnlyReplicantValue<BaseEventType>("eventState");
