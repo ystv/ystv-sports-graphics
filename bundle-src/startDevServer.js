@@ -1,3 +1,4 @@
+/* eslint-disable */
 const webpack = require("webpack");
 const webpackConfig = require("./webpack.config");
 if (process.argv.length > 2 && process.argv[2].length > 0) {
