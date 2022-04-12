@@ -64,7 +64,7 @@ export function Field(props: FieldProps) {
           {props.type == "number" ? (
             <NumberInput
               {...field}
-              value={form.values[props.name]}
+              value={field.value}
               /* necessary to properly handle NumberInput onChange having a different param type */
               onChange={(value) => form.setFieldValue(props.name, value)}
               error={meta.touched && meta.error}
@@ -73,6 +73,8 @@ export function Field(props: FieldProps) {
           ) : (
             <TextInput
               {...field}
+              value={field.value ?? ""}
+              onChange={(e) => form.setFieldValue(props.name, e.target.value)}
               error={meta.touched && meta.error}
               label={props.title}
             />
