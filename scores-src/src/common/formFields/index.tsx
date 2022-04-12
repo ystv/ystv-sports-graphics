@@ -86,7 +86,7 @@ export function Checkbox(props: CheckboxProps) {
 }
 
 interface SelectFieldProps extends BaseFieldProps {
-  values: [string, string][];
+  values: [string | null, string][];
   initialValue?: string;
 }
 

@@ -58,7 +58,7 @@ export const actionTypes: EventActionTypes<typeof schema> = {
   goal: {
     schema: Yup.object({
       side: Yup.string().oneOf(["home", "away"]).required(),
-      player: Yup.string().required().min(1).nullable(),
+      player: Yup.string().required().uuid().nullable(),
     }).required(),
     valid: (val) => val.clock.state === "running",
   },
@@ -94,9 +94,6 @@ export const actionFuncs: EventActionFunctions<
       val.scoreHome++;
     } else {
       val.scoreAway++;
-    }
-    if (data.player === "UNKNOWN") {
-      data.player = null;
     }
     val.quarters[val.quarters.length - 1].goals.push({
       side: data.side,
@@ -148,9 +145,11 @@ export function RenderScore(props: {
           )
           .reverse()
           .map((goal) => {
-            const player = props.value.players[goal.side as any].find(
-              (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
-            );
+            const player =
+              goal.player &&
+              props.value.players[goal.side as any].find(
+                (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
+              );
             const tag = player
               ? `${player.name} (${
                   player.position ? player.position + ", " : ""
@@ -193,7 +192,7 @@ export function GoalForm(props: ActionFormProps<typeof schema>) {
       <SelectField
         name="player"
         title="Player"
-        values={([["UNKNOWN", "Unknown"]] as any).concat(
+        values={([[null, "Unknown"]] as any).concat(
           players.map((player) => [
             player.id,
             `${player.name} (${player.position})`,
