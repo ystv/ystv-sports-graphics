@@ -48,7 +48,6 @@ export function CreateEventModal() {
       >
         {({ handleReset, handleSubmit, isSubmitting, errors }) => (
           <Stack>
-            {/*<BootstrapForm onReset={handleReset} onSubmit={handleSubmit}>*/}
             <Field
               type="number"
               name="worthPoints"
@@ -63,7 +62,6 @@ export function CreateEventModal() {
               <Alert>Could not create! {submitError}</Alert>
             )}
             {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
-            {/*  </BootstrapForm>*/}
           </Stack>
         )}
       </Formik>

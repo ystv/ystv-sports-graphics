@@ -2,7 +2,6 @@ import {
   Field as FormikField,
   useField,
   useFormikContext,
-  Formik,
   FieldArray,
   getIn,
   FastField,
@@ -31,24 +30,6 @@ interface BaseFieldProps {
 interface FieldWrapperProps extends BaseFieldProps {
   children: JSX.Element;
 }
-
-// function FieldWrapper(props: FieldWrapperProps) {
-//   const [field, meta] = useField(props.name);
-//   return (
-//     <Form.Group>
-//       <Form.Label>{props.title}</Form.Label>
-//       {props.children}
-//       {meta.touched && meta.error && (
-//         <Form.Control.Feedback type="invalid">
-//           {meta.error}
-//         </Form.Control.Feedback>
-//       )}
-//       {props.helper && (
-//         <Form.Text className="text-muted">{props.helper}</Form.Text>
-//       )}
-//     </Form.Group>
-//   );
-// }
 
 interface FieldProps extends BaseFieldProps {
   type?: JSX.IntrinsicElements["input"]["type"];
@@ -96,15 +77,6 @@ export function Checkbox(props: CheckboxProps) {
       {({ field, meta }: FormikFieldProps<any>) => (
         <Check {...field} label={props.title} />
         //  DON'T HAVE AN ERROR STATE CURRENTLY
-
-        // <FieldWrapper {...props}>
-        //   <Form.Check
-        //     {...field}
-        //     type="checkbox"
-        //     isValid={meta.touched && !meta.error}
-        //     isInvalid={meta.touched && !!meta.error}
-        //   />
-        // </FieldWrapper>
       )}
     </FieldComponent>
   );
