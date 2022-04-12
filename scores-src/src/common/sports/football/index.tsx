@@ -81,6 +81,7 @@ export function GoalForm(props: ActionFormProps<typeof schema>) {
       <SelectField
         name="player"
         title="Player"
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         values={([[null, "Unknown"]] as any).concat(
           players.map((player) => [
             player.id,
