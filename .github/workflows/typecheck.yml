@@ -7,14 +7,14 @@ on:
     branches: [main]
 
 jobs:
-  prettier:
+  typescript:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout NodeCG
         uses: actions/checkout@v3
         with:
-          repository: https://github.com/nodecg/nodecg.git
+          repository: nodecg/nodecg
           ref: v1.8.1
           path: ./nodecg
 
