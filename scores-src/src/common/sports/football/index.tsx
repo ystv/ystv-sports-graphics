@@ -266,7 +266,8 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     },
     startHalf: {
       ...actionTypes.startHalf,
-      Form: () => null as any,
+      // @ts-expect-error should be ReactNode
+      Form: () => null,
     },
     resumeCurrentHalf: {
       ...actionTypes.resumeCurrentHalf,
@@ -288,7 +289,8 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     },
     endHalf: {
       ...actionTypes.endHalf,
-      Form: () => null as any,
+      // @ts-expect-error should be ReactNode
+      Form: () => null,
     },
   },
 };

@@ -38,6 +38,7 @@ import { Logger } from "winston";
 
 const errorHandler: (
   log: Logger
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => (err: any, req: Request, res: Response, next: NextFunction) => any =
   (httpLogger) => (err, req, res, next) => {
     let code: number;

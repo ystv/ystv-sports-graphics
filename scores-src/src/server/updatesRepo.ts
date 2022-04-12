@@ -13,7 +13,10 @@ export interface UpdatesMessage {
 
 const UPDATES_STREAM = "eventUpdates";
 
-export async function dispatchChangeToEvent(id: string, data: any) {
+export async function dispatchChangeToEvent(
+  id: string,
+  data: Record<string, unknown>
+) {
   const msg: UpdatesMessage = {
     id,
     data: JSON.stringify(data),

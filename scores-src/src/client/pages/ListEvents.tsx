@@ -19,6 +19,7 @@ export function ListEvents() {
     if (error instanceof Error) {
       message = error.message;
       if ("status" in error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         message += ` [status: ${(error as any).status}]`;
       }
     } else {

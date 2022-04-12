@@ -28,8 +28,9 @@ export = (nodecg: NodeCG) => {
   const eventIDRep = nodecg.Replicant<EventID>("eventID", {
     defaultValue: null,
   });
-  const eventStateRep = nodecg.Replicant("eventState", {
-    defaultValue: null as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const eventStateRep = nodecg.Replicant<any>("eventState", {
+    defaultValue: null,
   });
 
   let sid = "";
@@ -48,7 +49,7 @@ export = (nodecg: NodeCG) => {
       cb(null, result.data);
     } catch (e) {
       nodecg.log.error("LE error", e);
-      cb!(e);
+      cb(e);
     }
   });
 
@@ -190,7 +191,7 @@ export = (nodecg: NodeCG) => {
         case "PONG":
           break;
         default:
-          // @ts-expect-error
+          // @ts-expect-error `kind` can have anything come in at runtime
           nodecg.log.warn("Unhandled WS message kind", payload.kind);
       }
     };

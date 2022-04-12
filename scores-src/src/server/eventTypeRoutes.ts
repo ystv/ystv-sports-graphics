@@ -6,7 +6,6 @@ import asyncHandler from "express-async-handler";
 import { PreconditionFailed } from "http-errors";
 import { DocumentExistsError } from "couchbase";
 import { EventActionFunctions, EventActionTypes } from "../common/types";
-import { REDIS } from "./redis";
 import { dispatchChangeToEvent } from "./updatesRepo";
 
 export function makeEventAPI<
@@ -48,7 +47,7 @@ export function makeEventAPI<
         .omit(["id", "type"])
         .validate(req.body, { abortEarly: false });
       val.type = typeName;
-      while (true) {
+      for (;;) {
         try {
           val.id = uuidv4();
           await DB.collection("_default").insert(key(val.id), val);
@@ -92,7 +91,9 @@ export function makeEventAPI<
             stripUnknown: true,
           });
         const result = await DB.collection("_default").get(key(req.params.id));
-        let val = result.content;
+
+        // interior-mutable
+        const val = result.content;
 
         const validFn = actionTypes[action].valid;
         if (typeof validFn === "function") {
