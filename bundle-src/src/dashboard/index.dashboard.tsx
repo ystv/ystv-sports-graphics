@@ -6,8 +6,11 @@ import { Button, MantineProvider, Title } from "@mantine/core";
 import { ScoresServiceConnectionState } from "common/types/scoresServiceConnectionState";
 import { EventID } from "common/types/eventID";
 import { BaseEventType } from "@ystv/scores/src/common/types";
+import { NetballDashboard } from "./events/netball";
 
-const SportControllers: Record<string, React.ComponentType> = {};
+const SportControllers: Record<string, React.ComponentType> = {
+  netball: NetballDashboard,
+};
 
 function Dashboard() {
   const connectionState = useOnlyReplicantValue<ScoresServiceConnectionState>(
@@ -34,9 +37,8 @@ function Dashboard() {
   );
 
   const EventController = eventState
-    ? SportControllers[eventState.type] ?? (
-        <b>no controller for {eventState.type} ?!</b>
-      )
+    ? SportControllers[eventState.type] ??
+      (() => <b>no controller for {eventState.type} ?!</b>)
     : () => null;
 
   return (

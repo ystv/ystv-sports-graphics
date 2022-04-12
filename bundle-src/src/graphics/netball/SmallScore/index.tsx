@@ -1,6 +1,6 @@
 import { RenderClock } from "@ystv/scores/src/common/components/Clock";
 import { ValueType } from "@ystv/scores/src/common/sports/netball";
-import { ControlNetball } from "common/types/control:netball";
+import { ControlNetball } from "common/types/control-netball";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface NetballSmallScoreProps {

@@ -2,14 +2,14 @@ import { useOnlyReplicantValue, useReplicantValue } from "common/useReplicant";
 import produce from "immer";
 
 import type { ValueType } from "@ystv/scores/src/common/sports/netball";
-import { ControlNetball } from "common/types/control:netball";
+import { ControlNetball } from "common/types/control-netball";
 import { Container, Title } from "@mantine/core";
 import { LiveKillButtons } from "../components/liveKill";
 
 export function NetballDashboard() {
   const state = useOnlyReplicantValue<ValueType>("eventState");
   const [control, setControl] = useReplicantValue<ControlNetball>(
-    "control:netball",
+    "control-netball",
     undefined,
     {
       defaultValue: {
