@@ -108,6 +108,7 @@ export function SelectField(props: SelectFieldProps) {
       onChange={(value) => helpers.setValue(value === nullSigil ? null : value)}
       error={meta.touched && meta.error}
       description={props.helper}
+      defaultValue={props.initialValue}
     />
   );
 }

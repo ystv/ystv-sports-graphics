@@ -81,8 +81,8 @@ export function GoalForm(props: ActionFormProps<typeof schema>) {
       <SelectField
         name="player"
         title="Player"
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        values={([[null, "Unknown"]] as any).concat(
+        // @ts-expect-error typing here is funky
+        values={[[null, "Unknown"]].concat(
           players.map((player) => [
             player.id,
             `${player.name} (${player.number})`,
@@ -162,32 +162,34 @@ export function RenderScore(props: { value: ValueType; actions: ReactNode }) {
             <th>Edit</th>
           </tr>
         </thead>
-        {props.value.halves
-          .flatMap((x) => x.goals.slice())
-          .reverse()
-          .map((goal) => {
-            // @ts-expect-error something is funky with the indexing here
-            const player = props.value.players[goal.side].find(
-              (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
-            ) as
-              | ValueType["players"]["home"][0]
-              | ValueType["players"]["away"][0];
-            return (
-              <tr key={goal.time}>
-                <td>{Math.floor(goal.time / 60 / 1000).toFixed(0)}'</td>
-                <td>GOAL</td>
-                <td>
-                  {player.name} ({player.number})
-                </td>
-                <td>
-                  <Button disabled leftIcon={<Pencil />}>
-                    Edit
-                  </Button>
-                </td>
-                {/* TODO: This needs to handle stoppage time (e.g. 47th minute should show as 45+2) */}
-              </tr>
-            );
-          })}
+        <tbody>
+          {props.value.halves
+            .flatMap((x) => x.goals.slice())
+            .reverse()
+            .map((goal) => {
+              // @ts-expect-error something is funky with the indexing here
+              const player = props.value.players[goal.side].find(
+                (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
+              ) as
+                | ValueType["players"]["home"][0]
+                | ValueType["players"]["away"][0];
+              return (
+                <tr key={goal.time}>
+                  <td>{Math.floor(goal.time / 60 / 1000).toFixed(0)}'</td>
+                  <td>GOAL</td>
+                  <td>
+                    {player.name} ({player.number})
+                  </td>
+                  <td>
+                    <Button disabled leftIcon={<Pencil />}>
+                      Edit
+                    </Button>
+                  </td>
+                  {/* TODO: This needs to handle stoppage time (e.g. 47th minute should show as 45+2) */}
+                </tr>
+              );
+            })}
+        </tbody>
       </Table>
     </Stack>
   );
