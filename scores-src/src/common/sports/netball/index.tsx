@@ -147,7 +147,8 @@ export function RenderScore(props: {
           .map((goal) => {
             const player =
               goal.player &&
-              props.value.players[goal.side as any].find(
+              // @ts-expect-error goal.side indexing is strange
+              props.value.players[goal.side].find(
                 (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
               );
             const tag = player
