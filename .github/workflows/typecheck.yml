@@ -1,0 +1,80 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Run TypeScript
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout NodeCG
+        uses: actions/checkout@v3
+        with:
+          repository: nodecg/nodecg
+          ref: v1.8.1
+          path: ./nodecg
+
+      - uses: actions/checkout@v3
+        with:
+          path: ./nodecg/bundles/ystv-sports-graphics
+
+      - uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Dependencies
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: yarn --immutable --inline-builds
+
+      - name: Run TypeScript (bundle-src)
+        id: tsc_bundle
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: yarn tsc --noEmit | reviewdog -f=tsc -name="tsc (bundle-src)" -reporter=github-pr-check -filter-mode=nofilter -fail-on-error=true -level=error
+
+      - name: Run TypeScript (scores-src common)
+        id: tsc_scores_common
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/common
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: yarn tsc --noEmit | reviewdog -f=tsc -name="tsc (scores-src/common)" -reporter=github-pr-check -filter-mode=nofilter -fail-on-error=true -level=error
+
+      - name: Run TypeScript (scores-src client)
+        id: tsc_scores_client
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/client
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: yarn tsc --noEmit | reviewdog -f=tsc -name="tsc (scores-src/client)" -reporter=github-pr-check -filter-mode=nofilter -fail-on-error=true -level=error
+
+      - name: Run TypeScript (scores-src server)
+        id: tsc_scores_server
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/server
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: yarn tsc --noEmit | reviewdog -f=tsc -name="tsc (scores-src/server)" -reporter=github-pr-check -filter-mode=nofilter -fail-on-error=true -level=error
+
+      - name: Fail if any of the previous failed
+        if: steps.tsc_bundle.outcome != 'success' || steps.tsc_scores_common.outcome != 'success' || steps.tsc_scores_client.outcome != 'success' || steps.tsc_scores_server.outcome != 'success'
+        run: exit 1

@@ -163,9 +163,12 @@ export function RenderScore(props: { value: ValueType; actions: ReactNode }) {
           .flatMap((x) => x.goals.slice())
           .reverse()
           .map((goal) => {
-            const player = props.value.players[goal.side as any].find(
+            // @ts-expect-error something is funky with the indexing here
+            const player = props.value.players[goal.side].find(
               (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
-            );
+            ) as
+              | ValueType["players"]["home"][0]
+              | ValueType["players"]["away"][0];
             return (
               <tr key={goal.time}>
                 <td>{Math.floor(goal.time / 60 / 1000).toFixed(0)}'</td>

@@ -91,20 +91,30 @@ interface SelectFieldProps extends BaseFieldProps {
   helper?: string;
 }
 
+const nullSigil = "$NULL$";
+
 export function SelectField(props: SelectFieldProps) {
-  const [field, meta] = useField(props.name);
+  const [field, meta, helpers] = useField(props.name);
   return (
     <Select
       label={props.title}
-      data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
+      data={props.values.map((e) => ({
+        value: e[0] ?? nullSigil,
+        label: e[1],
+      }))}
       {...field}
+      onChange={(value) => helpers.setValue(value === nullSigil ? null : value)}
       error={meta.touched && meta.error}
       description={props.helper}
     />
   );
 }
 
-export function SegmentedSelectField(props: SelectFieldProps) {
+export interface SegmentedSelectFieldProps extends SelectFieldProps {
+  values: [string, string][];
+}
+
+export function SegmentedSelectField(props: SegmentedSelectFieldProps) {
   const [field, meta, helpers] = useField(props.name);
   return (
     <InputWrapper description={props.helper}>
