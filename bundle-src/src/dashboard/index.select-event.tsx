@@ -16,7 +16,7 @@ import {
 } from "@mantine/core";
 import type { BaseEventType } from "@ystv/scores/src/common/types";
 import { EventID } from "common/types/eventID";
-import invariant from "invariant";
+import invariant from "tiny-invariant";
 
 function Dashboard() {
   const [events, setEvents] = useState<BaseEventType[] | null>(null);
