@@ -193,7 +193,8 @@ export function GoalForm(props: ActionFormProps<typeof schema>) {
       <SelectField
         name="player"
         title="Player"
-        values={([[null, "Unknown"]] as any).concat(
+        // @ts-expect-error typing here is funky
+        values={[[null, "Unknown"]].concat(
           players.map((player) => [
             player.id,
             `${player.name} (${player.position})`,
@@ -261,7 +262,8 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     },
     startQuarter: {
       ...actionTypes.startQuarter,
-      Form: () => null as any,
+      // @ts-expect-error should be ReactNode
+      Form: () => null,
     },
     pauseClock: {
       ...actionTypes.pauseClock,
@@ -281,7 +283,8 @@ export const typeInfo: EventTypeInfo<typeof schema> = {
     },
     endCurrentQuarter: {
       ...actionTypes.endCurrentQuarter,
-      Form: () => null as any,
+      // @ts-expect-error should be ReactNode
+      Form: () => null,
     },
   },
 };

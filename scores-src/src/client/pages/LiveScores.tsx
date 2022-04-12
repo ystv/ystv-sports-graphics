@@ -11,8 +11,9 @@ import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
 function EventActionModal(props: {
   eventType: keyof typeof EVENTS;
   eventId: string;
-  actionType: any;
+  actionType: string;
   onClose: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentState: any;
 }) {
   const actionSchema = EVENTS[props.eventType].actions[props.actionType].schema;
@@ -20,11 +21,17 @@ function EventActionModal(props: {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const doAction = usePOSTEventAction();
 
-  async function submit(values: any, helpers: FormikHelpers<any>) {
+  async function submit<T>(values: T, helpers: FormikHelpers<T>) {
     helpers.setSubmitting(true);
     setSubmitError(null);
     try {
-      await doAction(props.eventType, props.eventId, props.actionType, values);
+      await doAction(
+        props.eventType,
+        props.eventId,
+        props.actionType,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        values as any
+      );
       helpers.setSubmitting(false);
       props.onClose();
     } catch (e) {
@@ -68,7 +75,7 @@ export function LiveScores() {
   invariant(typeof type === "string", "no type");
   invariant(typeof id === "string", "no id");
   const [data, status, error] = useLiveData(`Event/${type}/${id}`);
-  const RenderScore = EVENTS[type!].RenderScore;
+  const RenderScore = EVENTS[type].RenderScore;
   const actions = EVENTS[type].actions;
 
   const [activeAction, setActiveAction] = useState<keyof typeof actions | null>(

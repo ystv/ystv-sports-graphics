@@ -1,6 +1,6 @@
 import { Button, Title, Group } from "@mantine/core";
 
-export type LiveKillCallback = (value: boolean) => any;
+export type LiveKillCallback = (value: boolean) => unknown;
 
 export const LiveButton = ({ callback }: { callback: LiveKillCallback }) => (
   <Button onClick={() => callback(true)} color="green">

@@ -17,7 +17,8 @@ function Dashboard() {
     "scoresServiceConnectionState",
     undefined,
     {
-      defaultValue: "<nodecg is having a moment...>" as any,
+      // @ts-expect-error explicitly not one of the valid values, just for display
+      defaultValue: "<nodecg is having a moment...>",
     }
   );
 

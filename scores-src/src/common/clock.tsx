@@ -97,7 +97,7 @@ export function formatMMSSMS(
   }
 
   if (precisionHigh >= 3) {
-    let h = Math.floor(time / (1000 * 60 * 60));
+    const h = Math.floor(time / (1000 * 60 * 60));
     str = h.toFixed(0).padStart(2, "0") + ":" + str;
   }
 

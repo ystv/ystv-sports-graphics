@@ -60,7 +60,7 @@ export function useLiveData<T>(eventId: string) {
     messageQueue.current.push(data);
   }
 
-  const handleMessage = (ev: MessageEvent<any>) => {
+  const handleMessage = (ev: MessageEvent<unknown>) => {
     invariant(
       typeof ev.data === "string",
       "got a websocket message with data type " +
@@ -88,7 +88,8 @@ export function useLiveData<T>(eventId: string) {
         messageQueue.current = [];
         break;
       case "SUBSCRIBE_OK":
-        setValue(payload.current as any);
+        // @ts-expect-error typing this is impossible
+        setValue(payload.current);
         break;
       case "UNSUBSCRIBE_OK":
         break;
@@ -98,7 +99,8 @@ export function useLiveData<T>(eventId: string) {
           break;
         }
 
-        setValue(payload.data as any);
+        // @ts-expect-error typing this is impossible
+        setValue(payload.data);
         lastMid.current = payload.mid;
         break;
       case "ERROR":
@@ -110,7 +112,8 @@ export function useLiveData<T>(eventId: string) {
       case "PONG":
         break;
       default:
-        invariant(false, "Unhandled message KIND " + (payload as any).kind);
+        // @ts-expect-error can receive anything at runtime
+        invariant(false, "Unhandled message KIND " + payload.kind);
     }
   };
 

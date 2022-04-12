@@ -13,7 +13,7 @@ function AllGraphics() {
   if (!state) {
     return null;
   }
-  const Graphic = SportGraphics[state.type as any];
+  const Graphic = SportGraphics[state.type];
   if (!Graphic) {
     return null;
   }

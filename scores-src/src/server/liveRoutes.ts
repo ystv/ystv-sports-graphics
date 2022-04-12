@@ -82,7 +82,7 @@ export function createLiveRouter() {
         BadRequest,
         "invalid last_mid type"
       );
-      while (true) {
+      for (;;) {
         const data = await getEventChanges(logger, req.query.last_mid, 0);
         if (data === null || data.length === 0) {
           logger.debug("Caught up, continuing");
@@ -98,14 +98,13 @@ export function createLiveRouter() {
 
     ws.on("message", async (msg) => {
       try {
-        let payload: LiveClientMessage;
         ensure(typeof msg === "string", UserError, "non-string message");
-        payload = JSON.parse(msg);
+        const payload: LiveClientMessage = JSON.parse(msg);
         switch (payload.kind) {
           case "PING":
             send({ kind: "PONG" });
             break;
-          case "SUBSCRIBE":
+          case "SUBSCRIBE": {
             ensure(
               typeof payload.to === "string",
               UserError,
@@ -131,6 +130,7 @@ export function createLiveRouter() {
               current,
             });
             break;
+          }
           case "UNSUBSCRIBE":
             ensure(
               typeof payload.to === "string",
@@ -158,7 +158,7 @@ export function createLiveRouter() {
 
     let lastMid = "$";
 
-    while (true) {
+    for (;;) {
       const data = await getEventChanges(logger, lastMid, 5_000);
       if (ws.readyState === ws.CLOSED) {
         logger.info("WebSocket state is CLOSED, ending Redis loop.");
@@ -176,7 +176,7 @@ export function createLiveRouter() {
         logger.debug("MID is now " + msg.mid);
       }
     }
-  } as any);
+  });
 
   return router;
 }

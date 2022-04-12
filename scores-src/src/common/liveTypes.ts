@@ -22,12 +22,12 @@ export type LiveServerMessage =
       kind: "CHANGE";
       changed: string;
       mid: string;
-      data: Record<string, any>;
+      data: Record<string, unknown>;
     }
   | {
       kind: "SUBSCRIBE_OK";
       to: string;
-      current: Record<string, any>;
+      current: Record<string, unknown>;
     }
   | {
       kind: "UNSUBSCRIBE_OK";
