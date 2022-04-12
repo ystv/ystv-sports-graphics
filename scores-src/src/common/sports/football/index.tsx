@@ -45,7 +45,7 @@ export const schema = BaseEvent.shape({
             Yup.object({
               time: Yup.number().required(),
               side: Yup.string().oneOf(["home", "away"]).required(),
-              player: Yup.string().uuid().required(),
+              player: Yup.string().uuid().required().nullable().default(null),
             })
           )
           .required()
@@ -81,10 +81,12 @@ export function GoalForm(props: ActionFormProps<typeof schema>) {
       <SelectField
         name="player"
         title="Player"
-        values={players.map((player) => [
-          player.id,
-          `${player.name} (${player.number})`,
-        ])}
+        values={([[null, "Unknown"]] as any).concat(
+          players.map((player) => [
+            player.id,
+            `${player.name} (${player.number})`,
+          ])
+        )}
       />
     </div>
   );
@@ -194,7 +196,7 @@ export const actionTypes: EventActionTypes<typeof schema> = {
   goal: {
     schema: Yup.object({
       side: Yup.string().oneOf(["home", "away"]).required(),
-      player: Yup.string().uuid().required(),
+      player: Yup.string().uuid().required().nullable().default(null),
     }).required(),
     valid: (val) => val.clock.state === "running",
   },
