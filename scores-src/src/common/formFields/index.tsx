@@ -19,6 +19,7 @@ import {
   Stack,
   Title,
   SegmentedControl,
+  InputWrapper,
 } from "@mantine/core";
 
 interface BaseFieldProps {
@@ -50,6 +51,7 @@ export function Field(props: FieldProps) {
               onChange={(value) => form.setFieldValue(props.name, value)}
               error={meta.touched && meta.error}
               label={props.title}
+              description={props.helper}
             />
           ) : (
             <TextInput
@@ -58,6 +60,7 @@ export function Field(props: FieldProps) {
               onChange={(e) => form.setFieldValue(props.name, e.target.value)}
               error={meta.touched && meta.error}
               label={props.title}
+              description={props.helper}
             />
           )}
         </>
@@ -85,6 +88,7 @@ export function Checkbox(props: CheckboxProps) {
 interface SelectFieldProps extends BaseFieldProps {
   values: [string | null, string][];
   initialValue?: string;
+  helper?: string;
 }
 
 export function SelectField(props: SelectFieldProps) {
@@ -95,6 +99,7 @@ export function SelectField(props: SelectFieldProps) {
       data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
       {...field}
       error={meta.touched && meta.error}
+      description={props.helper}
     />
   );
 }
@@ -102,12 +107,14 @@ export function SelectField(props: SelectFieldProps) {
 export function SegmentedSelectField(props: SelectFieldProps) {
   const [field, meta, helpers] = useField(props.name);
   return (
-    <SegmentedControl
-      fullWidth
-      data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
-      {...field}
-      onChange={(value) => helpers.setValue(value)}
-    />
+    <InputWrapper description={props.helper}>
+      <SegmentedControl
+        fullWidth
+        data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
+        {...field}
+        onChange={(value) => helpers.setValue(value)}
+      />
+    </InputWrapper>
   );
 }
 
