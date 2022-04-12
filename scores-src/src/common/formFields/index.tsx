@@ -115,6 +115,10 @@ export interface SegmentedSelectFieldProps extends SelectFieldProps {
 }
 
 export function SegmentedSelectField(props: SegmentedSelectFieldProps) {
+  useEffect(() => {
+    helpers.setValue(props.values[0][0]);
+  }, []);
+
   const [field, meta, helpers] = useField(props.name);
   return (
     <InputWrapper description={props.helper}>
@@ -123,6 +127,7 @@ export function SegmentedSelectField(props: SegmentedSelectFieldProps) {
         data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
         {...field}
         onChange={(value) => helpers.setValue(value)}
+        value={field.value}
       />
     </InputWrapper>
   );
