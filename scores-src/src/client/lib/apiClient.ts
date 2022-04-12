@@ -19,7 +19,8 @@ const fetcher = (
           logger.warn(
             `Received unexpected status ${res.status} from ${endpoint} (expected ${expectedStatus})`
           );
-          const up = new Error(`Unexpected status ${res.status}`) as any;
+          const up = new Error(`Unexpected status ${res.status}`);
+          // @ts-expect-error assigning to errors is fine
           up.status = res.status;
           try {
             const data = await res.json();
@@ -44,7 +45,9 @@ const fetcher = (
     }
   );
 
-function useAPIRoute<TRes, TParams extends {} | any[] = {}>(
+type AnyObject = Record<string, unknown>;
+
+function useAPIRoute<TRes, TParams extends AnyObject | AnyObject[] = AnyObject>(
   endpoint: string,
   payload?: TParams,
   expectedStatus?: number
@@ -134,7 +137,7 @@ export function usePOSTEventAction() {
     type: string,
     id: string,
     actionType: string,
-    data: Record<string, any>
+    data: Record<string, unknown>
   ) => {
     const result = (await fetcher(
       `/events/${type}/${id}/${actionType}`,

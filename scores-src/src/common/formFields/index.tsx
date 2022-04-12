@@ -41,6 +41,7 @@ export function Field(props: FieldProps) {
   const FieldComponent = props.independent ? FastField : FormikField;
   return (
     <FieldComponent name={props.name}>
+      {/*eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {({ field, meta, form }: FormikFieldProps<any>) => (
         <>
           {props.type == "number" ? (
@@ -77,6 +78,7 @@ export function Checkbox(props: CheckboxProps) {
   const FieldComponent = props.independent ? FastField : FormikField;
   return (
     <FieldComponent name={props.name} type="checkbox">
+      {/*eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {({ field, meta }: FormikFieldProps<any>) => (
         <Check {...field} label={props.title} />
         //  DON'T HAVE AN ERROR STATE CURRENTLY
@@ -143,6 +145,7 @@ export function RandomUUIDField(props: { name: string }) {
 interface ArrayFieldProps {
   name: string;
   title?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialChildValue: any;
   renderChild: (props: { namespace: string }) => React.ReactNode;
 }
@@ -156,7 +159,7 @@ export function ArrayField(props: ArrayFieldProps) {
       render={(arrayHelpers) => (
         <Stack>
           {props.title && <Title order={4}>{props.title}</Title>}
-          {field.value?.map((_: any, idx: number) => {
+          {field.value?.map((_: unknown, idx: number) => {
             const namespace = `${props.name}[${idx}]`;
             const errorMaybe = getIn(formik.errors, namespace);
             return (

@@ -3,6 +3,7 @@ import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Field } from "../../common/formFields";
+import { BaseEventType } from "../../common/types";
 import { EVENTS } from "../eventTypes";
 import { usePOSTEvents } from "../lib/apiClient";
 
@@ -13,7 +14,10 @@ export function CreateEventModal() {
   const create = usePOSTEvents();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  async function submit(values: any, helpers: FormikHelpers<any>) {
+  async function submit(
+    values: BaseEventType,
+    helpers: FormikHelpers<BaseEventType>
+  ) {
     helpers.setSubmitting(true);
     setSubmitError(null);
     try {
@@ -32,6 +36,7 @@ export function CreateEventModal() {
         <Select
           label={"Type"}
           value={type}
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           onChange={(e) => setType(e!)}
           data={Object.keys(EVENTS).map((e) => ({
             label: e.replace(/^\w/, (c) => c.toUpperCase()),
@@ -42,7 +47,8 @@ export function CreateEventModal() {
       </Stack>
       <Formik
         enableReinitialize
-        initialValues={{}}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        initialValues={{} as any}
         onSubmit={submit}
         validationSchema={EVENTS[type].schema.omit(["id", "type"])}
       >

@@ -11,7 +11,7 @@
  */
 export function ensure(
   condition: boolean,
-  ctor: new (msg: string) => any,
+  ctor: new (msg: string) => unknown,
   message: string
 ): asserts condition {
   if (!condition) {

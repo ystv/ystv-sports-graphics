@@ -38,12 +38,12 @@ export function useOnlyReplicantValue<T>(
 export function useReplicantValue<T>(
   name: string,
   namespace?: string
-): [T | undefined, (val: T) => any];
+): [T | undefined, (val: T) => unknown];
 export function useReplicantValue<T>(
   name: string,
   namespace: string | undefined,
   opts: ReplicantOptions<T>
-): [T, (val: T) => any];
+): [T, (val: T) => unknown];
 export function useReplicantValue<T>(
   name: string,
   namespace?: string,

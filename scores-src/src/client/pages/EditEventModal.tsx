@@ -2,23 +2,29 @@ import { Alert, Button, Modal, Stack, Title } from "@mantine/core";
 import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import invariant from "tiny-invariant";
 import { Field } from "../../common/formFields";
 import { EVENTS } from "../eventTypes";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
 export function EditEventForm() {
   const { type, id } = useParams();
-  const EditForm = EVENTS[type!].EditForm;
-  const { loading, error, data } = useGETEvent(type!, id!);
+  invariant(typeof type === "string", "no type given");
+  invariant(typeof id === "string", "no id given");
+  const EditForm = EVENTS[type].EditForm;
+  const { loading, error, data } = useGETEvent(type, id);
   const update = usePUTEvent();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const nav = useNavigate();
 
-  async function submit(values: any, helpers: FormikHelpers<any>) {
+  async function submit<T>(values: T, helpers: FormikHelpers<T>) {
+    invariant(typeof type === "string", "no type given");
+    invariant(typeof id === "string", "no id given");
     helpers.setSubmitting(true);
     setSubmitError(null);
     try {
-      const result = await update(type!, id!, values);
+      // @ts-expect-error can't be safely typed
+      const result = await update(type, id, values);
       nav("/events");
     } catch (e) {
       helpers.setSubmitting(false);
@@ -37,7 +43,7 @@ export function EditEventForm() {
       {data && (
         <Formik
           initialValues={data}
-          validationSchema={EVENTS[type!].schema}
+          validationSchema={EVENTS[type].schema}
           onSubmit={submit}
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
@@ -69,7 +75,9 @@ export function EditEventForm() {
 export function EditEventModal() {
   const nav = useNavigate();
   const { type, id } = useParams();
-  const { loading, error, data } = useGETEvent(type!, id!);
+  invariant(typeof type === "string", "no type given");
+  invariant(typeof id === "string", "no id given");
+  const { loading, error, data } = useGETEvent(type, id);
   return (
     <Modal opened onClose={() => nav("/events")}>
       <Title>Editing {data?.name || id}</Title>
