@@ -1,16 +1,17 @@
 {
-    "db": {
-        "connectionString": "couchbase://couchbase",
-        "username": "sports-scores",
-        "password": "password",
-        "bucket": "sports-scores",
-        "scope": "_default"
-    },
-    "logLevel": "info",
-    "pathPrefix": "/api",
-    "port": 8000,
-    "redis": {
-        "connectionString": "redis://localhost"
-    },
-    "allowedOrigins": []
+  "db": {
+    "connectionString": "couchbase://couchbase",
+    "username": "sports-scores",
+    "password": "password",
+    "bucket": "sports-scores",
+    "scope": "_default"
+  },
+  "logLevel": "info",
+  "pathPrefix": "/api",
+  "port": 8000,
+  "redis": {
+    "connectionString": "redis://localhost"
+  },
+  "allowedOrigins": [],
+  "subscriptionLifetime": 3600
 }
