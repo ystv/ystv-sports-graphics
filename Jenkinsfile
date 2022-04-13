@@ -2,6 +2,10 @@ pipeline {
     agent {
         label 'docker'
     }
+
+    environment {
+        DOCKER_BUILDKIT = "1"
+    }
     
     stages {
         stage('Download Dependencies') {
@@ -25,7 +29,7 @@ pipeline {
                 stage('Bundle') {
                     steps {
                         withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
-                            sh "DOCKER_BUILDKIT=1 docker build -t registry.comp.ystv.co.uk/sports-scores/bundle:${env.BUILD_NUMBER} -f Dockerfile.bundle ."
+                            sh "docker build -t registry.comp.ystv.co.uk/sports-scores/bundle:${env.BUILD_NUMBER} -f Dockerfile.bundle ."
                         }
                     }
                 }
