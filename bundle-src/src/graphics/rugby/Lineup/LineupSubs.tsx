@@ -98,6 +98,7 @@ export function LineupSubs({ isVisible = false, team = 0 }: LineupSubsProps) {
                     >
                       {side.team.map((e, i) => (
                         <motion.tr
+                          key={e.name}
                           className={styles.lineupMicroRow}
                           variants={cellVariants}
                         >

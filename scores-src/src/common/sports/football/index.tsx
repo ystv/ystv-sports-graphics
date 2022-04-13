@@ -175,7 +175,7 @@ export function RenderScore(props: { value: ValueType; actions: ReactNode }) {
                 | ValueType["players"]["away"][0];
               return (
                 <tr key={goal.time}>
-                  <td>{Math.floor(goal.time / 60 / 1000).toFixed(0)}'</td>
+                  <td>{Math.floor(goal.time / 60 / 1000).toFixed(0)}&apos;</td>
                   <td>GOAL</td>
                   <td>
                     {player.name} ({player.number})
