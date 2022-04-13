@@ -92,6 +92,7 @@ export function Lineup({ isVisible, lineupTeam = 0 }: LineupProps) {
                 >
                   {teams[lineupTeam].team.slice(0, 8).map((e, i) => (
                     <motion.tr
+                      key={e.name}
                       variants={cellVariants}
                       className={styles.lineupMicroRow}
                     >
@@ -110,6 +111,7 @@ export function Lineup({ isVisible, lineupTeam = 0 }: LineupProps) {
                 >
                   {teams[lineupTeam].team.slice(8).map((e, i) => (
                     <motion.tr
+                      key={e.name}
                       variants={cellVariants}
                       className={styles.lineupMicroRow}
                     >
