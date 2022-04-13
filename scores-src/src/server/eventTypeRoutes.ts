@@ -4,19 +4,33 @@ import { v4 as uuidv4 } from "uuid";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { PreconditionFailed } from "http-errors";
-import { DocumentExistsError } from "couchbase";
+import { DocumentExistsError, MutateInSpec } from "couchbase";
 import { EventActionFunctions, EventActionTypes } from "../common/types";
 import { dispatchChangeToEvent } from "./updatesRepo";
+import {
+  Action,
+  ActionPayloadValidators,
+  ActionValidChecks,
+  Edit,
+  Init,
+  Reducer,
+  resolveEventState,
+  wrapAction,
+} from "../common/eventStateHelpers";
 import { authenticate } from "./auth";
+import { actionValidChecks } from "../common/sports/netball";
+import invariant from "tiny-invariant";
 
 export function makeEventAPI<
-  TEventSchema extends Yup.AnyObjectSchema,
-  TActions extends EventActionTypes<TEventSchema>
+  TState extends Record<string, unknown>,
+  TActions extends Record<string, (payload?: any) => Action>
 >(
   typeName: string,
-  schema: TEventSchema,
-  actionTypes: TActions,
-  actionFuncs: EventActionFunctions<TEventSchema, TActions>
+  reducer: Reducer<TState>,
+  schema: Yup.SchemaOf<TState>,
+  actions: TActions,
+  actionValidators: ActionPayloadValidators<TActions>,
+  checks: ActionValidChecks<TState, TActions>
 ) {
   const router = Router();
 
@@ -29,7 +43,7 @@ export function makeEventAPI<
       const result = await DB.query(
         `SELECT RAW e FROM _default e WHERE meta(e).id LIKE 'Event/${typeName}/%'`
       );
-      res.status(200).json(result.rows);
+      res.json(result.rows.map((row) => resolveEventState(reducer, row)));
     })
   );
 
@@ -39,7 +53,7 @@ export function makeEventAPI<
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       const data = await DB.collection("_default").get(key(id));
-      res.status(200).json(data.content);
+      res.json(resolveEventState(reducer, data.content));
     })
   );
 
@@ -47,14 +61,18 @@ export function makeEventAPI<
     "/",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const val: Yup.InferType<TEventSchema> = await schema
+      const val: TState = await schema
         .omit(["id", "type"])
         .validate(req.body, { abortEarly: false });
-      val.type = typeName;
+
+      const initAction = wrapAction(Init(val));
+      let id: string;
+
       for (;;) {
         try {
-          val.id = uuidv4();
-          await DB.collection("_default").insert(key(val.id), val);
+          id = uuidv4();
+          initAction.payload.id = id;
+          await DB.collection("_default").insert(key(id), [initAction]);
           break;
         } catch (e) {
           if (e instanceof DocumentExistsError) {
@@ -63,8 +81,9 @@ export function makeEventAPI<
           throw e;
         }
       }
-      await dispatchChangeToEvent(key(val.id), val);
-      res.status(201).json(val);
+      await dispatchChangeToEvent(key(id), initAction);
+      res.statusCode = 201;
+      res.json(val);
     })
   );
 
@@ -74,45 +93,65 @@ export function makeEventAPI<
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       const data = await DB.collection("_default").get(key(id));
+      const currentActions = data.content as Action[];
       const inputData = req.body;
-      const val: Yup.InferType<TEventSchema> = await schema
+      const val: TState = await schema
         .omit(["id", "type"])
         .validate(inputData, { abortEarly: false, stripUnknown: true });
-      const result = Object.assign({}, data.content, val);
-      await DB.collection("_default").replace(key(id), result);
-      await dispatchChangeToEvent(key(id), result);
-      res.status(200).json(result);
+      const action = wrapAction(Edit(val));
+      await DB.collection("_default").mutateIn(
+        key(id),
+        [MutateInSpec.arrayAppend("", action)],
+        {
+          cas: data.cas,
+        }
+      );
+      await dispatchChangeToEvent(key(id), action);
+      res
+        .status(200)
+        .json(resolveEventState(reducer, currentActions.concat(action)));
     })
   );
 
-  for (const action of Object.keys(actionTypes)) {
+  for (const actionType of Object.keys(actions)) {
     router.post(
-      `/:id/${action}`,
+      `/:id/${actionType}`,
       authenticate("write"),
       asyncHandler(async (req, res) => {
-        const data: Yup.InferType<TActions[typeof action]["schema"]> =
-          await actionTypes[action].schema.validate(req.body, {
+        const id = req.params.id;
+        invariant(typeof id === "string", "route didn't give us a string id");
+        const payload: ReturnType<TActions[typeof actionType]> =
+          await actionValidators[actionType].validate(req.body, {
             abortEarly: false,
             stripUnknown: true,
           });
-        const result = await DB.collection("_default").get(key(req.params.id));
 
-        // interior-mutable
-        const val = result.content;
+        const currentActionsResult = await DB.collection("_default").get(
+          key(id)
+        );
+        const currentActions = currentActionsResult.content as Action[];
+        const currentState = resolveEventState(reducer, currentActions);
 
-        const validFn = actionTypes[action].valid;
-        if (typeof validFn === "function") {
-          if (!validFn(val)) {
+        const checkFn = checks[actionType];
+        if (typeof checkFn === "function") {
+          if (!checkFn(currentState)) {
             throw new PreconditionFailed("action not valid at this time");
           }
         }
 
-        actionFuncs[action](val, data);
-        await DB.collection("_default").replace(key(req.params.id), val, {
-          cas: result.cas,
-        });
-        await dispatchChangeToEvent(key(req.params.id), val);
-        res.status(200).json(val);
+        const actionData = wrapAction(actions[actionType](payload));
+
+        await DB.collection("_default").mutateIn(
+          key(id),
+          [MutateInSpec.arrayAppend("", actionData)],
+          {
+            cas: currentActionsResult.cas,
+          }
+        );
+        await dispatchChangeToEvent(key(id), actionData);
+        res
+          .status(200)
+          .json(resolveEventState(reducer, currentActions.concat(actionData)));
       })
     );
   }

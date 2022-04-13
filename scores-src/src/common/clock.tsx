@@ -2,8 +2,8 @@ import * as Yup from "yup";
 
 /** An upward clock starts from zero and counts up infinitely. */
 export const UpwardClock = Yup.object({
-  type: Yup.string().required().equals(["upward"]).default("upward"),
-  state: Yup.string()
+  type: Yup.mixed<"upward">().required().equals(["upward"]).default("upward"),
+  state: Yup.mixed<"running" | "stopped">()
     .oneOf(["running", "stopped"])
     .required()
     .default("stopped"),
@@ -13,8 +13,11 @@ export const UpwardClock = Yup.object({
 
 /** A downward clock starts at `startingTime` and counts down to zero. */
 export const DownwardClock = Yup.object({
-  type: Yup.string().required().equals(["downward"]).default("downward"),
-  state: Yup.string()
+  type: Yup.mixed<"downward">()
+    .required()
+    .equals(["downward"])
+    .default("downward"),
+  state: Yup.mixed<"running" | "stopped">()
     .oneOf(["running", "stopped"])
     .required()
     .default("stopped"),
@@ -23,7 +26,7 @@ export const DownwardClock = Yup.object({
   startingTime: Yup.number().required(),
 }).required();
 
-type DownwardClockType = Yup.InferType<typeof DownwardClock>;
+export type DownwardClockType = Yup.InferType<typeof DownwardClock>;
 
 export type ClockType =
   | Yup.InferType<typeof UpwardClock>
@@ -34,32 +37,48 @@ function isDownward(clock: ClockType): clock is DownwardClockType {
 }
 
 export function currentTime(clock: ClockType): number {
+  return clockTimeAt(clock, new Date().valueOf());
+}
+
+export function clockTimeAt(clock: ClockType, wallClock: number): number {
   if (clock.state === "stopped") {
     return clock.timeLastStartedOrStopped;
   }
   switch (clock.type) {
     case "downward":
+      console.log("YEET", {
+        ...clock,
+        wallClock,
+      });
       return Math.max(
         clock.timeLastStartedOrStopped -
-          (new Date().valueOf() - clock.wallClockLastStarted),
+          (wallClock - clock.wallClockLastStarted),
         0
       );
     case "upward":
       return (
         clock.timeLastStartedOrStopped +
-        (new Date().valueOf() - clock.wallClockLastStarted)
+        (wallClock - clock.wallClockLastStarted)
       );
     default:
       throw new Error("unexpected clock direction: " + clock.type);
   }
 }
 
-export function startClock(clock: ClockType, startAt?: number) {
+export function startClockNow(clock: ClockType, countDownFrom?: number) {
+  startClockAt(clock, new Date().valueOf(), countDownFrom);
+}
+
+export function startClockAt(
+  clock: ClockType,
+  wallClock: number,
+  countDownFrom?: number
+) {
   clock.state = "running";
-  clock.wallClockLastStarted = new Date().valueOf();
-  if (typeof startAt === "number" && isDownward(clock)) {
-    clock.timeLastStartedOrStopped = startAt;
-    clock.startingTime = startAt;
+  clock.wallClockLastStarted = wallClock;
+  if (typeof countDownFrom === "number" && isDownward(clock)) {
+    clock.timeLastStartedOrStopped = countDownFrom;
+    clock.startingTime = countDownFrom;
   }
 }
 

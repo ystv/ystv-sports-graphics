@@ -18,14 +18,11 @@ import { isHttpError, NotFound } from "http-errors";
 import { createEventsRouter } from "./eventsRoutes";
 
 import {
-  actionFuncs as footballActionFuncs,
-  actionTypes as footballActionTypes,
-  schema as footballSchema,
-} from "../common/sports/football";
-import {
-  actionFuncs as netballActionFuncs,
-  actionTypes as netballActionTypes,
-  schema as netballSchema,
+  actionPayloadValidators,
+  actions,
+  actionValidChecks,
+  reducer,
+  schema,
 } from "../common/sports/netball";
 import { createLiveRouter } from "./liveRoutes";
 import {
@@ -104,9 +101,10 @@ const errorHandler: (
     process.exit(11);
   }
 
-  process.on("exit", async () => {
+  process.on("beforeExit", async () => {
     await db.disconnect();
     await redis.close();
+    indexlogger.warn("Goodbye!");
   });
 
   await maybeSetupBootstrap();
@@ -166,21 +164,14 @@ const errorHandler: (
 
   for (const [name, router] of [
     [
-      "football",
-      makeEventAPI(
-        "football",
-        footballSchema,
-        footballActionTypes,
-        footballActionFuncs
-      ),
-    ],
-    [
       "netball",
       makeEventAPI(
         "netball",
-        netballSchema,
-        netballActionTypes,
-        netballActionFuncs
+        reducer as any,
+        schema as any,
+        actions as any,
+        actionPayloadValidators,
+        actionValidChecks as any
       ),
     ],
   ] as const) {
