@@ -112,6 +112,10 @@ export function createLiveRouter() {
             );
             subs.add(payload.to);
             await REDIS.sAdd(`subscriptions:${sid}`, payload.to);
+            await REDIS.expire(
+              `subscriptions:${sid}`,
+              config.subscriptionLifetime
+            );
 
             let current;
             try {
@@ -138,11 +142,26 @@ export function createLiveRouter() {
               "invalid 'to' type"
             );
             subs.delete(payload.to);
+            await REDIS.sRem(`subscriptions:${sid}`, payload.to);
             send({
               kind: "UNSUBSCRIBE_OK",
               to: payload.to,
             });
             break;
+          case "PONG":
+            // Take this as an opportunity to renew their subscriptions key,
+            // so it'll expire an hour after they're last seen
+            await REDIS.expire(
+              `subscriptions:${sid}`,
+              config.subscriptionLifetime
+            );
+            // PONG doesn't need a response
+            break;
+          default: {
+            // @ts-expect-error payload.kind is `never` because this is an exhaustive switch
+            const kind = payload.kind as string;
+            logger.info("Unexpected WS message kind", { kind });
+          }
         }
       } catch (e) {
         if (e instanceof UserError) {

@@ -18,6 +18,7 @@ const config = {
     typeof cfg.get("allowedOrigins") === "string"
       ? cfg.get<string>("allowedOrigins").split(",")
       : cfg.get<string[]>("allowedOrigins"),
+  subscriptionLifetime: cfg.get<number>("subscriptionLifetime"),
 };
 
 export default config;
