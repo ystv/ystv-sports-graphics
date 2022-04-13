@@ -24,7 +24,9 @@ pipeline {
                 }
                 stage('Bundle') {
                     steps {
-                        sh "docker build -t registry.comp.ystv.co.uk/sports-scores/bundle:${env.BUILD_NUMBER} -f Dockerfile.bundle ."
+                        withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
+                            sh "docker build -t registry.comp.ystv.co.uk/sports-scores/bundle:${env.BUILD_NUMBER} -f Dockerfile.bundle ."
+                        }
                     }
                 }
             }
