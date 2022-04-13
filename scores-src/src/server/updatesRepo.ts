@@ -3,23 +3,23 @@ import invariant from "tiny-invariant";
 import * as logging from "./loggingSetup";
 import { commandOptions } from "redis";
 import { Logger } from "winston";
+import { Action } from "../common/eventStateHelpers";
 
 const logger = logging.getLogger("updatesRepo");
 
 export interface UpdatesMessage {
   id: string;
-  data: string;
+  type: string;
+  payload: string;
 }
 
 const UPDATES_STREAM = "eventUpdates";
 
-export async function dispatchChangeToEvent(
-  id: string,
-  data: Record<string, unknown>
-) {
+export async function dispatchChangeToEvent(id: string, data: Action) {
   const msg: UpdatesMessage = {
     id,
-    data: JSON.stringify(data),
+    type: data.type,
+    payload: JSON.stringify(data.payload),
   };
   const result = await REDIS.xAdd(
     UPDATES_STREAM,

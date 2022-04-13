@@ -36,6 +36,7 @@
     "@mantine/hooks": "^4.1.2",
     "@mantine/notifications": "^4.1.2",
     "@popperjs/core": "^2.11.2",
+    "@reduxjs/toolkit": "^1.8.1",
     "@tabler/icons": "^1.64.0",
     "@types/body-parser": "^1.19.2",
     "@types/config": "^0.0.41",

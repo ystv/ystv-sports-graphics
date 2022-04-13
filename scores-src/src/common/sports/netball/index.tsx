@@ -1,15 +1,27 @@
 import { useFormikContext, Field } from "formik";
 import * as Yup from "yup";
-import { currentTime, DownwardClock, startClock, stopClock } from "../../clock";
+import {
+  clockTimeAt,
+  DownwardClock,
+  startClockAt,
+  stopClock,
+} from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { SelectField, ArrayField, RandomUUIDField } from "../../formFields";
 import {
-  ActionFormProps,
-  BaseEvent,
-  EventActionFunctions,
-  EventActionTypes,
-  EventTypeInfo,
-} from "../../types";
+  createSlice,
+  Slice,
+  SliceCaseReducers,
+  CaseReducer,
+  PayloadAction,
+} from "@reduxjs/toolkit";
+import { BaseEvent, BaseEventType } from "../../types";
+import {
+  Action,
+  ActionPayloadValidators,
+  ActionValidChecks,
+  wrapAction,
+} from "../../eventStateHelpers";
 
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
@@ -19,119 +31,158 @@ const playerSchema = Yup.object({
     .oneOf(["GS", "GA", "WA", "C", "WD", "GD", "GK"]),
 });
 
-const FIFTEEN_MINUTES_AS_MS = 15 * 60 * 1000;
+type PlayerType = Yup.InferType<typeof playerSchema>;
+
+const QUARTER_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_QUARTERS_INCLUDING_EXTRA_TIME = 6;
 
-export const schema = BaseEvent.shape({
-  scoreHome: Yup.number().default(0),
-  scoreAway: Yup.number().default(0),
-  players: Yup.object({
-    home: Yup.array().of(playerSchema).required().default([]),
-    away: Yup.array().of(playerSchema).required().default([]),
-  }).required(),
-  clock: DownwardClock.shape({
-    startingTime: Yup.number().required().default(FIFTEEN_MINUTES_AS_MS),
-  }),
-  quarters: Yup.array()
+const quarterSchema = Yup.object({
+  goals: Yup.array()
     .of(
       Yup.object({
-        goals: Yup.array()
-          .of(
-            Yup.object({
-              time: Yup.number().required(),
-              side: Yup.string().oneOf(["home", "away"]).required(),
-              player: Yup.string().uuid().required().nullable().default(null),
-            })
-          )
-          .required()
-          .default([]),
+        time: Yup.number().required(),
+        side: Yup.string().oneOf(["home", "away"]).required(),
+        player: Yup.string().uuid().nullable().default(null),
       })
     )
     .required()
-    .max(MAX_QUARTERS_INCLUDING_EXTRA_TIME)
     .default([]),
 });
 
-export type ValueType = Yup.InferType<typeof schema>;
+export interface State extends BaseEventType {
+  players: {
+    home: PlayerType[];
+    away: PlayerType[];
+  };
+  scoreHome: number;
+  scoreAway: number;
+  quarters: Array<Yup.InferType<typeof quarterSchema>>;
+  clock: Yup.InferType<typeof DownwardClock>;
+}
 
-export const actionTypes: EventActionTypes<typeof schema> = {
-  goal: {
-    schema: Yup.object({
-      side: Yup.string().oneOf(["home", "away"]).required(),
-      player: Yup.string().required().uuid().nullable(),
-    }).required(),
-    valid: (val) => val.clock.state === "running",
+const slice = createSlice({
+  name: "netball",
+  initialState: {
+    id: "INVALID",
+    type: "netball",
+    name: "",
+    worthPoints: 0,
+    players: {
+      home: [],
+      away: [],
+    },
+    scoreHome: 0,
+    scoreAway: 0,
+    quarters: [],
+    clock: {
+      type: "downward",
+      state: "stopped",
+      wallClockLastStarted: -1,
+      timeLastStartedOrStopped: 0,
+      startingTime: QUARTER_DURATION_MS,
+    },
+  } as State,
+  reducers: {
+    goal: {
+      reducer(
+        state,
+        action: Action<{ side: "home" | "away"; player: string | null }>
+      ) {
+        if (action.payload.side === "home") {
+          state.scoreHome++;
+        } else {
+          state.scoreAway++;
+        }
+        state.quarters[state.quarters.length - 1].goals.push({
+          side: action.payload.side,
+          player: action.payload.player,
+          time: clockTimeAt(state.clock, action.meta.ts),
+        });
+      },
+      prepare(payload: { side: "home" | "away"; player: string | null }) {
+        return wrapAction({ payload });
+      },
+    },
+    startQuarter: {
+      reducer(state, action) {
+        state.quarters.push({
+          goals: [],
+        });
+        startClockAt(state.clock, action.meta.ts, QUARTER_DURATION_MS);
+      },
+      prepare() {
+        return wrapAction({});
+      },
+    },
+    pauseClock(state) {
+      stopClock(state.clock);
+    },
+    resumeCurrentQuarter: {
+      reducer(state, action) {
+        state.quarters.push({
+          goals: [],
+        });
+        startClockAt(state.clock, action.meta.ts, QUARTER_DURATION_MS);
+      },
+      prepare() {
+        return wrapAction({});
+      },
+    },
+    endCurrentQuarter(state) {
+      stopClock(state.clock);
+    },
   },
-  startQuarter: {
-    schema: Yup.object({}),
-    valid: (val) =>
-      val.clock.state === "stopped" &&
-      val.quarters.length < MAX_QUARTERS_INCLUDING_EXTRA_TIME,
-  },
-  pauseClock: {
-    schema: Yup.object({}),
-    valid: (val) => val.clock.state === "running",
-  },
-  resumeCurrentQuarter: {
-    schema: Yup.object({}),
-    valid: (val) =>
-      val.clock.state === "stopped" &&
-      val.quarters.length < MAX_QUARTERS_INCLUDING_EXTRA_TIME &&
-      val.quarters.length > 0,
-  },
-  endCurrentQuarter: {
-    schema: Yup.object({}),
-    valid: (val) => val.clock.state === "running",
-  },
-};
+});
 
-export const actionFuncs: EventActionFunctions<
-  typeof schema,
-  typeof actionTypes
+export const reducer = slice.reducer;
+export const actions = slice.actions;
+export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
+  players: Yup.object({
+    home: Yup.array().of(playerSchema),
+    away: Yup.array().of(playerSchema),
+  }),
+  scoreHome: Yup.number().required().default(0),
+  scoreAway: Yup.number().required().default(0),
+  clock: DownwardClock.shape({
+    startingTime: Yup.number().default(QUARTER_DURATION_MS),
+  }),
+  quarters: Yup.array().of(quarterSchema).default([]),
+});
+
+export const actionPayloadValidators: ActionPayloadValidators<
+  typeof slice["actions"]
 > = {
-  goal(val, data) {
-    if (data.side === "home") {
-      val.scoreHome++;
-    } else {
-      val.scoreAway++;
-    }
-    val.quarters[val.quarters.length - 1].goals.push({
-      side: data.side,
-      player: data.player,
-      time: currentTime(val.clock),
-    });
-  },
-  startQuarter(val, data) {
-    val.quarters.push({
-      goals: [],
-    });
-    // TODO: last two quarters need to be 7m
-    startClock(val.clock, FIFTEEN_MINUTES_AS_MS);
-  },
-  pauseClock(val, data) {
-    stopClock(val.clock);
-  },
-  endCurrentQuarter(val, data) {
-    stopClock(val.clock);
-  },
-  resumeCurrentQuarter(val, data) {
-    startClock(val.clock);
-  },
+  goal: Yup.object({
+    side: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).required(),
+    player: Yup.string().uuid().nullable().default(null),
+  }),
+  startQuarter: Yup.object({}),
+  endCurrentQuarter: Yup.object({}),
+  pauseClock: Yup.object({}),
+  resumeCurrentQuarter: Yup.object({}),
 };
 
-export function RenderScore(props: {
-  value: ValueType;
-  actions: React.ReactNode;
-}) {
+export const actionValidChecks: ActionValidChecks<
+  State,
+  typeof slice["actions"]
+> = {
+  goal: (state) => state.quarters.length > 0,
+  pauseClock: (state) => state.clock.state === "running",
+  endCurrentQuarter: (state) => state.quarters.length > 0,
+  resumeCurrentQuarter: (state) =>
+    state.quarters.length > 0 && state.clock.state === "stopped",
+};
+
+export function RenderScore(props: { state: State; actions: React.ReactNode }) {
   return (
     <div>
       <h1>
-        Home {props.value.scoreHome} - Away {props.value.scoreAway}
+        Home {props.state.scoreHome} - Away {props.state.scoreAway}
       </h1>
-      <small>Quarter {props.value.quarters.length}</small>
+      <small>Quarter {props.state.quarters.length}</small>
       <div>
         <RenderClock
-          clock={props.value.clock}
+          clock={props.state.clock}
           precisionMs={0}
           precisionHigh={2}
         />
@@ -139,7 +190,7 @@ export function RenderScore(props: {
       {props.actions}
       <h2>Goals</h2>
       <ul>
-        {props.value.quarters
+        {props.state.quarters
           .flatMap((x, q) =>
             x.goals.slice().map((goal) => ({ ...goal, quarter: q + 1 }))
           )
@@ -148,7 +199,7 @@ export function RenderScore(props: {
             const player =
               goal.player &&
               // @ts-expect-error goal.side indexing is strange
-              props.value.players[goal.side].find(
+              props.state.players[goal.side].find(
                 (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
               );
             const tag = player
@@ -160,7 +211,7 @@ export function RenderScore(props: {
               <li key={goal.time}>
                 {tag} at{" "}
                 {Math.floor(
-                  (FIFTEEN_MINUTES_AS_MS - goal.time) / 60 / 1000
+                  (QUARTER_DURATION_MS - goal.time) / 60 / 1000
                 ).toFixed(0)}{" "}
                 minutes (Q{goal.quarter})
               </li>
@@ -171,9 +222,13 @@ export function RenderScore(props: {
   );
 }
 
-export function GoalForm(props: ActionFormProps<typeof schema>) {
+export interface ActionFormProps<TState> {
+  currentState: TState;
+}
+
+export function GoalForm(props: ActionFormProps<State>) {
   const { values } =
-    useFormikContext<Yup.InferType<typeof actionTypes.goal.schema>>();
+    useFormikContext<Yup.InferType<typeof actionPayloadValidators["goal"]>>();
   const players =
     values.side === "home"
       ? props.currentState.players.home
@@ -250,41 +305,3 @@ export function EditForm() {
     </div>
   );
 }
-
-export const typeInfo: EventTypeInfo<typeof schema> = {
-  schema,
-  EditForm,
-  RenderScore,
-  actions: {
-    goal: {
-      ...actionTypes.goal,
-      Form: GoalForm,
-    },
-    startQuarter: {
-      ...actionTypes.startQuarter,
-      // @ts-expect-error should be ReactNode
-      Form: () => null,
-    },
-    pauseClock: {
-      ...actionTypes.pauseClock,
-      Form: () => (
-        <strong className="text-warning">
-          Only use this if the umpire has paused the match!
-        </strong>
-      ),
-    },
-    resumeCurrentQuarter: {
-      ...actionTypes.resumeCurrentQuarter,
-      Form: () => (
-        <strong className="text-warning">
-          Only use this if you stopped the last quarter by accident!
-        </strong>
-      ),
-    },
-    endCurrentQuarter: {
-      ...actionTypes.endCurrentQuarter,
-      // @ts-expect-error should be ReactNode
-      Form: () => null,
-    },
-  },
-};

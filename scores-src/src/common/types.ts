@@ -1,20 +1,23 @@
 import * as Yup from "yup";
 import { TypedSchema } from "yup/lib/util/types";
 
-export const BaseEvent = Yup.object().shape({
+export const BaseEvent: Yup.SchemaOf<BaseEventType> = Yup.object().shape({
   id: Yup.string().uuid().required(),
   type: Yup.string().required(),
   name: Yup.string().required(),
   notCovered: Yup.boolean().default(false),
-  winner: Yup.string()
-    .oneOf(["home", "away", null])
-    .nullable(true)
-    .default(null)
-    .notRequired(),
+  winner: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).notRequired(),
   worthPoints: Yup.number().integer().required().min(0),
 });
 
-export type BaseEventType = Yup.InferType<typeof BaseEvent>;
+export interface BaseEventType {
+  id: string;
+  type: string;
+  name: string;
+  notCovered?: boolean;
+  winner?: "home" | "away";
+  worthPoints: number;
+}
 
 export interface EventActionTypes<TEventSchema extends Yup.AnySchema> {
   readonly [K: string]: {
