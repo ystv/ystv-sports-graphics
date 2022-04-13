@@ -135,8 +135,6 @@ const errorHandler: (
       }
     });
     next();
-    const diff = process.hrtime(start);
-    httpLogger.log(req.method, req.url, res.statusCode, diff[0] + "ms");
   });
 
   app.use(
