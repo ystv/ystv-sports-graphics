@@ -20,13 +20,13 @@ RUN yarn --immutable --inline-builds && rm .yarn/cache/*
 FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION} AS bundle_build
 
 COPY .yarnrc.yml /usr/src/app/bundles/ystv-sports-graphics/
-COPY .yarn /usr/src/app/bundles/ystv-sports-graphics/.yarn
+COPY .yarn/ /usr/src/app/bundles/ystv-sports-graphics/.yarn/
 COPY package.json yarn.lock /usr/src/app/bundles/ystv-sports-graphics/
 COPY scores-src/ /usr/src/app/bundles/ystv-sports-graphics/scores-src/
 COPY bundle-src/ /usr/src/app/bundles/ystv-sports-graphics/bundle-src/
 COPY --from=build /app/node_modules/ /usr/src/app/bundles/ystv-sports-graphics/node_modules/
 WORKDIR /usr/src/app/bundles/ystv-sports-graphics
-RUN yarn bundle:build
+RUN node .yarn/releases/yarn-3.2.0.cjs bundle:build
 
 FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION}
 COPY --from=bundle_build /usr/src/app/bundles/ystv-sports-graphics/ /usr/src/app/bundles/ystv-sports-graphics/
