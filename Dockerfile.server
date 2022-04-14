@@ -28,3 +28,6 @@ COPY --from=build /app/scores-src/dist/index.server.js* /app/
 WORKDIR /app
 EXPOSE 8000
 CMD ["--enable-source-maps", "index.server.js"]
+
+ARG GIT_REV=unknown
+LABEL ystv.git-rev=${GIT_REV}

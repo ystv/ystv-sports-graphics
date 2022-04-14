@@ -18,18 +18,18 @@ pipeline {
             parallel {
                 stage('Server') {
                     steps {
-                        sh "docker build -t registry.comp.ystv.co.uk/sports-scores/server:${env.BUILD_NUMBER} -f Dockerfile.server ."
+                        sh "docker build --build-arg GIT_REV=${env.GIT_COMMIT} -t registry.comp.ystv.co.uk/sports-scores/server:${env.BUILD_NUMBER} -f Dockerfile.server ."
                     }
                 }
                 stage('Client') {
                     steps {
-                        sh "docker build -t registry.comp.ystv.co.uk/sports-scores/client:${env.BUILD_NUMBER} -f Dockerfile.client ."
+                        sh "docker build --build-arg GIT_REV=${env.GIT_COMMIT} -t registry.comp.ystv.co.uk/sports-scores/client:${env.BUILD_NUMBER} -f Dockerfile.client ."
                     }
                 }
                 stage('Bundle') {
                     steps {
                         withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
-                            sh "docker build -t registry.comp.ystv.co.uk/sports-scores/bundle:${env.BUILD_NUMBER} -f Dockerfile.bundle ."
+                            sh "docker build --build-arg GIT_REV=${env.GIT_COMMIT} -t registry.comp.ystv.co.uk/sports-scores/bundle:${env.BUILD_NUMBER} -f Dockerfile.bundle ."
                         }
                     }
                 }

@@ -30,3 +30,6 @@ RUN yarn bundle:build
 
 FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION}
 COPY --from=bundle_build /usr/src/app/bundles/ystv-sports-graphics/ /usr/src/app/bundles/ystv-sports-graphics/
+
+ARG GIT_REV=unknown
+LABEL ystv.git-rev=${GIT_REV}
