@@ -1,20 +1,20 @@
 import { Meta, Story } from "@storybook/react";
-import { Bug, BugProps, BugState } from "./Bug";
+import { Bug as BugComponent, BugProps } from "./Bug";
 import { TeamDictionary } from "common/teamDictionary";
 
 export default {
-  title: "Bug",
-  component: Bug,
+  title: "Generic/Bug",
+  component: BugComponent,
 } as Meta;
 
 const Template: Story<BugProps> = (args) => <Bug {...args} />;
 
-export const Hello = Template.bind({});
+export const Bug = Template.bind({});
 
-// Hello.args = {
-//   state: BugState.Closed,
-// };
-//
+Bug.args = {
+  state: true,
+};
+
 // Hello.argTypes = {
 //   state: {
 //     options: [0, 1, 2], // iterator
@@ -25,7 +25,3 @@ export const Hello = Template.bind({});
 //     },
 //   },
 // };
-
-Hello.parameters = {
-  backgrounds: { default: "mid" },
-};
