@@ -6,6 +6,7 @@ WORKDIR /app
 COPY .yarnrc.yml /app/
 COPY .yarn /app/.yarn
 
+COPY patches/ /app/patches/
 COPY package.json /app/
 COPY scores-src/package.json /app/scores-src/
 COPY bundle-src/package.json /app/bundle-src/
