@@ -6,6 +6,7 @@ import type {
 } from "../../common/liveTypes";
 import invariant from "tiny-invariant";
 import { stringify as stringifyQS } from "qs";
+import { getAuthToken } from "./apiClient";
 const logger = logging.getLogger("liveData");
 logger.setLevel(import.meta.env.DEV ? "trace" : "info");
 
@@ -118,22 +119,27 @@ export function useLiveData<T>(eventId: string) {
   };
 
   function doConnect() {
+    const token = getAuthToken();
     let url =
       (
         (import.meta.env.PUBLIC_API_BASE as string) ||
         window.location.origin + "/api"
       ).replace(/^http(s?):\/\//, "ws$1://") + "/updates/stream/v2";
-    if (sid.current !== null && lastMid.current !== null) {
-      url += stringifyQS(
-        {
-          sid: sid.current,
-          last_mid: lastMid.current,
-        },
-        {
-          addQueryPrefix: true,
-        }
-      );
+
+    const queryInfo: Record<string, string> = {};
+    if (token) {
+      queryInfo.token = token;
     }
+
+    if (sid.current !== null && lastMid.current !== null) {
+      queryInfo.sid = sid.current;
+      queryInfo.last_mid = lastMid.current;
+    }
+
+    url += stringifyQS(queryInfo, {
+      addQueryPrefix: true,
+    });
+
     wsRef.current = new WebSocket(url);
     wsRef.current.onopen = () => {
       logger.info("WS open");

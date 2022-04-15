@@ -20,6 +20,7 @@ import {
   Title,
   SegmentedControl,
   InputWrapper,
+  PasswordInput,
 } from "@mantine/core";
 
 interface BaseFieldProps {
@@ -50,6 +51,13 @@ export function Field(props: FieldProps) {
               value={field.value}
               /* necessary to properly handle NumberInput onChange having a different param type */
               onChange={(value) => form.setFieldValue(props.name, value)}
+              error={meta.touched && meta.error}
+              label={props.title}
+              description={props.helper}
+            />
+          ) : props.type === "password" ? (
+            <PasswordInput
+              {...field}
               error={meta.touched && meta.error}
               label={props.title}
               description={props.helper}

@@ -35,6 +35,8 @@ import {
 } from "./metrics";
 import asyncHandler from "express-async-handler";
 import { Logger } from "winston";
+import { createBootstrapRouter, maybeSetupBootstrap } from "./bootstrap";
+import { createAuthRouter } from "./auth";
 
 const errorHandler: (
   log: Logger
@@ -61,9 +63,19 @@ const errorHandler: (
         })),
       };
     } else {
+      let errType: string;
+      let errMsg: string;
+      if (err instanceof Error) {
+        errType = err.name;
+        errMsg = err.message + "\n" + err.stack;
+      } else {
+        errType = typeof err;
+        errMsg = JSON.stringify(err);
+      }
       httpLogger.error(`Uncaught handler error`, {
         url: req.baseUrl,
-        error: err,
+        type: errType,
+        error: errMsg,
       });
       code = 500;
       message = "internal server error, sorry";
@@ -96,6 +108,8 @@ const errorHandler: (
     await db.disconnect();
     await redis.close();
   });
+
+  await maybeSetupBootstrap();
 
   const app = Express();
   const ws = ExpressWS(app);
@@ -146,6 +160,9 @@ const errorHandler: (
   app.use(jsonParser());
 
   const baseRouter = Router();
+
+  baseRouter.use("/bootstrap", createBootstrapRouter());
+  baseRouter.use("/auth", createAuthRouter());
 
   for (const [name, router] of [
     [

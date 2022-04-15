@@ -6,7 +6,9 @@ const child_process = require("child_process");
 let proc = null;
 
 function start() {
-  proc = child_process.fork("./dist/index.server.js");
+  proc = child_process.fork("./dist/index.server.js", {
+    execArgv: ["--enable-source-maps"],
+  });
   proc.once("spawn", () => {
     console.log("Server started.");
   });
@@ -31,7 +33,8 @@ esbuild
     platform: "node",
     target: ["node16"],
     treeShaking: true,
-    sourcemap: false,
+    sourcemap: true,
+    external: ["argon2"],
     watch: {
       onRebuild(err, res) {
         if (err) {

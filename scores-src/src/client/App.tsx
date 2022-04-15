@@ -7,10 +7,14 @@ import { EditEventForm, EditEventModal } from "./pages/EditEventModal";
 import { LiveScores } from "./pages/LiveScores";
 
 import { MantineProvider } from "@mantine/core";
+import { BootstrapScreen } from "./pages/Bootstrap";
+import { LoginScreen } from "./pages/Login";
 
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/bootstrap" element={<BootstrapScreen />} />
+      <Route path="/login" element={<LoginScreen />} />
       <Route path="/" element={<Wrapper />}>
         <Route path="events/:type/:id" element={<LiveScores />} />
         <Route path="events" element={<ListEvents />}>

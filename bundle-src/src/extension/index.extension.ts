@@ -12,7 +12,7 @@ import qs from "qs";
 import axios from "axios";
 import { UnhandledListenForCb } from "../../../../../types/lib/nodecg-instance";
 
-export = (nodecg: NodeCG) => {
+export = async (nodecg: NodeCG) => {
   const config: Configschema = nodecg.bundleConfig;
   if (!config.scoresService) {
     nodecg.log.warn("Scores service not configured!");
@@ -35,6 +35,7 @@ export = (nodecg: NodeCG) => {
 
   let sid = "";
   let lastMID = "";
+  let token = "";
 
   const apiClient = axios.create({
     baseURL: config.scoresService.apiURL,
@@ -52,6 +53,14 @@ export = (nodecg: NodeCG) => {
       cb(e);
     }
   });
+
+  nodecg.log.debug("Authenticating...");
+  const authResponse = await apiClient.post("/auth/login/local", {
+    username: config.scoresService.username,
+    password: config.scoresService.password,
+  });
+  token = authResponse.data.token;
+  nodecg.log.debug("Authenticated successfully.");
 
   let ws: WebSocket | null = null;
   let subscribedId: string | null = null;
@@ -113,7 +122,9 @@ export = (nodecg: NodeCG) => {
       config.scoresService,
       "tried to connect with no scores service config"
     );
-    const params: Record<string, string> = {};
+    const params: Record<string, string> = {
+      token,
+    };
     if (sid.length > 0) {
       params.sid = sid;
     }
