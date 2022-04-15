@@ -9,7 +9,7 @@
     "dev:server:typecheck": "cd src/server && tsc -w --preserveWatchOutput",
     "dev:client": "vite dev",
     "build": "rm -rf dist && yarn build:client && yarn build:server",
-    "build:server": "esbuild --platform=node --target=node16 --tree-shaking=true --bundle --sourcemap --external:argon2 --outfile=dist/index.server.js src/server/index.server.ts",
+    "build:server": "node buildProdServer.js",
     "build:client": "vite build",
     "prod": "concurrently -n server,client npm:prod:server npm:prod:client",
     "prod:server": "node --enable-source-maps dist/index.server.js",

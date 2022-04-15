@@ -25,7 +25,7 @@ ENV NODE_ENV=${NODE_ENV}
 COPY --from=build /app/node_modules/couchbase/build/Release/couchbase_impl.node /app/addon-build/release/install-root/couchbase_impl.node
 COPY --from=build /app/scores-src/config /app/config
 COPY --from=build /app/scores-src/package.json /app/
-COPY --from=build /app/scores-src/dist/index.server.js* /app/
+COPY --from=build /app/scores-src/dist/ /app/
 WORKDIR /app
 EXPOSE 8000
 CMD ["--enable-source-maps", "index.server.js"]

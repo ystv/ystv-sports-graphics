@@ -29,12 +29,7 @@ function startOrRestart() {
 
 esbuild
   .build({
-    entryPoints: ["./src/server/index.server.ts"],
-    platform: "node",
-    target: ["node16"],
-    treeShaking: true,
-    sourcemap: true,
-    external: ["argon2"],
+    ...require("./esbuild.config"),
     watch: {
       onRebuild(err, res) {
         if (err) {
@@ -46,8 +41,6 @@ esbuild
         startOrRestart();
       },
     },
-    bundle: true,
-    outfile: "./dist/index.server.js",
   })
   .then(() => {
     console.log("Build complete. Watching for changes...");
