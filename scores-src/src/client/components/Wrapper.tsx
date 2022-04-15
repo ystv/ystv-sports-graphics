@@ -14,7 +14,7 @@ import {
   ThemeIcon,
 } from "@mantine/core";
 
-import { CalendarEvent, Shirt } from "tabler-icons-react";
+import CalendarEvent from "tabler-icons-react/dist/icons/calendar-event";
 
 export function Wrapper() {
   const [opened, setOpened] = useState(false);

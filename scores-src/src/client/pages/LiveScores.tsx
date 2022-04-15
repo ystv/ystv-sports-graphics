@@ -5,7 +5,7 @@ import invariant from "tiny-invariant";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
-import { startCase } from "lodash";
+import { startCase } from "lodash-es";
 import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
 
 function EventActionModal(props: {
