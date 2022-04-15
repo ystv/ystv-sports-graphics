@@ -25,13 +25,10 @@ const baseConfig = {
         exclude: /node_modules/,
         use: [
           {
-            loader: require.resolve("babel-loader"),
+            loader: require.resolve("esbuild-loader"),
             options: {
-              ...require("./babel.config"),
-              plugins: [
-                ...(require("./babel.config").plugins || []),
-                isDevelopment && require.resolve("react-refresh/babel"),
-              ].filter(Boolean),
+              loader: "tsx",
+              target: ["node16", "chrome95"],
             },
           },
         ],
