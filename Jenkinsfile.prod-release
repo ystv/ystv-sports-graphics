@@ -54,7 +54,7 @@ node('docker') {
 
     stage('Preparation') {
         // Find the build that is currently live
-        def currentJSON = sh returnStdout: true, script: 'nomad job inspect sports-scores-dev' // FIXME
+        def currentJSON = sh returnStdout: true, script: 'nomad job inspect sports-scores-prod'
         def current = readJSON(text: currentJSON)
 
         // Find the git SHAs of its images
