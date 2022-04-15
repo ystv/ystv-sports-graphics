@@ -15,3 +15,8 @@ fs.writeFileSync(
   path.join("src", "client", "icons.d.ts"),
   definitions.join("\n")
 );
+
+fs.writeFileSync(
+  path.join("src", "common", "icons.d.ts"),
+  definitions.join("\n")
+);

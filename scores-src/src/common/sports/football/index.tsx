@@ -17,7 +17,7 @@ import { useFormikContext } from "formik";
 import { currentTime, startClock, stopClock, UpwardClock } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { Mark, Stack, Title, Text, Table, Button } from "@mantine/core";
-import { Pencil } from "tabler-icons-react";
+import Pencil from "tabler-icons-react/dist/icons/pencil";
 import { ReactNode } from "react";
 
 const playerSchema = Yup.object({
