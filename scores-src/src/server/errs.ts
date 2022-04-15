@@ -1,3 +1,5 @@
+import invariant from "tiny-invariant";
+
 /**
  * If condition evaluates to false, throws ctor with message.
  *
@@ -18,3 +20,5 @@ export function ensure(
     throw new ctor(message);
   }
 }
+
+export { invariant };

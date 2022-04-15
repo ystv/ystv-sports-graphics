@@ -7,6 +7,7 @@ import { PreconditionFailed } from "http-errors";
 import { DocumentExistsError } from "couchbase";
 import { EventActionFunctions, EventActionTypes } from "../common/types";
 import { dispatchChangeToEvent } from "./updatesRepo";
+import { authenticate } from "./auth";
 
 export function makeEventAPI<
   TEventSchema extends Yup.AnyObjectSchema,
@@ -23,25 +24,28 @@ export function makeEventAPI<
 
   router.get(
     "/",
+    authenticate("read"),
     asyncHandler(async (req, res) => {
       const result = await DB.query(
         `SELECT RAW e FROM _default e WHERE meta(e).id LIKE 'Event/${typeName}/%'`
       );
-      res.json(result.rows);
+      res.status(200).json(result.rows);
     })
   );
 
   router.get(
     "/:id",
+    authenticate("read"),
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       const data = await DB.collection("_default").get(key(id));
-      res.json(data.content);
+      res.status(200).json(data.content);
     })
   );
 
   router.post(
     "/",
+    authenticate("write"),
     asyncHandler(async (req, res) => {
       const val: Yup.InferType<TEventSchema> = await schema
         .omit(["id", "type"])
@@ -60,13 +64,13 @@ export function makeEventAPI<
         }
       }
       await dispatchChangeToEvent(key(val.id), val);
-      res.statusCode = 201;
-      res.json(val);
+      res.status(201).json(val);
     })
   );
 
   router.put(
     "/:id",
+    authenticate("write"),
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       const data = await DB.collection("_default").get(key(id));
@@ -77,13 +81,14 @@ export function makeEventAPI<
       const result = Object.assign({}, data.content, val);
       await DB.collection("_default").replace(key(id), result);
       await dispatchChangeToEvent(key(id), result);
-      res.json(result);
+      res.status(200).json(result);
     })
   );
 
   for (const action of Object.keys(actionTypes)) {
     router.post(
       `/:id/${action}`,
+      authenticate("write"),
       asyncHandler(async (req, res) => {
         const data: Yup.InferType<TActions[typeof action]["schema"]> =
           await actionTypes[action].schema.validate(req.body, {
@@ -107,7 +112,7 @@ export function makeEventAPI<
           cas: result.cas,
         });
         await dispatchChangeToEvent(key(req.params.id), val);
-        res.json(val);
+        res.status(200).json(val);
       })
     );
   }

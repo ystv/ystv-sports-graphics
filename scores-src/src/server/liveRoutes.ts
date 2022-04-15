@@ -12,6 +12,8 @@ import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
 import { Request, Router } from "express";
 import { activeStreamConnections } from "./metrics";
+import { verifyToken } from "./auth";
+import { URLSearchParams } from "url";
 
 function generateSid(): string {
   return randomUUID();
@@ -27,14 +29,6 @@ export function createLiveRouter() {
       .debug("Received WS connection", { remote: req.ip });
     activeStreamConnections.inc();
 
-    function send(msg: LiveServerMessage) {
-      ws.send(JSON.stringify(msg), (err) => {
-        if (err) {
-          logger.warn("WS send error", { error: err });
-        }
-      });
-    }
-
     let sid: string;
     if ("sid" in req.query) {
       ensure(typeof req.query.sid === "string", BadRequest, "invalid sid type");
@@ -43,13 +37,37 @@ export function createLiveRouter() {
       sid = "INVALID";
     }
 
+    const logger = logging.getLogger(`live`).child({ sid });
+
+    const url = new URL(req.originalUrl, `http://ystv.internal`);
+    const query = new URLSearchParams(url.search);
+    const token = query.get("token");
+    if (token === null) {
+      logger.info("Rejecting because no token was given");
+      ws.close(1008);
+      return;
+    }
+    try {
+      verifyToken(token, ["read"]);
+    } catch (e) {
+      logger.info("Rejecting because the token was invalid");
+      ws.close(1008);
+      return;
+    }
+
+    function send(msg: LiveServerMessage) {
+      ws.send(JSON.stringify(msg), (err) => {
+        if (err) {
+          logger.warn("WS send error", { error: err });
+        }
+      });
+    }
+
     const subs = new Set<string>(await REDIS.sMembers(`subscriptions:${sid}`));
     if (subs.size === 0) {
       // Reset the SID to signal to the client that they've lost their subscriptions
       sid = generateSid();
     }
-
-    const logger = logging.getLogger(`live`).child({ sid });
 
     ws.on("close", (code: number) => {
       logger.info("WebSocket closed", { code: code });

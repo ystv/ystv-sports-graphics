@@ -1,4 +1,4 @@
-import { Outlet, NavLink, NavLinkProps } from "react-router-dom";
+import { Outlet, NavLink, NavLinkProps, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import {
@@ -15,41 +15,52 @@ import {
 } from "@mantine/core";
 
 import CalendarEvent from "tabler-icons-react/dist/icons/calendar-event";
+import UserIcon from "tabler-icons-react/dist/icons/user";
+import { setAuthToken } from "../lib/apiClient";
 
 export function Wrapper() {
   const [opened, setOpened] = useState(false);
+  const navigate = useNavigate();
 
-  function MainLink({ icon, color, label, link }: MainLinkProps) {
-    return (
-      <NavLink to={link}>
-        <UnstyledButton
-          onClick={() => setOpened(false)}
-          sx={(theme) => ({
-            display: "block",
-            width: "100%",
-            padding: theme.spacing.xs,
-            borderRadius: theme.radius.sm,
-            color:
-              theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
+  function MainLink(props: MainLinkProps) {
+    const { icon, color, label } = props;
+    const contents = (
+      <UnstyledButton
+        onClick={() => {
+          if ("onClick" in props) {
+            props.onClick();
+          }
+          setOpened(false);
+        }}
+        sx={(theme) => ({
+          display: "block",
+          width: "100%",
+          padding: theme.spacing.xs,
+          borderRadius: theme.radius.sm,
+          color:
+            theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
 
-            "&:hover": {
-              backgroundColor:
-                theme.colorScheme === "dark"
-                  ? theme.colors.dark[6]
-                  : theme.colors.gray[0],
-            },
-          })}
-        >
-          <Group>
-            <ThemeIcon color={color} variant="light">
-              {icon}
-            </ThemeIcon>
+          "&:hover": {
+            backgroundColor:
+              theme.colorScheme === "dark"
+                ? theme.colors.dark[6]
+                : theme.colors.gray[0],
+          },
+        })}
+      >
+        <Group>
+          <ThemeIcon color={color} variant="light">
+            {icon}
+          </ThemeIcon>
 
-            <Text size="sm">{label}</Text>
-          </Group>
-        </UnstyledButton>
-      </NavLink>
+          <Text size="sm">{label}</Text>
+        </Group>
+      </UnstyledButton>
     );
+    if ("link" in props) {
+      return <NavLink to={props.link}>{contents}</NavLink>;
+    }
+    return contents;
   }
   return (
     <>
@@ -64,7 +75,23 @@ export function Wrapper() {
             hidden={!opened}
             width={{ sm: 150, lg: 200 }}
           >
-            {data.map((link) => (
+            {[
+              {
+                icon: <CalendarEvent size={16} />,
+                color: "blue",
+                label: "Events",
+                link: "/events",
+              },
+              {
+                icon: <UserIcon size={16} />,
+                color: "yellow",
+                label: "Sign Out",
+                onClick: () => {
+                  setAuthToken(null);
+                  navigate("/login");
+                },
+              },
+            ].map((link) => (
               <MainLink {...link} key={link.label} />
             ))}
           </Navbar>
@@ -93,19 +120,8 @@ export function Wrapper() {
   );
 }
 
-interface MainLinkProps {
+type MainLinkProps = {
   icon: React.ReactNode;
   color: string;
   label: string;
-  link: string;
-}
-
-const data = [
-  {
-    icon: <CalendarEvent size={16} />,
-    color: "blue",
-    label: "Events",
-    link: "/events",
-  },
-  // { icon: <Shirt size={16} />, color: "red", label: "Clubs", link: "/" },
-];
+} & ({ link: string } | { onClick: () => unknown });
