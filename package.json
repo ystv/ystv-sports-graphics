@@ -55,6 +55,7 @@
   },
   "packageManager": "yarn@3.2.0",
   "devDependencies": {
+    "@size-limit/preset-app": "^7.0.8",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "@ury1350/prettier-config": "^1.0.1",
@@ -65,6 +66,7 @@
     "lint-staged": ">=10",
     "patch-package": "^6.4.7",
     "prettier": "^2.6.1",
+    "size-limit": "^7.0.8",
     "typescript": "^4.6.3"
   },
   "prettier": "@ury1350/prettier-config",
@@ -73,5 +75,15 @@
       "prettier --write",
       "eslint"
     ]
-  }
+  },
+  "size-limit": [
+    {
+      "path": "scores-src/dist/assets/index.*",
+      "limit": "1 mb"
+    },
+    {
+      "path": "scores-src/dist/assets/vendor.*",
+      "limit": "1 mb"
+    }
+  ]
 }
