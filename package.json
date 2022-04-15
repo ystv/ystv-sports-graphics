@@ -79,11 +79,13 @@
   "size-limit": [
     {
       "path": "scores-src/dist/assets/index.*",
-      "limit": "750 kb"
+      "limit": "1.5 mb",
+      "running": false
     },
     {
       "path": "scores-src/dist/assets/vendor.*",
-      "limit": "750 kb"
+      "limit": "1.5 mb",
+      "running": false
     }
   ]
 }
