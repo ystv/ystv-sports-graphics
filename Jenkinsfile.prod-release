@@ -54,7 +54,7 @@ node('docker') {
 
     stage('Preparation') {
         // Find the build that is currently live
-        def currentJSON = sh returnStdout: true, script: 'nomad job inspect sports-scores-dev'
+        def currentJSON = sh returnStdout: true, script: 'nomad job inspect sports-scores-dev' // FIXME
         def current = readJSON(text: currentJSON)
 
         // Find the git SHAs of its images
@@ -79,6 +79,8 @@ node('docker') {
         // Send all this to jira!
         jiraSendDeploymentInfo(
             environmentType: 'production',
+            environmentId: 'prod',
+            environmentName: 'production',
             issueKeys: issueKeys,
             site: 'ystv.atlassian.net',
             state: 'in_progress'
@@ -93,6 +95,8 @@ node('docker') {
             ]
             jiraSendDeploymentInfo(
                 environmentType: 'production',
+                environmentId: 'prod',
+                environmentName: 'production',
                 issueKeys: issueKeys,
                 site: 'ystv.atlassian.net',
                 state: 'successful'
@@ -100,6 +104,8 @@ node('docker') {
         } catch (Exception e) {
             jiraSendDeploymentInfo(
                 environmentType: 'production',
+                environmentId: 'prod',
+                environmentName: 'production',
                 issueKeys: issueKeys,
                 site: 'ystv.atlassian.net',
                 state: 'failed'
