@@ -1,0 +1,114 @@
+import groovy.json
+
+properties([
+    disableConcurrentBuilds(),
+    parameters([
+        run(description: 'Build to promote to production', filter: 'SUCCESSFUL', name: 'BUILD', projectName: 'Sports Scores/main')
+    ])
+])
+
+@NonCPS
+def findSHAOfImage(image) {
+    def nameMatch = (image =~ /^([^\/]+)\/(.+?):(.+)$/)[0]
+    def result
+    withCredentials([usernameColonPassword(credentialsId: 'docker-registry', variable: 'DOCKER_AUTH')]) {
+        String auth = env.DOCKER_AUTH.bytes.encodeBase64().toString()
+        def manifestRes = httpRequest(
+            consoleLogResponseBody: true,
+            url: "https://registry.comp.ystv.co.uk/v2/${nameMatch[2]}/manifests/${nameMatch[3]}",
+            customHeaders:[
+                [name: 'Accept', value: 'application/vnd.docker.distribution.manifest.v2+json'],
+                [name: 'Authorization', value: "Basic ${auth}"]
+            ]
+        )
+        def manifest = readJSON(text: manifestRes.content)
+        def configBlobID = manifest.config.digest
+
+        def configRes = httpRequest(
+            consoleLogResponseBody: true,
+            url: "https://registry.comp.ystv.co.uk/v2/${nameMatch[2]}/blobs/${configBlobID}",
+            customHeaders:[
+                [name: 'Authorization', value: "Basic ${auth}"]
+            ]
+        )
+        def config = readJSON(text: configRes.content)
+        result = config.config.Labels.'ystv.git-rev'
+    }
+    return result
+}
+
+node('docker') {
+    def bldNum = (env.BUILD =~ /\/(\d+)\/?$/)[0][1]
+    def issueKeys = []
+
+    stage('Checkout') {
+        checkout(
+            changelog: false,
+            poll: false,
+            scm: [
+                $class: 'GitSCM',
+                branches: [[name: '*/main']],
+                extensions: [],
+                userRemoteConfigs: [[credentialsId: 'github-app-ystv', url: 'https://github.com/ystv/ystv-sports-graphics']
+                ]
+            ]
+        )
+    }
+
+    stage('Preparation') {
+        // Find the build that is currently live
+        def currentJSON = sh returnStdout: true, script: 'nomad job inspect sports-scores-dev'
+        def current = readJSON(text: currentJSON)
+
+        // Find the git SHAs of its images
+        def images = current.Job.TaskGroups.collectMany { group -> 
+            group.Tasks.collect { it.Config.image }
+        }.findAll { it.contains("registry.comp.ystv.co.uk/sports-scores") }
+        def currentSHAs = images.collect { findSHAOfImage(it) }.unique(false)
+
+        def nextSHAs = [
+            "registry.comp.ystv.co.uk/sports-scores/client:$bldNum",
+            "registry.comp.ystv.co.uk/sports-scores/server:$bldNum",
+            "registry.comp.ystv.co.uk/sports-scores/bundle:$bldNum"
+        ].collect { findSHAOfImage(it) }.unique(false)
+        
+        for (sha1 in currentSHAs) {
+            for (sha2 in nextSHAs) {
+                def issueKeyStrs = (sh(returnStdout: true, script: "git log ${sha1}..${sha2} | grep -ohE '[A-Z][A-Z0-9]*-[0-9]+'")).split("\n")
+                issueKeys.addAll(issueKeyStrs)
+            }
+        }
+
+        // Send all this to jira!
+        jiraSendDeploymentInfo(
+            environmentType: 'production',
+            issueKeys: issueKeys,
+            site: 'ystv.atlassian.net',
+            state: 'in_progress'
+        )
+    }
+
+    stage('Deploy') {
+        try {
+            build job: 'Deploy Nomad Job', parameters: [
+                string(name: 'JOB_FILE', value: 'sports-graphics-prod.nomad'),
+                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/server:${bldNum} registry.comp.ystv.co.uk/sports-scores/client:${bldNum} registry.comp.ystv.co.uk/sports-scores/bundle:${bldNum}")
+            ]
+            jiraSendDeploymentInfo(
+                environmentType: 'production',
+                issueKeys: issueKeys,
+                site: 'ystv.atlassian.net',
+                state: 'successful'
+            )
+        } catch (Exception e) {
+            jiraSendDeploymentInfo(
+                environmentType: 'production',
+                issueKeys: issueKeys,
+                site: 'ystv.atlassian.net',
+                state: 'failed'
+            )
+            throw e
+        }
+    }
+
+}
