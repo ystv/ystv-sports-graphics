@@ -1,17 +1,17 @@
 import { Meta, Story } from "@storybook/react";
-import { Bug as BugComponent, BugProps } from "./Bug";
+import { Index, BugProps } from "./index";
 import { TeamDictionary } from "common/teamDictionary";
 
 export default {
-  title: "Generic/Bug",
-  component: BugComponent,
+  title: "Generic/DOG",
+  component: Index,
 } as Meta;
 
-const Template: Story<BugProps> = (args) => <Bug {...args} />;
+const Template: Story<BugProps> = (args) => <Index {...args} />;
 
-export const Bug = Template.bind({});
+export const DOG = Template.bind({});
 
-Bug.args = {
+DOG.args = {
   state: true,
 };
 
