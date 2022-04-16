@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["../../server/*"]
+          }
+        ],
+        "paths": [
+          {
+            "name": "tabler-icons-react",
+            "message": "Import tabler-icons-react/dist/icons/... instead"
+          }
+        ]
+      }
+    ]
+  }
+}
