@@ -49,7 +49,7 @@ export function wrapReducer<TState>(reducer: Reducer<TState>): Reducer<TState> {
       return action.payload as TState;
     }
     if (Edit.match(action as any)) {
-      return merge(state, action.payload);
+      return { ...state, ...action.payload };
     }
     return reducer(state, action);
   };

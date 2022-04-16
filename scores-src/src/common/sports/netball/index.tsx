@@ -22,6 +22,7 @@ import {
   ActionValidChecks,
   wrapAction,
 } from "../../eventStateHelpers";
+import { TypographyStylesProvider } from "@mantine/core";
 
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
@@ -79,7 +80,6 @@ const slice = createSlice({
       state: "stopped",
       wallClockLastStarted: -1,
       timeLastStartedOrStopped: 0,
-      startingTime: QUARTER_DURATION_MS,
     },
   } as State,
   reducers: {
@@ -138,8 +138,8 @@ export const reducer = slice.reducer;
 export const actions = slice.actions;
 export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
   players: Yup.object({
-    home: Yup.array().of(playerSchema),
-    away: Yup.array().of(playerSchema),
+    home: Yup.array().of(playerSchema).default([]),
+    away: Yup.array().of(playerSchema).default([]),
   }),
   scoreHome: Yup.number().required().default(0),
   scoreAway: Yup.number().required().default(0),
@@ -174,8 +174,9 @@ export const actionValidChecks: ActionValidChecks<
 };
 
 export function RenderScore(props: { state: State; actions: React.ReactNode }) {
+  console.log("RenderScore rendered!", props.state);
   return (
-    <div>
+    <TypographyStylesProvider>
       <h1>
         Home {props.state.scoreHome} - Away {props.state.scoreAway}
       </h1>
@@ -218,7 +219,7 @@ export function RenderScore(props: { state: State; actions: React.ReactNode }) {
             );
           })}
       </ul>
-    </div>
+    </TypographyStylesProvider>
   );
 }
 

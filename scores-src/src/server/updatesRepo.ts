@@ -1,7 +1,7 @@
 import { REDIS } from "./redis";
 import invariant from "tiny-invariant";
 import * as logging from "./loggingSetup";
-import { commandOptions } from "redis";
+import { AbortError, commandOptions } from "redis";
 import { Logger } from "winston";
 import { Action } from "../common/eventStateHelpers";
 
@@ -34,23 +34,33 @@ export async function dispatchChangeToEvent(id: string, data: Action) {
 export async function getActions(
   logger: Logger,
   lastMid: string,
-  block?: number
+  block?: number,
+  signal?: AbortSignal
 ): Promise<Array<{ mid: string; data: UpdatesMessage }> | null> {
   logger.debug(
     `Listening to updates with lastMID ${lastMid} and block time ${block}`
   );
-  const data = await REDIS.xRead(
-    commandOptions({
-      isolated: typeof block === "number",
-    }),
-    {
-      key: UPDATES_STREAM,
-      id: lastMid,
-    },
-    {
-      BLOCK: block,
+  let data;
+  try {
+    data = await REDIS.xRead(
+      commandOptions({
+        isolated: typeof block === "number",
+        signal,
+      }),
+      {
+        key: UPDATES_STREAM,
+        id: lastMid,
+      },
+      {
+        BLOCK: block,
+      }
+    );
+  } catch (e) {
+    if (e instanceof AbortError) {
+      return null;
     }
-  );
+    throw e;
+  }
   if (data === null) {
     return null;
   }

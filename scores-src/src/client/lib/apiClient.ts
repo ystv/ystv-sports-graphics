@@ -1,7 +1,6 @@
 import type { InferType } from "yup";
-import type { BaseEvent, User } from "../../common/types";
+import type { BaseEvent, BaseEventType, User } from "../../common/types";
 import { stringify } from "qs";
-import { createContext, createRef, useContext, useEffect } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import logging from "loglevel";
 import { NavigateFunction, useNavigate } from "react-router-dom";
@@ -129,7 +128,7 @@ export function usePOSTEvents() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (type: string, data: InferType<typeof BaseEvent>) => {
+  return async (type: string, data: BaseEventType) => {
     const result = (await fetcher(navigate)(
       "/events/" + type,
       {
@@ -140,7 +139,7 @@ export function usePOSTEvents() {
         body: JSON.stringify(data),
       },
       201
-    )) as InferType<typeof BaseEvent>;
+    )) as BaseEventType;
     mutate("/events");
     mutate(`/events/${result.type}/${result.id}`, result, false);
     return result;

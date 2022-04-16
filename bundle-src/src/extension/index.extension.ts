@@ -150,6 +150,7 @@ export = async (nodecg: NodeCG) => {
     );
     const params: Record<string, string> = {
       token,
+      mode: "state",
     };
     if (sid.length > 0) {
       params.sid = sid;
@@ -233,8 +234,10 @@ export = async (nodecg: NodeCG) => {
           break;
         case "PONG":
           break;
+        case "ACTION":
+        case "BULK_ACTIONS":
+        // Fall through - we're always in state-mode, so shouldn't receive any action-mode messages
         default:
-          // @ts-expect-error `kind` can have anything come in at runtime
           nodecg.log.warn("Unhandled WS message kind", payload.kind);
       }
     };

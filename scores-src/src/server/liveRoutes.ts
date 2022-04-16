@@ -18,6 +18,8 @@ import { Action, resolveEventState } from "../common/eventStateHelpers";
 import invariant from "tiny-invariant";
 import { EVENT_TYPES } from "../common/sports";
 
+type SocketMode = "actions" | "state";
+
 function generateSid(): string {
   return randomUUID();
 }
@@ -40,7 +42,9 @@ export function createLiveRouter() {
       sid.current = req.query.sid;
     }
 
-    let logger = logging.getLogger(`live`).child({ sid: sid.current });
+    const mode = (req.query.mode as SocketMode) ?? "state";
+
+    let logger = logging.getLogger(`live`).child({ sid: sid.current, mode });
 
     const url = new URL(req.originalUrl, `http://ystv.internal`);
     const query = new URLSearchParams(url.search);
@@ -82,7 +86,7 @@ export function createLiveRouter() {
     if (subs.size === 0) {
       // Reset the SID to signal to the client that they've lost their subscriptions
       sid.current = generateSid();
-      logger = logging.getLogger(`live`).child({ sid: sid.current });
+      logger = logging.getLogger(`live`).child({ sid: sid.current, mode });
     }
 
     ws.on("close", (code: number, reason: Buffer) => {
@@ -99,6 +103,7 @@ export function createLiveRouter() {
       kind: "HELLO",
       sid: sid.current,
       subs: Array.from(subs),
+      mode,
     });
 
     const historyCache = new Map<string, Action[]>();
@@ -121,15 +126,12 @@ export function createLiveRouter() {
       });
     }
 
-    async function dispatchChangeToSubscribedData(
-      mid: string,
-      data: UpdatesMessage
-    ) {
+    async function handleAction(mid: string, data: UpdatesMessage) {
       let history = historyCache.get(data.id);
       if (history) {
         history.push({
           type: data.type,
-          payload: JSON.parse(data.payload),
+          payload: JSON.parse(data.payload || "{}"),
           meta: JSON.parse(data.meta),
         });
       } else {
@@ -143,12 +145,24 @@ export function createLiveRouter() {
       logger.debug("dCTSD: history updated", {
         latest: history[history.length - 1],
         len: history.length,
+        payload: data.payload,
       });
       historyCache.set(data.id, history);
-      calculateAndSendCurrentState(data.id, mid);
+      if (mode === "state") {
+        calculateAndSendCurrentState(data.id, mid);
+      } else {
+        send({
+          kind: "ACTION",
+          mid,
+          event: data.id,
+          type: data.type,
+          payload: JSON.parse(data.payload || "{}"),
+          meta: JSON.parse(data.meta),
+        });
+      }
     }
 
-    let lastMid = "$";
+    let lastMid = "0";
 
     if ("last_mid" in req.query) {
       ensure(
@@ -156,24 +170,21 @@ export function createLiveRouter() {
         BadRequest,
         "invalid last_mid type"
       );
-      logger.debug("Got a last_mid so catching up", {
-        last_mid: req.query.last_mid,
-      });
       lastMid = req.query.last_mid;
-      for (;;) {
-        const data = await getActions(logger, lastMid);
-        if (data === null || data.length === 0) {
-          logger.debug("Caught up, continuing");
-          break;
+    }
+    for (;;) {
+      const data = await getActions(logger, lastMid);
+      if (data === null || data.length === 0) {
+        logger.debug("Caught up, continuing");
+        break;
+      }
+      logger.debug("Catch-up: got data", { len: data.length });
+      for (const msg of data) {
+        if (subs.has(msg.data.id)) {
+          handleAction(msg.mid, msg.data);
         }
-        logger.debug("Catch-up: got data", { len: data.length });
-        for (const msg of data) {
-          if (subs.has(msg.data.id)) {
-            dispatchChangeToSubscribedData(msg.mid, msg.data);
-          }
-          lastMid = msg.mid;
-          logger.debug("Catch-up: last MID now " + lastMid);
-        }
+        lastMid = msg.mid;
+        logger.debug("Catch-up: last MID now " + lastMid);
       }
     }
 
@@ -216,10 +227,13 @@ export function createLiveRouter() {
             send({
               kind: "SUBSCRIBE_OK",
               to: payload.to,
-              current: resolveEventState(
-                EVENT_TYPES[eventType].reducer,
-                currentHistory
-              ),
+              current:
+                mode === "actions"
+                  ? currentHistory
+                  : resolveEventState(
+                      EVENT_TYPES[eventType].reducer,
+                      currentHistory
+                    ),
             });
             break;
           }
@@ -236,19 +250,27 @@ export function createLiveRouter() {
               to: payload.to,
             });
             break;
-          case "RESYNC":
+          case "RESYNC": {
             // Throw away the cache, get the state from the DB, and send it off
             ensure(
               subs.has(payload.what),
               UserError,
               "can't resync not subscribed event"
             );
-            historyCache.set(
-              payload.what,
-              (await DB.collection("_default").get(payload.what)).content
-            );
-            calculateAndSendCurrentState(payload.what);
+            const history = (await DB.collection("_default").get(payload.what))
+              .content;
+            historyCache.set(payload.what, history);
+            if (mode === "state") {
+              calculateAndSendCurrentState(payload.what);
+            } else {
+              send({
+                kind: "BULK_ACTIONS",
+                event: payload.what,
+                actions: history,
+              });
+            }
             break;
+          }
           case "PONG":
             // Take this as an opportunity to renew their subscriptions key,
             // so it'll expire an hour after they're last seen
@@ -291,7 +313,7 @@ export function createLiveRouter() {
       }
       for (const msg of data) {
         if (subs.has(msg.data.id)) {
-          dispatchChangeToSubscribedData(msg.mid, msg.data);
+          handleAction(msg.mid, msg.data);
         }
         lastMid = msg.mid;
         logger.debug("MID is now " + msg.mid);

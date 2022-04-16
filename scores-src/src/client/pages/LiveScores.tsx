@@ -1,23 +1,28 @@
 import { useParams } from "react-router-dom";
-import { EVENTS } from "../eventTypes";
 import { useLiveData } from "../lib/liveData";
 import invariant from "tiny-invariant";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { usePOSTEventAction } from "../lib/apiClient";
 import { startCase } from "lodash-es";
+import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
+import { actionPayloadValidators } from "../../common/sports/netball";
 
 function EventActionModal(props: {
-  eventType: keyof typeof EVENTS;
+  eventType: keyof typeof EVENT_TYPES;
   eventId: string;
   actionType: string;
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentState: any;
 }) {
-  const actionSchema = EVENTS[props.eventType].actions[props.actionType].schema;
-  const ActionForm = EVENTS[props.eventType].actions[props.actionType].Form;
+  console.log("goalform currentState", props.currentState);
+  const actionSchema =
+    EVENT_TYPES[props.eventType].actionPayloadValidators[props.actionType];
+  const ActionForm =
+    EVENT_COMPONENTS[props.eventType].actionForms[props.actionType] ??
+    (() => null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const doAction = usePOSTEventAction();
 
@@ -74,16 +79,15 @@ export function LiveScores() {
   const { type, id } = useParams();
   invariant(typeof type === "string", "no type");
   invariant(typeof id === "string", "no id");
-  const [data, status, error] = useLiveData(`Event/${type}/${id}`);
-  const RenderScore = EVENTS[type].RenderScore;
-  const actions = EVENTS[type].actions;
+  const [state, history, status, error] = useLiveData(`Event/${type}/${id}`);
+  const RenderScore = EVENT_COMPONENTS[type].RenderScore;
+  const actionValidChecks = EVENT_TYPES[type].actionValidChecks;
 
-  const [activeAction, setActiveAction] = useState<keyof typeof actions | null>(
-    null
-  );
+  const [activeAction, setActiveAction] = useState<string | null>(null);
 
   if (status === "READY" || status === "POSSIBLY_DISCONNECTED") {
-    if (!data) {
+    console.log("State:", state);
+    if (!state) {
       return (
         <div>
           <b>Loading data from server, please wait...</b>
@@ -94,16 +98,16 @@ export function LiveScores() {
     return (
       <>
         <RenderScore
-          value={data}
+          state={state}
           actions={
             <Group>
-              {Object.keys(actions)
+              {Object.keys(actionPayloadValidators)
                 .filter((type) => {
-                  const validFn = actions[type].valid;
+                  const validFn = actionValidChecks[type];
                   if (!validFn) {
                     return true;
                   }
-                  return validFn(data);
+                  return validFn(state);
                 })
                 .map((actionType) => (
                   <Button
@@ -129,7 +133,7 @@ export function LiveScores() {
             eventType={type}
             eventId={id}
             actionType={activeAction}
-            currentState={data}
+            currentState={state}
             onClose={() => setActiveAction(null)}
           />
         )}
