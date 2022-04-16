@@ -1,5 +1,5 @@
 import logging from "loglevel";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useReducer } from "react";
 import type {
   LiveClientMessage,
   LiveServerMessage,
@@ -7,6 +7,10 @@ import type {
 import invariant from "tiny-invariant";
 import { stringify as stringifyQS } from "qs";
 import { getAuthToken } from "./apiClient";
+import { Action, wrapReducer } from "../../common/eventStateHelpers";
+import { EVENT_TYPES } from "../../common/sports";
+import { pick } from "lodash-es";
+
 const logger = logging.getLogger("liveData");
 logger.setLevel(import.meta.env.DEV ? "trace" : "info");
 
@@ -16,11 +20,41 @@ export type LiveDataStatus =
   | "READY"
   | "POSSIBLY_DISCONNECTED";
 
-export function useLiveData<T>(eventId: string) {
+type AnyObject = Record<string, unknown>;
+
+const historyReducer = (
+  state: Action[] = [],
+  action: Action | { type: "_resync"; history: Action[] }
+) => {
+  if (action.type === "_resync") {
+    return (action as { history: Action[] }).history as Action[];
+  }
+  return [...state, action] as Action[];
+};
+
+const stateReducer = (type: string) =>
+  function <TState extends AnyObject>(
+    state: TState | null,
+    action: Action | { type: "_resync" }
+  ) {
+    console.log("SR", state, action);
+    if (action.type === "_resync") {
+      return null;
+    }
+    return wrapReducer<TState>(EVENT_TYPES[type].reducer)(
+      state ?? ({} as TState),
+      action as Action
+    );
+  };
+
+export function useLiveData(eventId: string) {
+  const [_, type] = eventId.split("/");
+  invariant(type, "eventId must be of the form 'Event/<type>/<id>'");
   const wsRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState<LiveDataStatus>("NOT_CONNECTED");
   const [error, setError] = useState<string | null>(null);
-  const [value, setValue] = useState<T | null>(null);
+  const [history, addToHistory] = useReducer(historyReducer, []);
+  const [state, dispatch] = useReducer(stateReducer(type), null as any);
 
   const messageQueue = useRef<LiveClientMessage[]>([]);
   const sid = useRef<string | null>(null);
@@ -93,21 +127,41 @@ export function useLiveData<T>(eventId: string) {
         messageQueue.current.forEach((msg) => send(msg));
         messageQueue.current = [];
         break;
-      case "SUBSCRIBE_OK":
-        // @ts-expect-error typing this is impossible
-        setValue(payload.current);
+      case "SUBSCRIBE_OK": {
+        invariant(
+          Array.isArray(payload.current),
+          "received non-array current in SUBSCRIBE_OK"
+        );
+        const history = payload.current;
+        addToHistory({ type: "_resync", history: history });
+        dispatch({ type: "_resync" });
+        history.forEach((action) => dispatch(action));
         break;
+      }
       case "UNSUBSCRIBE_OK":
         break;
-      case "CHANGE":
-        if (payload.changed !== latestEventId.current) {
-          logger.debug("Ignoring unwanted change to", payload.changed);
+      case "ACTION": {
+        if (payload.event !== latestEventId.current) {
+          logger.debug("Ignoring unwanted change to", payload.event);
           break;
         }
+        logger.debug("Received action, applying", payload.type);
 
-        // @ts-expect-error typing this is impossible
-        setValue(payload.data);
+        const action = pick(payload, "type", "payload", "meta");
+
+        addToHistory(action);
+        dispatch(action);
         lastMid.current = payload.mid;
+        break;
+      }
+      case "BULK_ACTIONS":
+        if (payload.event !== latestEventId.current) {
+          logger.debug("Ignoring unwanted change to", payload.event);
+          break;
+        }
+        addToHistory({ type: "_resync", history: payload.actions });
+        dispatch({ type: "_resync" });
+        payload.actions.forEach((action) => dispatch(action));
         break;
       case "ERROR":
         setError(payload.error);
@@ -116,6 +170,9 @@ export function useLiveData<T>(eventId: string) {
         send({ kind: "PONG" });
         break;
       case "PONG":
+        break;
+      case "CHANGE":
+        logger.warn("Received CHANGE - we're in actions-mode");
         break;
       default:
         // @ts-expect-error can receive anything at runtime
@@ -131,7 +188,9 @@ export function useLiveData<T>(eventId: string) {
         window.location.origin + "/api"
       ).replace(/^http(s?):\/\//, "ws$1://") + "/updates/stream/v2";
 
-    const queryInfo: Record<string, string> = {};
+    const queryInfo: Record<string, string> = {
+      mode: "actions",
+    };
     if (token) {
       queryInfo.token = token;
     }
@@ -193,5 +252,5 @@ export function useLiveData<T>(eventId: string) {
     });
   }, [eventId]);
 
-  return [value, status, error] as const;
+  return [state, history, status, error] as const;
 }

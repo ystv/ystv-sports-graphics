@@ -1,4 +1,5 @@
 import { Reducer } from "@reduxjs/toolkit";
+import React from "react";
 import * as Yup from "yup";
 import {
   Action,
@@ -11,6 +12,9 @@ import {
   actionPayloadValidators,
   actionValidChecks,
   actions,
+  RenderScore,
+  GoalForm,
+  EditForm,
 } from "./netball";
 
 export interface EventTypeInfo<
@@ -19,7 +23,7 @@ export interface EventTypeInfo<
   TActions extends Record<string, (payload?: any) => Action>
 > {
   reducer: Reducer<TState>;
-  schema: Yup.SchemaOf<TState>;
+  schema: Yup.SchemaOf<TState> & Yup.AnyObjectSchema;
   actionCreators: TActions;
   actionPayloadValidators: ActionPayloadValidators<TActions>;
   actionValidChecks: ActionValidChecks<TState, TActions>;
@@ -33,5 +37,27 @@ export const EVENT_TYPES: Record<string, EventTypeInfo<any, any>> = {
     actionCreators: actions,
     actionPayloadValidators: actionPayloadValidators,
     actionValidChecks: actionValidChecks,
+  },
+};
+
+interface EventComponents {
+  EditForm: () => React.ReactNode;
+  RenderScore: (props: {
+    state: any;
+    actions: React.ReactNode;
+  }) => React.ReactNode;
+  actionForms: Record<
+    string,
+    (props: { currentState: any }) => React.ReactNode
+  >;
+}
+
+export const EVENT_COMPONENTS: Record<string, EventComponents> = {
+  netball: {
+    EditForm: EditForm,
+    RenderScore: RenderScore,
+    actionForms: {
+      goal: GoalForm,
+    },
   },
 };

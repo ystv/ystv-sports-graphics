@@ -4,14 +4,14 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import invariant from "tiny-invariant";
 import { Field } from "../../common/formFields";
-import { EVENTS } from "../eventTypes";
+import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
 export function EditEventForm() {
   const { type, id } = useParams();
   invariant(typeof type === "string", "no type given");
   invariant(typeof id === "string", "no id given");
-  const EditForm = EVENTS[type].EditForm;
+  const EditForm = EVENT_COMPONENTS[type].EditForm;
   const { loading, error, data } = useGETEvent(type, id);
   const update = usePUTEvent();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function EditEventForm() {
       {data && (
         <Formik
           initialValues={data}
-          validationSchema={EVENTS[type].schema}
+          validationSchema={EVENT_TYPES[type].schema.omit(["type", "id"])}
           onSubmit={submit}
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (

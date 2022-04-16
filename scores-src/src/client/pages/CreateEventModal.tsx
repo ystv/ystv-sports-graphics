@@ -3,14 +3,14 @@ import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Field } from "../../common/formFields";
+import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { BaseEventType } from "../../common/types";
-import { EVENTS } from "../eventTypes";
 import { usePOSTEvents } from "../lib/apiClient";
 
 export function CreateEventModal() {
   const nav = useNavigate();
-  const [type, setType] = useState(Object.keys(EVENTS)[0]);
-  const EditForm = EVENTS[type].EditForm;
+  const [type, setType] = useState(Object.keys(EVENT_TYPES)[0]);
+  const EditForm = EVENT_COMPONENTS[type].EditForm;
   const create = usePOSTEvents();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -18,9 +18,11 @@ export function CreateEventModal() {
     values: BaseEventType,
     helpers: FormikHelpers<BaseEventType>
   ) {
+    console.log("submit called");
     helpers.setSubmitting(true);
     setSubmitError(null);
     try {
+      console.log("POST");
       const result = await create(type, values);
       nav("..");
     } catch (e) {
@@ -36,9 +38,8 @@ export function CreateEventModal() {
         <Select
           label={"Type"}
           value={type}
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          onChange={(e?: string) => setType(e!)}
-          data={Object.keys(EVENTS).map((e) => ({
+          onChange={(e: string) => setType(e)}
+          data={Object.keys(EVENT_TYPES).map((e) => ({
             label: e.replace(/^\w/, (c) => c.toUpperCase()),
             value: e,
           }))}
@@ -50,9 +51,9 @@ export function CreateEventModal() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         initialValues={{} as any}
         onSubmit={submit}
-        validationSchema={EVENTS[type].schema.omit(["id", "type"])}
+        validationSchema={EVENT_TYPES[type].schema.omit(["id", "type"])}
       >
-        {({ handleReset, handleSubmit, isSubmitting, errors }) => (
+        {({ handleSubmit, isSubmitting, errors }) => (
           <Stack>
             <Field
               type="number"
@@ -61,7 +62,7 @@ export function CreateEventModal() {
               helper="How many Roses points will the winner get?"
             />
             <EditForm />
-            <Button type="submit" disabled={isSubmitting}>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
               Create
             </Button>
             {submitError !== null && (

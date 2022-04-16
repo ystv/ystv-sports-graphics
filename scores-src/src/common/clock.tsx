@@ -11,7 +11,7 @@ export const UpwardClock = Yup.object({
   timeLastStartedOrStopped: Yup.number().required().default(0),
 }).required();
 
-/** A downward clock starts at `startingTime` and counts down to zero. */
+/** A downward clock counts down to zero. */
 export const DownwardClock = Yup.object({
   type: Yup.mixed<"downward">()
     .required()
@@ -23,7 +23,6 @@ export const DownwardClock = Yup.object({
     .default("stopped"),
   wallClockLastStarted: Yup.number().required().default(0),
   timeLastStartedOrStopped: Yup.number().required().default(0),
-  startingTime: Yup.number().required(),
 }).required();
 
 export type DownwardClockType = Yup.InferType<typeof DownwardClock>;
@@ -74,7 +73,6 @@ export function startClockAt(
   clock.wallClockLastStarted = wallClock;
   if (typeof countDownFrom === "number" && isDownward(clock)) {
     clock.timeLastStartedOrStopped = countDownFrom;
-    clock.startingTime = countDownFrom;
   }
 }
 

@@ -4,18 +4,24 @@ const child_process = require("child_process");
 
 /** @type {ReturnType<child_process.fork> | null} */
 let proc = null;
+let dead = true;
 
 function start() {
+  dead = false;
   proc = child_process.fork("./dist/index.server.js", {
     execArgv: ["--enable-source-maps"],
   });
   proc.once("spawn", () => {
     console.log("Server started.");
   });
+  proc.on("exit", (code) => {
+    console.log("Server exited with code " + code);
+    dead = true;
+  });
 }
 
 function startOrRestart() {
-  if (proc !== null) {
+  if (!dead) {
     console.log("Killing server...");
     proc.on("exit", function () {
       proc = null;
