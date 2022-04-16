@@ -50,6 +50,9 @@ function Dashboard() {
           Selected event: {eventID === null ? "<none>" : eventID}
         </Title>
         <Button nodecg-dialog="select-event">Select Event</Button>
+        <Button onClick={() => nodecg.sendMessage("resync")} color="orange">
+          Resync
+        </Button>
         <br />
         <hr style={{ borderTopWidth: "2px", borderColor: "grey" }} />
         <EventController />

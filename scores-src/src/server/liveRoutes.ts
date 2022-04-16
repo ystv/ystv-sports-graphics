@@ -7,7 +7,7 @@ import { randomUUID } from "crypto";
 import { getActions, UpdatesMessage } from "./updatesRepo";
 import { ensure } from "./errs";
 import { DB } from "./db";
-import { DocumentNotFoundError } from "couchbase";
+import { DocumentNotFoundError, User } from "couchbase";
 import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
 import { Request, Router } from "express";
@@ -85,8 +85,8 @@ export function createLiveRouter() {
       logger = logging.getLogger(`live`).child({ sid: sid.current });
     }
 
-    ws.on("close", (code: number) => {
-      logger.info("WebSocket closed", { code: code });
+    ws.on("close", (code: number, reason: Buffer) => {
+      logger.info("WebSocket closed", { code, reason });
       activeStreamConnections.dec();
     });
 
@@ -102,6 +102,24 @@ export function createLiveRouter() {
     });
 
     const historyCache = new Map<string, Action[]>();
+
+    function calculateAndSendCurrentState(
+      fullyQualifiedId: string,
+      mid?: string
+    ) {
+      const idParts = fullyQualifiedId.split("/");
+      invariant(idParts.length === 3, "dCTSD: invalid FQID!");
+      const [_, eventType] = idParts;
+      const history = historyCache.get(fullyQualifiedId);
+      invariant(Array.isArray(history), "cASCS: no history");
+      const state = resolveEventState(EVENT_TYPES[eventType].reducer, history);
+      send({
+        kind: "CHANGE",
+        changed: fullyQualifiedId,
+        mid: mid ?? lastMid,
+        data: state,
+      });
+    }
 
     async function dispatchChangeToSubscribedData(
       mid: string,
@@ -121,22 +139,13 @@ export function createLiveRouter() {
           "history undefined even after DB get"
         );
       }
-      const idParts = data.id.split("/");
-      invariant(idParts.length === 3, "dCTSD: invalid id!");
-      const [_, eventType] = idParts;
 
       logger.debug("dCTSD: history updated", {
         latest: history[history.length - 1],
         len: history.length,
       });
       historyCache.set(data.id, history);
-      const state = resolveEventState(EVENT_TYPES[eventType].reducer, history);
-      send({
-        kind: "CHANGE",
-        changed: data.id,
-        mid,
-        data: state,
-      });
+      calculateAndSendCurrentState(data.id, mid);
     }
 
     let lastMid = "$";
@@ -226,6 +235,19 @@ export function createLiveRouter() {
               kind: "UNSUBSCRIBE_OK",
               to: payload.to,
             });
+            break;
+          case "RESYNC":
+            // Throw away the cache, get the state from the DB, and send it off
+            ensure(
+              subs.has(payload.what),
+              UserError,
+              "can't resync not subscribed event"
+            );
+            historyCache.set(
+              payload.what,
+              (await DB.collection("_default").get(payload.what)).content
+            );
+            calculateAndSendCurrentState(payload.what);
             break;
           case "PONG":
             // Take this as an opportunity to renew their subscriptions key,
