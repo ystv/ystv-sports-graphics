@@ -1,6 +1,6 @@
 import { Alert, Button, Modal, Select, Stack, Title } from "@mantine/core";
 import { Form as FormikForm, Formik, FormikHelpers } from "formik";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Field } from "../../common/formFields";
 import { BaseEventType } from "../../common/types";
@@ -37,7 +37,7 @@ export function CreateEventModal() {
           label={"Type"}
           value={type}
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          onChange={(e) => setType(e!)}
+          onChange={(e?: string) => setType(e!)}
           data={Object.keys(EVENTS).map((e) => ({
             label: e.replace(/^\w/, (c) => c.toUpperCase()),
             value: e,

@@ -52,3 +52,11 @@ export interface EventTypeInfo<T extends Yup.AnyObjectSchema> {
   }) => JSX.Element;
   actions: Record<string, EventActionInfo<T>>;
 }
+
+export type Permission = "SUDO" | "read" | "write" | "admin";
+
+export interface User {
+  username: string;
+  passwordHash?: string;
+  permissions: Permission[];
+}

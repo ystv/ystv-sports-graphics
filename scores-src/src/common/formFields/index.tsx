@@ -7,7 +7,7 @@ import {
   FastField,
   FieldProps as FormikFieldProps,
 } from "formik";
-import { useEffect } from "react";
+import { ChangeEvent, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -50,7 +50,9 @@ export function Field(props: FieldProps) {
               {...field}
               value={field.value}
               /* necessary to properly handle NumberInput onChange having a different param type */
-              onChange={(value) => form.setFieldValue(props.name, value)}
+              onChange={(value: number) =>
+                form.setFieldValue(props.name, value)
+              }
               error={meta.touched && meta.error}
               label={props.title}
               description={props.helper}
@@ -66,7 +68,9 @@ export function Field(props: FieldProps) {
             <TextInput
               {...field}
               value={field.value ?? ""}
-              onChange={(e) => form.setFieldValue(props.name, e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                form.setFieldValue(props.name, e.target.value)
+              }
               error={meta.touched && meta.error}
               label={props.title}
               description={props.helper}
@@ -113,7 +117,9 @@ export function SelectField(props: SelectFieldProps) {
         label: e[1],
       }))}
       {...field}
-      onChange={(value) => helpers.setValue(value === nullSigil ? null : value)}
+      onChange={(value: string) =>
+        helpers.setValue(value === nullSigil ? null : value)
+      }
       error={meta.touched && meta.error}
       description={props.helper}
       defaultValue={props.initialValue}
@@ -137,7 +143,7 @@ export function SegmentedSelectField(props: SegmentedSelectFieldProps) {
         fullWidth
         data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
         {...field}
-        onChange={(value) => helpers.setValue(value)}
+        onChange={(value: string) => helpers.setValue(value)}
         value={field.value}
       />
     </InputWrapper>

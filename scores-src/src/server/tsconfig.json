@@ -10,5 +10,10 @@
         "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
         "typeRoots": ["../../node_modules/@types"]
-    }
+    },
+    "include": [
+        "../common/**/*.ts",
+        "../common/**/*.tsx",
+        "./**/*.ts"
+    ]
 }
