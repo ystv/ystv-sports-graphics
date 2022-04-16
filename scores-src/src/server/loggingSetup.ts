@@ -15,14 +15,14 @@ const format = winston.format.combine(
   winston.format.timestamp(),
   process.env.NODE_ENV === "production"
     ? winston.format.printf(({ level, message, timestamp, name, ...meta }) =>
-        logfmt({ timestamp, level, name, message, ...meta })
+        logfmt({ ts: timestamp, level, name, message, ...meta })
       )
     : winston.format.printf(({ level, message, timestamp, name, ...rest }) => {
         let restStr = "";
         if (Object.keys(rest).length > 0) {
           restStr = `\n\t ${logfmt(rest)}`;
         }
-        return `${timestamp} ${level} ${name}: ${message}${restStr}`;
+        return `${timestamp} ${level.toUpperCase()} ${name}: ${message}${restStr}`;
       })
 );
 

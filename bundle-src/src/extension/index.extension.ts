@@ -180,6 +180,7 @@ export = async (nodecg: NodeCG) => {
           stateRep.value = "READY";
           subscribedId = payload.to;
           eventStateRep.value = payload.current;
+          nodecg.log.debug("event state now", eventStateRep.value);
           break;
         case "UNSUBSCRIBE_OK":
           if (payload.to !== subscribedId) {
@@ -195,6 +196,7 @@ export = async (nodecg: NodeCG) => {
         case "CHANGE":
           eventStateRep.value = payload.data;
           lastMID = payload.mid;
+          nodecg.log.debug("event state now", eventStateRep.value);
           break;
         case "ERROR":
           nodecg.log.warn("Server-side error", payload.error);

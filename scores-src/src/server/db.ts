@@ -20,7 +20,7 @@ const INDEXES = [
 ];
 
 export async function connect() {
-  logger.debug("Connecting to DB", {
+  logger.info("Connecting to DB", {
     connectionString: config.db.connectionString,
   });
   cluster = await cbConnect(config.db.connectionString, {

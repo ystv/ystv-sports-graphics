@@ -9,7 +9,7 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import onFinished from "on-finished";
 
-import { makeEventAPI } from "./eventTypeRoutes";
+import { createEventTypesRouter } from "./eventTypeRoutes";
 import * as db from "./db";
 import * as redis from "./redis";
 import { DocumentNotFoundError } from "couchbase";
@@ -17,13 +17,6 @@ import { ValidationError } from "yup";
 import { isHttpError, NotFound } from "http-errors";
 import { createEventsRouter } from "./eventsRoutes";
 
-import {
-  actionPayloadValidators,
-  actions,
-  actionValidChecks,
-  reducer,
-  schema,
-} from "../common/sports/netball";
 import { createLiveRouter } from "./liveRoutes";
 import {
   httpRequestDurationSeconds,
@@ -161,23 +154,8 @@ const errorHandler: (
 
   baseRouter.use("/bootstrap", createBootstrapRouter());
   baseRouter.use("/auth", createAuthRouter());
-
-  for (const [name, router] of [
-    [
-      "netball",
-      makeEventAPI(
-        "netball",
-        reducer as any,
-        schema as any,
-        actions as any,
-        actionPayloadValidators,
-        actionValidChecks as any
-      ),
-    ],
-  ] as const) {
-    baseRouter.use("/events/" + name, router);
-  }
-
+  baseRouter.use("/events", createEventTypesRouter());
+  ``;
   baseRouter.use("/events", createEventsRouter());
 
   app.use(config.pathPrefix, baseRouter);

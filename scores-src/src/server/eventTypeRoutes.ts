@@ -13,28 +13,38 @@ import {
   ActionValidChecks,
   Edit,
   Init,
+  Redo,
   Reducer,
   resolveEventState,
+  Undo,
   wrapAction,
 } from "../common/eventStateHelpers";
 import { authenticate } from "./auth";
-import { actionValidChecks } from "../common/sports/netball";
-import invariant from "tiny-invariant";
+import { EventTypeInfo, EVENT_TYPES } from "../common/sports";
+import { ensure, invariant } from "./errs";
+import { BadRequest } from "http-errors";
+import { getLogger } from "./loggingSetup";
 
-export function makeEventAPI<
+export function makeEventAPIFor<
   TState extends Record<string, unknown>,
-  TActions extends Record<string, (payload?: any) => Action>
->(
-  typeName: string,
-  reducer: Reducer<TState>,
-  schema: Yup.SchemaOf<TState>,
-  actions: TActions,
-  actionValidators: ActionPayloadValidators<TActions>,
-  checks: ActionValidChecks<TState, TActions>
-) {
+  TActions extends Record<
+    string,
+    (payload?: any) => Action<Record<string, unknown>>
+  >
+>(typeName: string, info: EventTypeInfo<TState, TActions>) {
+  const logger = getLogger("eventTypeAPI").child({
+    type: typeName,
+  });
   const router = Router();
 
   const key = (id: string) => `Event/${typeName}/${id}`;
+  const {
+    reducer,
+    actionCreators,
+    actionPayloadValidators,
+    actionValidChecks,
+    schema,
+  } = info;
 
   router.get(
     "/",
@@ -53,7 +63,20 @@ export function makeEventAPI<
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       const data = await DB.collection("_default").get(key(id));
-      res.json(resolveEventState(reducer, data.content));
+      res.json({
+        ...resolveEventState(reducer, data.content),
+        _cas: data.cas,
+      });
+    })
+  );
+
+  router.get(
+    "/:id/_history",
+    authenticate("read"),
+    asyncHandler(async (req, res) => {
+      const id = req.params.id;
+      const data = await DB.collection("_default").get(key(id));
+      res.json(data.content);
     })
   );
 
@@ -92,6 +115,7 @@ export function makeEventAPI<
     authenticate("write"),
     asyncHandler(async (req, res) => {
       const id = req.params.id;
+      const cas = req.params["cas"] ?? undefined;
       const data = await DB.collection("_default").get(key(id));
       const currentActions = data.content as Action[];
       const inputData = req.body;
@@ -103,7 +127,7 @@ export function makeEventAPI<
         key(id),
         [MutateInSpec.arrayAppend("", action)],
         {
-          cas: data.cas,
+          cas: cas ?? data.cas,
         }
       );
       await dispatchChangeToEvent(key(id), action);
@@ -113,7 +137,80 @@ export function makeEventAPI<
     })
   );
 
-  for (const actionType of Object.keys(actions)) {
+  router.post(
+    "/:id/_undo",
+    authenticate("write"),
+    asyncHandler(async (req, res) => {
+      const id = req.params.id;
+      invariant(typeof id === "string", "route didn't give us a string id");
+      const ts = req.body.ts;
+      ensure(typeof ts === "number", BadRequest, "no ts given");
+
+      const currentActionsResult = await DB.collection("_default").get(key(id));
+      const currentActions = currentActionsResult.content as Action[];
+      const undoneIndex = currentActions.findIndex((x) => x.meta.ts === ts);
+      ensure(undoneIndex > -1, BadRequest, "no action with that ts");
+      const undoAction = wrapAction(Undo({ ts }));
+      currentActions.push(undoAction);
+
+      await DB.collection("_default").mutateIn(
+        key(id),
+        [MutateInSpec.arrayAppend("", undoAction)],
+        {
+          cas: currentActionsResult.cas,
+        }
+      );
+      await dispatchChangeToEvent(key(id), undoAction);
+      res.status(200).json(resolveEventState(reducer, currentActions));
+    })
+  );
+
+  router.post(
+    "/:id/_redo",
+    authenticate("write"),
+    asyncHandler(async (req, res) => {
+      const id = req.params.id;
+      invariant(typeof id === "string", "route didn't give us a string id");
+      const ts = req.body.ts;
+      ensure(typeof ts === "number", BadRequest, "no ts given");
+
+      const currentActionsResult = await DB.collection("_default").get(key(id));
+      const currentActions = currentActionsResult.content as Action[];
+      const redoneIndex = currentActions.findIndex((x) => x.meta.ts === ts);
+      ensure(redoneIndex > -1, BadRequest, "no action with that ts");
+      const redoAction = wrapAction(Redo({ ts }));
+
+      // Special case: if the undo action was the last one, we can delete it,
+      // rather than adding a redo.
+      // We still need to dispatch a redo to the repo though.
+      const spec: MutateInSpec[] = [];
+      if (
+        Undo.match(currentActions[currentActions.length - 1]) &&
+        currentActions[currentActions.length - 1].payload.ts === ts
+      ) {
+        logger.debug("Redo: special case matched", {
+          lastThree: currentActions.slice(currentActions.length - 3),
+        });
+        currentActions.splice(currentActions.length - 1, 1);
+        // no +1 here as we've already removed the last action - really this is (currentActions.length - 1 + 1)
+        spec.push(MutateInSpec.remove(`[${currentActions.length}]`));
+      } else {
+        logger.debug("Redo: special case NOT matched", {
+          lastThree: currentActions.slice(currentActions.length - 3),
+        });
+        currentActions.push(redoAction);
+        spec.push(MutateInSpec.arrayAppend("", redoAction));
+      }
+
+      await DB.collection("_default").mutateIn(key(id), spec, {
+        cas: currentActionsResult.cas,
+      });
+      await dispatchChangeToEvent(key(id), redoAction);
+      res.status(200).json(resolveEventState(reducer, currentActions));
+    })
+  );
+
+  for (const actionType of Object.keys(actionCreators)) {
     router.post(
       `/:id/${actionType}`,
       authenticate("write"),
@@ -121,7 +218,7 @@ export function makeEventAPI<
         const id = req.params.id;
         invariant(typeof id === "string", "route didn't give us a string id");
         const payload: ReturnType<TActions[typeof actionType]> =
-          await actionValidators[actionType].validate(req.body, {
+          await actionPayloadValidators[actionType].validate(req.body, {
             abortEarly: false,
             stripUnknown: true,
           });
@@ -132,14 +229,14 @@ export function makeEventAPI<
         const currentActions = currentActionsResult.content as Action[];
         const currentState = resolveEventState(reducer, currentActions);
 
-        const checkFn = checks[actionType];
+        const checkFn = actionValidChecks[actionType];
         if (typeof checkFn === "function") {
           if (!checkFn(currentState)) {
             throw new PreconditionFailed("action not valid at this time");
           }
         }
 
-        const actionData = wrapAction(actions[actionType](payload));
+        const actionData = wrapAction(actionCreators[actionType](payload));
 
         await DB.collection("_default").mutateIn(
           key(id),
@@ -156,5 +253,13 @@ export function makeEventAPI<
     );
   }
 
+  return router;
+}
+
+export function createEventTypesRouter() {
+  const router = Router();
+  for (const [typeName, info] of Object.entries(EVENT_TYPES)) {
+    router.use(`/${typeName}`, makeEventAPIFor(typeName, info));
+  }
   return router;
 }

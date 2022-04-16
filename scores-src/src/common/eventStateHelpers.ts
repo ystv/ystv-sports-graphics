@@ -4,7 +4,7 @@ import * as Yup from "yup";
 
 export interface ActionMeta {
   ts: number;
-  undo?: true;
+  undone?: boolean;
 }
 
 export interface Action<TPayload = Record<string, unknown>> {
@@ -37,9 +37,14 @@ export type ActionValidChecks<
 
 export const Init = createAction<Record<string, unknown>>("@@init");
 export const Edit = createAction<Record<string, unknown>>("@@edit");
+export const Undo = createAction<{ ts: number }>("@@undo");
+export const Redo = createAction<{ ts: number }>("@@redo");
 
 export function wrapReducer<TState>(reducer: Reducer<TState>): Reducer<TState> {
   return (state, action) => {
+    if (action.meta.undone) {
+      return state;
+    }
     if (Init.match(action as any)) {
       return action.payload as TState;
     }
@@ -51,7 +56,7 @@ export function wrapReducer<TState>(reducer: Reducer<TState>): Reducer<TState> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function wrapAction(action: Record<string, never>): any;
+export function wrapAction(action: Record<string, any>): any;
 export function wrapAction<
   TPayload extends Record<string, unknown>,
   TAction extends { payload: TPayload }
@@ -73,7 +78,31 @@ export function resolveEventState<TState>(
   reducer: Reducer<TState>,
   actions: Action[]
 ): TState {
+  // First, filter out all undos with a matching redo.
+  // Then, filter out all undone actions.
+  // Finally, apply the reducer to the remaining actions in order.
+  const undone = new Set<number>();
+  actions.forEach((action) => {
+    if (Undo.match(action)) {
+      undone.add(action.payload.ts);
+    } else if (Redo.match(action)) {
+      undone.delete(action.payload.ts);
+    }
+  });
   return actions
-    .filter((x) => !x.meta?.undo)
+    .map((action) => {
+      if (undone.has(action.meta.ts)) {
+        return {
+          ...action,
+          meta: {
+            ...action.meta,
+            undone: true,
+          },
+        };
+      } else if (action.meta.undone) {
+        delete action.meta.undone;
+      }
+      return action;
+    })
     .reduce(wrapReducer(reducer), {} as TState);
 }
