@@ -12,7 +12,7 @@ import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
 import { Request, Router } from "express";
 import { activeStreamConnections } from "./metrics";
-import { verifyToken } from "./auth";
+import { verifySessionID } from "./auth";
 import { URLSearchParams } from "url";
 
 function generateSid(): string {
@@ -48,7 +48,7 @@ export function createLiveRouter() {
       return;
     }
     try {
-      verifyToken(token, ["read"]);
+      verifySessionID(token, ["read"]);
     } catch (e) {
       logger.info("Rejecting because the token was invalid");
       ws.close(1008);

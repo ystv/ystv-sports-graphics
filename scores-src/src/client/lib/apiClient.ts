@@ -18,17 +18,30 @@ export function setAuthToken(tokenVal: string | null) {
   sessionStorage.setItem(TOKEN_KEY, JSON.stringify(tokenVal));
 }
 
+function setHeader(req: RequestInit, key: string, value: string) {
+  if (Array.isArray(req.headers)) {
+    req.headers.push([key, value]);
+  } else if (req.headers instanceof Headers) {
+    req.headers.set(key, value);
+  } else if (req.headers) {
+    req.headers[key] = value;
+  } else {
+    req.headers = { [key]: value };
+  }
+}
+
 const fetcher =
   (navigate: NavigateFunction) =>
   (endpoint: string, req?: RequestInit, expectedStatus?: number) => {
+    req = req || {};
+    setHeader(req, "Accept", "application/json");
+    setHeader(req, "X-Requested-With", "fetch");
+
     const token = getAuthToken();
     if (token !== null) {
-      req = req || {};
-      req.headers = {
-        ...(req.headers ?? {}),
-        Authorization: `Bearer ${token}`,
-      };
+      setHeader(req, "Authorization", `Bearer ${token}`);
     }
+
     return fetch(
       (import.meta.env.PUBLIC_API_BASE || "/api") + endpoint,
       req

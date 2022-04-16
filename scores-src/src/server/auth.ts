@@ -23,6 +23,12 @@ declare module "express-serve-static-core" {
   }
 }
 
+/**
+ * getUserForSession matches the given session ID to a user.
+ * @param sesionID
+ * @returns
+ * @throws Forbidden if the session ID does not match to a user.
+ */
 async function getUserForSession(sesionID: string): Promise<User> {
   try {
     const sessionDoc = await DB.collection("_default").get(
@@ -42,8 +48,20 @@ async function getUserForSession(sesionID: string): Promise<User> {
 
 const cookieKey = "sports-graphics-session";
 
-export async function verifyToken(token: string, permissions: Permission[]) {
-  const user = await getUserForSession(token);
+/**
+ * verifyToken validates that the given session ID is valid and the user
+ * it corresponds to has the requested permissions.
+ * @param sessionID
+ * @param permissions
+ * @returns User
+ * @throws Unauthorized
+ * @throws Forbidden
+ */
+export async function verifySessionID(
+  sessionID: string,
+  permissions: Permission[]
+) {
+  const user = await getUserForSession(sessionID);
   const hasPerms =
     user.permissions.includes("SUDO") ||
     user.permissions.some((x) => permissions.includes(x));
@@ -51,6 +69,24 @@ export async function verifyToken(token: string, permissions: Permission[]) {
   return user;
 }
 
+/**
+ * Popping up the browser's auth dialog is a bit annoying, so let the
+ * UI detect the 401 and show its login prompt.
+ */
+const requestersToNotSendWWWAuthenticateFor = new Set([
+  "xmlhttprequest",
+  "fetch",
+]);
+
+/**
+ * authenticate creates an Express middleware that will authenticate the user,
+ * setting `req.user`, and verify if they have the required permissions.
+ * If not, it will abort the request.
+ * @param permissions
+ * @returns
+ * @example
+ *   router.get("/foo", authenticate("read"), (req, res) => {...})
+ */
 export function authenticate(...permissions: Permission[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -58,42 +94,45 @@ export function authenticate(...permissions: Permission[]) {
         throw new Forbidden("Server is not yet bootstrapped");
       }
       let user: User;
+
       ensure(!!req.headers, BadRequest, "no headers?");
       const authHeader = req.headers["authorization"];
-      if (authHeader) {
-        const [scheme, ...rest] = authHeader.split(" ");
-        switch (scheme) {
-          case "Bearer": {
-            ensure(rest.length > 0, Unauthorized, "missing token");
-            const token = rest[0];
-            user = await getUserForSession(token);
-            break;
-          }
-          case "Basic": {
-            ensure(rest.length > 0, Unauthorized, "missing credentials");
-            const [username, password] = Buffer.from(rest[0], "base64")
-              .toString("utf-8")
-              .split(":");
-            user = await authenticateUser(username, password);
-            break;
-          }
-          default:
-            throw new Unauthorized("invalid auth scheme");
+      ensure(
+        typeof authHeader === "string",
+        Unauthorized,
+        "no auth credentials supplied"
+      );
+
+      const [scheme, ...rest] = authHeader.split(" ");
+      switch (scheme) {
+        case "Bearer": {
+          ensure(rest.length > 0, Unauthorized, "missing token");
+          const token = rest[0];
+          user = await getUserForSession(token);
+          break;
         }
-      } else {
-        ensure(req.cookies, Unauthorized, "no cookies");
-        const cookie = req.cookies[cookieKey];
-        ensure(typeof cookie === "string", Unauthorized, "no session");
-        user = await getUserForSession(cookie);
+        case "Basic": {
+          ensure(rest.length > 0, Unauthorized, "missing credentials");
+          const [username, ...password] = Buffer.from(rest[0], "base64")
+            .toString("utf-8")
+            .split(":");
+          user = await authenticateUser(username, password.join(":"));
+          break;
+        }
+        default:
+          throw new Unauthorized("invalid auth scheme");
       }
+
       const hasPerms =
         user.permissions.includes("SUDO") ||
         user.permissions.some((x) => permissions.includes(x));
       ensure(hasPerms, Forbidden, "insufficient permissions");
+
       req.user = user;
       next();
     } catch (e) {
       const bootstrapState = await isBootstrapped();
+
       if (bootstrapState !== true) {
         res.status(401).json({
           ok: false,
@@ -101,7 +140,15 @@ export function authenticate(...permissions: Permission[]) {
         });
         return;
       }
-      if (e instanceof Unauthorized) {
+
+      let requester = req.headers["x-requested-with"] ?? "";
+      if (Array.isArray(requester)) {
+        requester = requester[0];
+      }
+      if (
+        e instanceof Unauthorized &&
+        !requestersToNotSendWWWAuthenticateFor.has(requester.toLowerCase())
+      ) {
         res.setHeader("WWW-Authenticate", 'Basic realm="Sports Graphics"');
       }
       next(e);
@@ -111,6 +158,12 @@ export function authenticate(...permissions: Permission[]) {
 
 const sessionTTLSeconds = 60 * 60 * 24 * 7;
 
+/**
+ * createSessionForUser creates a session for the given user, assuming that they
+ * have already been authenticated.
+ * @param username
+ * @returns the session ID
+ */
 async function createSessionForUser(username: string): Promise<string> {
   for (;;) {
     try {
@@ -128,6 +181,13 @@ async function createSessionForUser(username: string): Promise<string> {
   }
 }
 
+/**
+ * createLocalUser creates a username/password user in the database.
+ * @param username
+ * @param password
+ * @returns User
+ * @throws couchbase.DocumentExistsError if the username is already taken
+ */
 export async function createLocalUser(
   username: string,
   password: string
@@ -139,9 +199,18 @@ export async function createLocalUser(
     permissions: ["SUDO"],
   };
   await DB.collection("_default").insert(`User/${username}`, data);
+  delete data.passwordHash;
   return data;
 }
 
+/**
+ * authenticateUser finds a user for the given username and verifies the
+ * provided password is correct.
+ * @param username
+ * @param password
+ * @returns User
+ * @throws Unauthorized if the username or password is incorrect
+ */
 async function authenticateUser(
   username: string,
   password: string
