@@ -7,6 +7,7 @@ export type LiveClientMessage =
       kind: "UNSUBSCRIBE";
       to: string;
     }
+  | { kind: "RESYNC"; what: string }
   | {
       kind: "PING";
     }

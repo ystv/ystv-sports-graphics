@@ -98,6 +98,12 @@ export = async (nodecg: NodeCG) => {
       // To avoid confusing users, set state to READY if we don't want an event
       if (subscribedId === null) {
         stateRep.value = "READY";
+      } else {
+        // Resync if we do want one though
+        send({
+          kind: "RESYNC",
+          what: subscribedId,
+        });
       }
       return;
     }
@@ -120,6 +126,21 @@ export = async (nodecg: NodeCG) => {
   eventIDRep.on("change", (val) => {
     nodecg.log.debug("eventID change", val);
     maybeResubscribe();
+  });
+
+  nodecg.listenFor("resync", () => {
+    if (eventIDRep.value === null) {
+      nodecg.log.warn("Tried to resync with no eventID");
+      return;
+    }
+    try {
+      send({
+        kind: "RESYNC",
+        what: eventIDRep.value,
+      });
+    } catch (e) {
+      nodecg.log.error("Resync failed", e);
+    }
   });
 
   function connect() {
@@ -197,6 +218,10 @@ export = async (nodecg: NodeCG) => {
           eventStateRep.value = payload.data;
           lastMID = payload.mid;
           nodecg.log.debug("event state now", eventStateRep.value);
+          // Could end up here if we were already subscribed and did a resync
+          if (stateRep.value === "SYNCHRONISING") {
+            stateRep.value = "READY";
+          }
           break;
         case "ERROR":
           nodecg.log.warn("Server-side error", payload.error);
