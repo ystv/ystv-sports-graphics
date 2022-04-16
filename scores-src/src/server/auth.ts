@@ -8,14 +8,7 @@ import { ensure } from "./errs";
 import { Unauthorized, Forbidden, BadRequest } from "http-errors";
 import { randomUUID } from "crypto";
 import { isBootstrapped } from "./bootstrap";
-
-export type Permission = "SUDO" | "read" | "write" | "admin";
-
-export interface User {
-  username: string;
-  passwordHash?: string;
-  permissions: Permission[];
-}
+import { Permission, User } from "../common/types";
 
 declare module "express-serve-static-core" {
   interface Request {

@@ -9,7 +9,7 @@ import {
   Title,
   TypographyStylesProvider,
 } from "@mantine/core";
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   useGETBootstrapReady,
   usePOSTBootstrap,
@@ -73,7 +73,9 @@ function EnterTokenScreen(props: {
           label="Bootstrap Token"
           placeholder="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
           value={token}
-          onChange={(e) => setToken(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setToken(e.target.value)
+          }
           error={error}
         />
         <Button onClick={check}>Check Token</Button>

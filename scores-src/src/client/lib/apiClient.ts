@@ -1,11 +1,11 @@
 import type { InferType } from "yup";
-import type { BaseEvent } from "../../common/types";
+import type { BaseEvent, User } from "../../common/types";
 import { stringify } from "qs";
 import { createContext, createRef, useContext, useEffect } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import logging from "loglevel";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import type { User } from "../../server/auth";
+// import type { User } from "../../server/auth";
 const logger = logging.getLogger("apiClient");
 
 const TOKEN_KEY = "SportsScoresToken";
