@@ -8,7 +8,9 @@ const logger = logging.getLogger("redis");
 export let REDIS: RedisClientType;
 
 export async function connect() {
-  logger.debug("Connecting...");
+  logger.info("Connecting to Redis", {
+    connectionString: config.redis.connectionString,
+  });
   REDIS = createClient({
     url: config.redis.connectionString,
   });

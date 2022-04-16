@@ -11,6 +11,7 @@ export interface UpdatesMessage {
   id: string;
   type: string;
   payload: string;
+  meta: string;
 }
 
 const UPDATES_STREAM = "eventUpdates";
@@ -20,6 +21,7 @@ export async function dispatchChangeToEvent(id: string, data: Action) {
     id,
     type: data.type,
     payload: JSON.stringify(data.payload),
+    meta: JSON.stringify(data.meta),
   };
   const result = await REDIS.xAdd(
     UPDATES_STREAM,
@@ -29,7 +31,7 @@ export async function dispatchChangeToEvent(id: string, data: Action) {
   logger.debug("Dispatched change to " + id + ", its MID is " + result);
 }
 
-export async function getEventChanges(
+export async function getActions(
   logger: Logger,
   lastMid: string,
   block?: number

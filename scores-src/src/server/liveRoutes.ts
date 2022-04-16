@@ -4,7 +4,7 @@ import { REDIS } from "./redis";
 import * as logging from "./loggingSetup";
 import { BadRequest } from "http-errors";
 import { randomUUID } from "crypto";
-import { getEventChanges, UpdatesMessage } from "./updatesRepo";
+import { getActions, UpdatesMessage } from "./updatesRepo";
 import { ensure } from "./errs";
 import { DB } from "./db";
 import { DocumentNotFoundError } from "couchbase";
@@ -14,6 +14,9 @@ import { Request, Router } from "express";
 import { activeStreamConnections } from "./metrics";
 import { verifySessionID } from "./auth";
 import { URLSearchParams } from "url";
+import { Action, resolveEventState } from "../common/eventStateHelpers";
+import invariant from "tiny-invariant";
+import { EVENT_TYPES } from "../common/sports";
 
 function generateSid(): string {
   return randomUUID();
@@ -24,20 +27,20 @@ class UserError extends Error {}
 export function createLiveRouter() {
   const router = Router();
   router.ws(`/updates/stream/v2`, async function (ws: ws, req: Request) {
-    logging
-      .getLogger("live")
-      .debug("Received WS connection", { remote: req.ip });
+    logging.getLogger("live").info("Received WS connection", {
+      remote: req.ip + ":" + req.socket.remotePort,
+      sid: req.query.sid,
+      last_mid: req.query.last_mid,
+    });
     activeStreamConnections.inc();
 
-    let sid: string;
+    const sid: { current: string } = { current: "INVALID" };
     if ("sid" in req.query) {
       ensure(typeof req.query.sid === "string", BadRequest, "invalid sid type");
-      sid = req.query.sid;
-    } else {
-      sid = "INVALID";
+      sid.current = req.query.sid;
     }
 
-    const logger = logging.getLogger(`live`).child({ sid });
+    let logger = logging.getLogger(`live`).child({ sid: sid.current });
 
     const url = new URL(req.originalUrl, `http://ystv.internal`);
     const query = new URLSearchParams(url.search);
@@ -58,7 +61,19 @@ export function createLiveRouter() {
     function send(msg: LiveServerMessage) {
       ws.send(JSON.stringify(msg), (err) => {
         if (err) {
-          logger.warn("WS send error", { error: err });
+          let meta = {} as Record<string, string>;
+          if (err instanceof Error) {
+            meta = {
+              name: err.name,
+              message: err.message,
+              stack: err.stack ?? "<none>",
+            };
+          } else {
+            meta.err = JSON.stringify(err);
+          }
+          logger.error("WS send error", meta);
+        } else {
+          logger.debug("WS sent", { kind: msg.kind });
         }
       });
     }
@@ -66,7 +81,8 @@ export function createLiveRouter() {
     const subs = new Set<string>(await REDIS.sMembers(`subscriptions:${sid}`));
     if (subs.size === 0) {
       // Reset the SID to signal to the client that they've lost their subscriptions
-      sid = generateSid();
+      sid.current = generateSid();
+      logger = logging.getLogger(`live`).child({ sid: sid.current });
     }
 
     ws.on("close", (code: number) => {
@@ -81,18 +97,49 @@ export function createLiveRouter() {
     logger.debug("HELLO");
     send({
       kind: "HELLO",
-      sid,
+      sid: sid.current,
       subs: Array.from(subs),
     });
 
-    function dispatchChangeToSubscribedData(mid: string, data: UpdatesMessage) {
+    const historyCache = new Map<string, Action[]>();
+
+    async function dispatchChangeToSubscribedData(
+      mid: string,
+      data: UpdatesMessage
+    ) {
+      let history = historyCache.get(data.id);
+      if (history) {
+        history.push({
+          type: data.type,
+          payload: JSON.parse(data.payload),
+          meta: JSON.parse(data.meta),
+        });
+      } else {
+        history = (await DB.collection("_default").get(data.id)).content;
+        invariant(
+          typeof history !== "undefined",
+          "history undefined even after DB get"
+        );
+      }
+      const idParts = data.id.split("/");
+      invariant(idParts.length === 3, "dCTSD: invalid id!");
+      const [_, eventType] = idParts;
+
+      logger.debug("dCTSD: history updated", {
+        latest: history[history.length - 1],
+        len: history.length,
+      });
+      historyCache.set(data.id, history);
+      const state = resolveEventState(EVENT_TYPES[eventType].reducer, history);
       send({
         kind: "CHANGE",
         changed: data.id,
-        mid: mid,
-        data: JSON.parse(data.data),
+        mid,
+        data: state,
       });
     }
+
+    let lastMid = "$";
 
     if ("last_mid" in req.query) {
       ensure(
@@ -100,16 +147,23 @@ export function createLiveRouter() {
         BadRequest,
         "invalid last_mid type"
       );
+      logger.debug("Got a last_mid so catching up", {
+        last_mid: req.query.last_mid,
+      });
+      lastMid = req.query.last_mid;
       for (;;) {
-        const data = await getEventChanges(logger, req.query.last_mid, 0);
+        const data = await getActions(logger, lastMid);
         if (data === null || data.length === 0) {
           logger.debug("Caught up, continuing");
           break;
         }
+        logger.debug("Catch-up: got data", { len: data.length });
         for (const msg of data) {
           if (subs.has(msg.data.id)) {
             dispatchChangeToSubscribedData(msg.mid, msg.data);
           }
+          lastMid = msg.mid;
+          logger.debug("Catch-up: last MID now " + lastMid);
         }
       }
     }
@@ -118,6 +172,7 @@ export function createLiveRouter() {
       try {
         ensure(typeof msg === "string", UserError, "non-string message");
         const payload: LiveClientMessage = JSON.parse(msg);
+        logger.debug("WS recv", { kind: payload.kind });
         switch (payload.kind) {
           case "PING":
             send({ kind: "PONG" });
@@ -128,6 +183,9 @@ export function createLiveRouter() {
               UserError,
               "invalid 'to' type"
             );
+            const idParts = payload.to.split("/");
+            ensure(idParts.length === 3, UserError, "invalid 'to' format");
+            const [_, eventType] = idParts;
             subs.add(payload.to);
             await REDIS.sAdd(`subscriptions:${sid}`, payload.to);
             await REDIS.expire(
@@ -135,13 +193,13 @@ export function createLiveRouter() {
               config.subscriptionLifetime
             );
 
-            let current;
+            let currentHistory;
             try {
-              current = (await DB.collection("_default").get(payload.to))
+              currentHistory = (await DB.collection("_default").get(payload.to))
                 .content;
             } catch (e) {
               if (e instanceof DocumentNotFoundError) {
-                current = {};
+                currentHistory = [];
               } else {
                 throw e;
               }
@@ -149,7 +207,10 @@ export function createLiveRouter() {
             send({
               kind: "SUBSCRIBE_OK",
               to: payload.to,
-              current,
+              current: resolveEventState(
+                EVENT_TYPES[eventType].reducer,
+                currentHistory
+              ),
             });
             break;
           }
@@ -193,15 +254,16 @@ export function createLiveRouter() {
       }
     });
 
-    let lastMid = "$";
-
     for (;;) {
-      const data = await getEventChanges(logger, lastMid, 5_000);
+      const data = await getActions(logger, lastMid, 5_000);
       if (ws.readyState === ws.CLOSED) {
         logger.info("WebSocket state is CLOSED, ending Redis loop.");
         return;
       }
       if (data === null) {
+        // Redis has nothing to give us now, so we can replace the MID with $,
+        // then next time round we'll get the latest
+        lastMid = "$";
         send({ kind: "PING" });
         continue;
       }

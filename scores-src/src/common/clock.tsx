@@ -46,10 +46,6 @@ export function clockTimeAt(clock: ClockType, wallClock: number): number {
   }
   switch (clock.type) {
     case "downward":
-      console.log("YEET", {
-        ...clock,
-        wallClock,
-      });
       return Math.max(
         clock.timeLastStartedOrStopped -
           (wallClock - clock.wallClockLastStarted),
