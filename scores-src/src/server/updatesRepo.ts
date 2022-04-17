@@ -3,7 +3,7 @@ import invariant from "tiny-invariant";
 import * as logging from "./loggingSetup";
 import { AbortError, commandOptions } from "redis";
 import { Logger } from "winston";
-import { Action } from "../common/eventStateHelpers";
+import { Action } from "../common/types";
 
 const logger = logging.getLogger("updatesRepo");
 

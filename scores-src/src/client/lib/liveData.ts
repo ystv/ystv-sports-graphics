@@ -1,5 +1,5 @@
 import logging from "loglevel";
-import { useRef, useEffect, useState, useReducer } from "react";
+import { useRef, useEffect, useState, useReducer, useMemo } from "react";
 import type {
   LiveClientMessage,
   LiveServerMessage,
@@ -7,13 +7,10 @@ import type {
 import invariant from "tiny-invariant";
 import { stringify as stringifyQS } from "qs";
 import { getAuthToken } from "./apiClient";
-import {
-  Action,
-  resolveEventState,
-  wrapReducer,
-} from "../../common/eventStateHelpers";
+import { resolveEventState, wrapReducer } from "../../common/eventStateHelpers";
 import { EVENT_TYPES } from "../../common/sports";
 import { pick } from "lodash-es";
+import { Action } from "../../common/types";
 
 const logger = logging.getLogger("liveData");
 logger.setLevel(import.meta.env.DEV ? "trace" : "info");
@@ -36,21 +33,6 @@ const historyReducer = (
   return [...state, action] as Action[];
 };
 
-const stateReducer = (type: string) =>
-  function <TState extends AnyObject>(
-    state: TState | null,
-    action: Action | { type: "_resync" }
-  ) {
-    console.log("SR", state, action);
-    if (action.type === "_resync") {
-      return null;
-    }
-    return wrapReducer<TState>(EVENT_TYPES[type].reducer)(
-      state ?? ({} as TState),
-      action as Action
-    );
-  };
-
 export function useLiveData(eventId: string) {
   const [_, type] = eventId.split("/");
   invariant(type, "eventId must be of the form 'Event/<type>/<id>'");
@@ -58,10 +40,13 @@ export function useLiveData(eventId: string) {
   const [status, setStatus] = useState<LiveDataStatus>("NOT_CONNECTED");
   const [error, setError] = useState<string | null>(null);
   const [history, addToHistory] = useReducer(historyReducer, []);
-  const state =
-    history.length === 0
-      ? null
-      : resolveEventState(EVENT_TYPES[type].reducer, history);
+  const state = useMemo(
+    () =>
+      history.length === 0
+        ? null
+        : resolveEventState(EVENT_TYPES[type].reducer, history),
+    [history, type]
+  );
 
   const messageQueue = useRef<LiveClientMessage[]>([]);
   const sid = useRef<string | null>(null);

@@ -5,25 +5,21 @@ import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { PreconditionFailed } from "http-errors";
 import { DocumentExistsError, MutateInSpec } from "couchbase";
-import { EventActionFunctions, EventActionTypes } from "../common/types";
 import { dispatchChangeToEvent } from "./updatesRepo";
 import {
-  Action,
-  ActionPayloadValidators,
-  ActionValidChecks,
   Edit,
   Init,
   Redo,
-  Reducer,
   resolveEventState,
   Undo,
   wrapAction,
 } from "../common/eventStateHelpers";
 import { authenticate } from "./auth";
-import { EventTypeInfo, EVENT_TYPES } from "../common/sports";
+import { EVENT_TYPES } from "../common/sports";
 import { ensure, invariant } from "./errs";
 import { BadRequest } from "http-errors";
 import { getLogger } from "./loggingSetup";
+import { Action, EventTypeInfo } from "../common/types";
 
 export function makeEventAPIFor<
   TState extends Record<string, unknown>,

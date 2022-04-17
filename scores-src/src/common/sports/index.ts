@@ -1,6 +1,3 @@
-import { Reducer } from "@reduxjs/toolkit";
-import React from "react";
-import * as Yup from "yup";
 import {
   typeInfo as netballTypeInfo,
   components as netballComponents,
