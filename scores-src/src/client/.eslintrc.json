@@ -11,7 +11,7 @@
         "paths": [
           {
             "name": "tabler-icons-react",
-            "message": "Import tabler-icons-react/dist/icons/... instead"
+            "message": "Import @tabler/icons instead"
           }
         ]
       }
