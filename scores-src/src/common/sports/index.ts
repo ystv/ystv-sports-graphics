@@ -42,10 +42,7 @@ export const EVENT_TYPES: Record<string, EventTypeInfo<any, any>> = {
 
 interface EventComponents {
   EditForm: () => React.ReactNode;
-  RenderScore: (props: {
-    state: any;
-    actions: React.ReactNode;
-  }) => React.ReactNode;
+  RenderScore: (props: { state: any }) => React.ReactNode;
   actionForms: Record<
     string,
     (props: { currentState: any }) => React.ReactNode

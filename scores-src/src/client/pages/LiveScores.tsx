@@ -7,7 +7,15 @@ import { usePOSTEventAction } from "../lib/apiClient";
 import { startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
-import { actionPayloadValidators } from "../../common/sports/netball";
+import {
+  actionPayloadValidators,
+  actionRenderers,
+} from "../../common/sports/netball";
+import {
+  Action,
+  findUndoneActions,
+  wrapReducer,
+} from "../../common/eventStateHelpers";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENT_TYPES;
@@ -75,6 +83,34 @@ function EventActionModal(props: {
   );
 }
 
+function Timeline(props: { type: string; history: Action[] }) {
+  const result: JSX.Element[] = [];
+  let state = {};
+  const reducer = wrapReducer(EVENT_TYPES[props.type].reducer);
+  const undone = findUndoneActions(props.history);
+  for (const action of props.history) {
+    if (undone.has(action.meta.ts)) {
+      continue;
+    }
+    state = reducer(state, action);
+    if (action.type[0] === "@") {
+      continue;
+    }
+    const Entry =
+      actionRenderers[
+        action.type.replace(/^.*?\//, "") as keyof typeof actionRenderers
+      ];
+    result.push(
+      <li key={action.type + action.meta.ts}>
+        <Entry action={action as any} state={state as any} />
+      </li>
+    );
+  }
+  result.reverse();
+
+  return <ul>{result}</ul>;
+}
+
 export function LiveScores() {
   const { type, id } = useParams();
   invariant(typeof type === "string", "no type");
@@ -97,29 +133,29 @@ export function LiveScores() {
 
     return (
       <>
-        <RenderScore
-          state={state}
-          actions={
-            <Group>
-              {Object.keys(actionPayloadValidators)
-                .filter((type) => {
-                  const validFn = actionValidChecks[type];
-                  if (!validFn) {
-                    return true;
-                  }
-                  return validFn(state);
-                })
-                .map((actionType) => (
-                  <Button
-                    key={actionType}
-                    onClick={() => setActiveAction(actionType)}
-                  >
-                    {startCase(actionType)}
-                  </Button>
-                ))}
-            </Group>
-          }
-        />
+        <RenderScore state={state} />
+
+        <Group>
+          {Object.keys(actionPayloadValidators)
+            .filter((type) => {
+              const validFn = actionValidChecks[type];
+              if (!validFn) {
+                return true;
+              }
+              return validFn(state);
+            })
+            .map((actionType) => (
+              <Button
+                key={actionType}
+                onClick={() => setActiveAction(actionType)}
+              >
+                {startCase(actionType)}
+              </Button>
+            ))}
+        </Group>
+
+        <Title order={2}>Timeline</Title>
+        <Timeline type={type} history={history} />
         {error !== null && <Alert>{error}</Alert>}
         {status === "POSSIBLY_DISCONNECTED" && (
           <Alert>
