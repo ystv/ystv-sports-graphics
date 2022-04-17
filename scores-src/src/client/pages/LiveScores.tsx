@@ -11,11 +11,8 @@ import {
 import { startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
-import {
-  Action,
-  findUndoneActions,
-  wrapReducer,
-} from "../../common/eventStateHelpers";
+import { findUndoneActions, wrapReducer } from "../../common/eventStateHelpers";
+import { Action } from "../../common/types";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENT_TYPES;
@@ -30,7 +27,7 @@ function EventActionModal(props: {
     EVENT_TYPES[props.eventType].actionPayloadValidators[props.actionType];
   const ActionForm =
     EVENT_COMPONENTS[props.eventType].actionForms[props.actionType] ??
-    (() => null);
+    (() => <></>);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const doAction = usePOSTEventAction();
 
