@@ -4701,6 +4701,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tabler/icons@npm:^1.64.0":
+  version: 1.64.0
+  resolution: "@tabler/icons@npm:1.64.0"
+  peerDependencies:
+    react: ^16.x || 17.x
+    react-dom: ^16.x || 17.x
+  peerDependenciesMeta:
+    react:
+      optional: true
+    react-dom:
+      optional: true
+  checksum: 3402d7e792e2e26a5e1e427febd142da6c7ece9c9a77b59f47a8a169ee859d57eaa9e0a079e3db55eeda84236c40fd9c5f0c9d993860952f67fc5a4b9368278c
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -5837,6 +5852,7 @@ __metadata:
     "@mantine/hooks": ^4.1.2
     "@mantine/notifications": ^4.1.2
     "@popperjs/core": ^2.11.2
+    "@tabler/icons": ^1.64.0
     "@types/body-parser": ^1.19.2
     "@types/config": ^0.0.41
     "@types/cors": ^2.8.12
@@ -5887,7 +5903,6 @@ __metadata:
     redis: ^4.0.4
     serve-handler: ^6.1.3
     swr: ^1.2.2
-    tabler-icons-react: ^1.44.0
     tiny-invariant: ^1.2.0
     ts-node: ^10.5.0
     typescript: ^4.6.2
@@ -18249,15 +18264,6 @@ __metadata:
   version: 2.0.15
   resolution: "synchronous-promise@npm:2.0.15"
   checksum: 6079a6acd37d02eb76f250dc7ce09009151744901b320a8cfbba056b015c3d7cbf4e7467458f2d27c6393634f68521b241ea9e35fd9640f8fb59342740550472
-  languageName: node
-  linkType: hard
-
-"tabler-icons-react@npm:^1.44.0":
-  version: 1.44.0
-  resolution: "tabler-icons-react@npm:1.44.0"
-  peerDependencies:
-    react: ">= 16.8.0"
-  checksum: e5951f294594e8b3d66e0963570b5fca71eb04d89e25f7ba0c9d5f23ff2fc97589019f26e6636f4ce58d07adfd57225e596562a101fec54fac6e699693a3899b
   languageName: node
   linkType: hard
 

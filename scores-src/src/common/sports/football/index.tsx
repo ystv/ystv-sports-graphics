@@ -17,7 +17,7 @@ import { useFormikContext } from "formik";
 import { currentTime, startClock, stopClock, UpwardClock } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { Mark, Stack, Title, Text, Table, Button } from "@mantine/core";
-import Pencil from "tabler-icons-react/dist/icons/pencil";
+import { IconPencil } from "@tabler/icons";
 import { ReactNode } from "react";
 
 const playerSchema = Yup.object({
@@ -181,7 +181,7 @@ export function RenderScore(props: { value: ValueType; actions: ReactNode }) {
                     {player.name} ({player.number})
                   </td>
                   <td>
-                    <Button disabled leftIcon={<Pencil />}>
+                    <Button disabled leftIcon={<IconPencil />}>
                       Edit
                     </Button>
                   </td>

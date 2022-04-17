@@ -14,8 +14,7 @@ import {
   ThemeIcon,
 } from "@mantine/core";
 
-import CalendarEvent from "tabler-icons-react/dist/icons/calendar-event";
-import UserIcon from "tabler-icons-react/dist/icons/user";
+import { IconCalendarEvent, IconUser } from "@tabler/icons";
 import { setAuthToken } from "../lib/apiClient";
 
 export function Wrapper() {
@@ -77,13 +76,13 @@ export function Wrapper() {
           >
             {[
               {
-                icon: <CalendarEvent size={16} />,
+                icon: <IconCalendarEvent size={16} />,
                 color: "blue",
                 label: "Events",
                 link: "/events",
               },
               {
-                icon: <UserIcon size={16} />,
+                icon: <IconUser size={16} />,
                 color: "yellow",
                 label: "Sign Out",
                 onClick: () => {
