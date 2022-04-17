@@ -39,6 +39,11 @@ export = async (nodecg: NodeCG) => {
 
   const apiClient = axios.create({
     baseURL: config.scoresService.apiURL,
+    withCredentials: true,
+    auth: {
+      username: config.scoresService.username,
+      password: config.scoresService.password,
+    },
   });
 
   nodecg.listenFor("list-events", async (_, cb_) => {
