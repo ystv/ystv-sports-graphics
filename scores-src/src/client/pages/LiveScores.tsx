@@ -12,10 +12,6 @@ import { startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
 import {
-  actionPayloadValidators,
-  actionRenderers,
-} from "../../common/sports/netball";
-import {
   Action,
   findUndoneActions,
   wrapReducer,
@@ -93,6 +89,7 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
   const result: JSX.Element[] = [];
   let state = {};
   const reducer = wrapReducer(EVENT_TYPES[props.type].reducer);
+  const actionRenderers = EVENT_TYPES[props.type].actionRenderers;
   const allUndoneActions = findUndoneActions(props.history);
   for (const action of props.history) {
     const undone = allUndoneActions.has(action.meta.ts);
@@ -102,10 +99,7 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
     if (action.type[0] === "@") {
       continue;
     }
-    const Entry =
-      actionRenderers[
-        action.type.replace(/^.*?\//, "") as keyof typeof actionRenderers
-      ];
+    const Entry = actionRenderers[action.type.replace(/^.*?\//, "") as string];
     const Wrapper = ({ children }: { children: JSX.Element }) =>
       undone ? <s>{children}</s> : children;
     result.push(
@@ -137,6 +131,7 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
   }
   result.reverse();
 
+  // TODO make this a table rather than a UL
   return <ul>{result}</ul>;
 }
 
@@ -147,6 +142,7 @@ export function LiveScores() {
   const [state, history, status, error] = useLiveData(`Event/${type}/${id}`);
   const RenderScore = EVENT_COMPONENTS[type].RenderScore;
   const actionValidChecks = EVENT_TYPES[type].actionValidChecks;
+  const actionPayloadValidators = EVENT_TYPES[type].actionPayloadValidators;
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
 

@@ -9,14 +9,8 @@ import {
 } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { SelectField, ArrayField, RandomUUIDField } from "../../formFields";
-import {
-  createSlice,
-  Slice,
-  SliceCaseReducers,
-  CaseReducer,
-  PayloadAction,
-} from "@reduxjs/toolkit";
-import { BaseEvent, BaseEventType } from "../../types";
+import { createSlice } from "@reduxjs/toolkit";
+import { ActionRenderers, BaseEvent, BaseEventType } from "../../types";
 import {
   Action,
   ActionPayloadValidators,
@@ -36,7 +30,6 @@ const playerSchema = Yup.object({
 type PlayerType = Yup.InferType<typeof playerSchema>;
 
 const QUARTER_DURATION_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_QUARTERS_INCLUDING_EXTRA_TIME = 6;
 
 const quarterSchema = Yup.object({
   goals: Yup.array()
@@ -182,14 +175,11 @@ export const actionValidChecks: ActionValidChecks<
     state.quarters.length > 0 && state.clock.state === "stopped",
 };
 
-export type ActionRenderers = {
-  [K in keyof typeof slice["actions"]]: (props: {
-    action: Parameters<typeof slice["caseReducers"][K]>[1];
-    state: ReturnType<typeof reducer>;
-  }) => JSX.Element;
-};
-
-export const actionRenderers: ActionRenderers = {
+export const actionRenderers: ActionRenderers<
+  typeof actions,
+  typeof slice["caseReducers"],
+  State
+> = {
   goal: ({ action, state }) => {
     const goal = action.payload;
     const player =

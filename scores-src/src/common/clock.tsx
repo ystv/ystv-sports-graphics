@@ -11,6 +11,8 @@ export const UpwardClock = Yup.object({
   timeLastStartedOrStopped: Yup.number().required().default(0),
 }).required();
 
+export type UpwardClockType = Yup.InferType<typeof UpwardClock>;
+
 /** A downward clock counts down to zero. */
 export const DownwardClock = Yup.object({
   type: Yup.mixed<"downward">()
