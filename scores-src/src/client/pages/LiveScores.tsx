@@ -103,6 +103,7 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
       <li key={action.type + action.meta.ts}>
         <Wrapper>
           <>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Entry action={action as any} state={state as any} />
             {undone ? (
               <Button

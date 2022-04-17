@@ -1,4 +1,4 @@
-import { Action } from "./eventStateHelpers";
+import { Action } from "./types";
 
 export type LiveClientMessage =
   | {

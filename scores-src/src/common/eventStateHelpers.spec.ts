@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/// <reference types="@types/jest" />
 
 import { createSlice, Reducer } from "@reduxjs/toolkit";
 import {
-  Action,
   Init,
   Redo,
   resolveEventState,
   Undo,
   wrapAction,
 } from "./eventStateHelpers";
+import { Action } from "./types";
 
 const testSlice = createSlice({
   name: "test",

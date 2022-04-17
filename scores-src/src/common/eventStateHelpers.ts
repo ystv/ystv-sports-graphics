@@ -6,6 +6,7 @@ export const Edit = createAction<Record<string, unknown>>("@@edit");
 export const Undo = createAction<{ ts: number }>("@@undo");
 export const Redo = createAction<{ ts: number }>("@@redo");
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function wrapReducer<TState>(reducer: Reducer<TState>): Reducer<TState> {
   return (state, action) => {
     if (action.meta.undone) {
@@ -20,6 +21,7 @@ export function wrapReducer<TState>(reducer: Reducer<TState>): Reducer<TState> {
     return reducer(state, action);
   };
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function wrapAction<
   TPayload extends Record<string, unknown>,
