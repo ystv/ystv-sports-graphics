@@ -7,19 +7,33 @@ import {
   ActionValidChecks,
 } from "../eventStateHelpers";
 import {
-  reducer,
-  schema,
-  actionPayloadValidators,
-  actionValidChecks,
-  actions,
-  RenderScore,
-  GoalForm,
-  EditForm,
+  reducer as netballReducer,
+  schema as netballSchema,
+  actionPayloadValidators as netballActionPayloadValidators,
+  actionValidChecks as netballActionValidChecks,
+  actionRenderers as netballActionRenderers,
+  actions as netballActions,
+  RenderScore as NetballRenderScore,
+  GoalForm as NetballGoalForm,
+  EditForm as NetballEditForm,
 } from "./netball";
+import {
+  reducer as footballReducer,
+  schema as footballSchema,
+  actionPayloadValidators as footballActionPayloadValidators,
+  actionValidChecks as footballActionValidChecks,
+  actionRenderers as footballActionRenderers,
+  actions as footballActions,
+  RenderScore as FootballRenderScore,
+  GoalForm as FootballGoalForm,
+  EditForm as FootballEditForm,
+  StoppageTimeForm as FootballStoppageTimeForm,
+} from "./football";
+import { ActionRenderers } from "../types";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface EventTypeInfo<
   TState extends Record<string, unknown>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TActions extends Record<string, (payload?: any) => Action>
 > {
   reducer: Reducer<TState>;
@@ -27,19 +41,8 @@ export interface EventTypeInfo<
   actionCreators: TActions;
   actionPayloadValidators: ActionPayloadValidators<TActions>;
   actionValidChecks: ActionValidChecks<TState, TActions>;
+  actionRenderers: ActionRenderers<TActions, any, TState>;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const EVENT_TYPES: Record<string, EventTypeInfo<any, any>> = {
-  netball: {
-    reducer: reducer,
-    schema: schema,
-    actionCreators: actions,
-    actionPayloadValidators: actionPayloadValidators,
-    actionValidChecks: actionValidChecks,
-  },
-};
-
 interface EventComponents {
   EditForm: () => React.ReactNode;
   RenderScore: (props: { state: any }) => React.ReactNode;
@@ -49,12 +52,41 @@ interface EventComponents {
   >;
 }
 
+export const EVENT_TYPES: Record<string, EventTypeInfo<any, any>> = {
+  netball: {
+    reducer: netballReducer,
+    schema: netballSchema,
+    actionCreators: netballActions,
+    actionPayloadValidators: netballActionPayloadValidators,
+    actionValidChecks: netballActionValidChecks,
+    actionRenderers: netballActionRenderers,
+  },
+  football: {
+    reducer: footballReducer,
+    schema: footballSchema,
+    actionCreators: footballActions,
+    actionPayloadValidators: footballActionPayloadValidators,
+    actionValidChecks: footballActionValidChecks,
+    actionRenderers: footballActionRenderers,
+  },
+};
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 export const EVENT_COMPONENTS: Record<string, EventComponents> = {
   netball: {
-    EditForm: EditForm,
-    RenderScore: RenderScore,
+    EditForm: NetballEditForm,
+    RenderScore: NetballRenderScore,
     actionForms: {
-      goal: GoalForm,
+      goal: NetballGoalForm,
+    },
+  },
+  football: {
+    EditForm: FootballEditForm,
+    RenderScore: FootballRenderScore,
+    actionForms: {
+      goal: FootballGoalForm,
+      addStoppageTime: FootballStoppageTimeForm,
     },
   },
 };

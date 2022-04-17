@@ -63,3 +63,18 @@ export interface User {
   passwordHash?: string;
   permissions: Permission[];
 }
+
+export type ActionRenderers<
+  TActions,
+  TCaseReducers extends Record<
+    keyof TActions,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (state: TState, action: any) => unknown
+  >,
+  TState
+> = {
+  [K in keyof TActions]: (props: {
+    action: Parameters<TCaseReducers[K]>[1];
+    state: TState;
+  }) => JSX.Element;
+};
