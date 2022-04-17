@@ -74,21 +74,23 @@ export function wrapAction<TAction extends Action>(action: TAction): TAction {
   };
 }
 
-export function resolveEventState<TState>(
-  reducer: Reducer<TState>,
-  actions: Action[]
-): TState {
-  // First, filter out all undos with a matching redo.
-  // Then, filter out all undone actions.
-  // Finally, apply the reducer to the remaining actions in order.
+export function findUndoneActions(history: Action[]) {
   const undone = new Set<number>();
-  actions.forEach((action) => {
+  history.forEach((action) => {
     if (Undo.match(action)) {
       undone.add(action.payload.ts);
     } else if (Redo.match(action)) {
       undone.delete(action.payload.ts);
     }
   });
+  return undone;
+}
+
+export function resolveEventState<TState>(
+  reducer: Reducer<TState>,
+  actions: Action[]
+): TState {
+  const undone = findUndoneActions(actions);
   return actions
     .map((action) => {
       if (undone.has(action.meta.ts)) {

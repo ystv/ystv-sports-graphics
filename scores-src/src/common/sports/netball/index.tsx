@@ -3,6 +3,7 @@ import * as Yup from "yup";
 import {
   clockTimeAt,
   DownwardClock,
+  formatMMSSMS,
   startClockAt,
   stopClockAt,
 } from "../../clock";
@@ -181,7 +182,51 @@ export const actionValidChecks: ActionValidChecks<
     state.quarters.length > 0 && state.clock.state === "stopped",
 };
 
-export function RenderScore(props: { state: State; actions: React.ReactNode }) {
+export type ActionRenderers = {
+  [K in keyof typeof slice["actions"]]: (props: {
+    action: Parameters<typeof slice["caseReducers"][K]>[1];
+    state: ReturnType<typeof reducer>;
+  }) => JSX.Element;
+};
+
+export const actionRenderers: ActionRenderers = {
+  goal: ({ action, state }) => {
+    const goal = action.payload;
+    const player =
+      goal.player &&
+      state.players[goal.side].find(
+        (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
+      );
+    const tag = player
+      ? `${player.name} (${player.position ? player.position + ", " : ""}${
+          goal.side
+        })`
+      : goal.side;
+    const time = clockTimeAt(state.clock, action.meta.ts);
+    return (
+      <span>
+        {tag} at{" "}
+        {Math.floor((QUARTER_DURATION_MS - time) / 60 / 1000).toFixed(0)}{" "}
+        minutes (Q
+        {state.quarters.length})
+      </span>
+    );
+  },
+  pauseClock: ({ action, state }) => {
+    const time = clockTimeAt(state.clock, action.meta.ts);
+    return (
+      <span>
+        Clock paused at {formatMMSSMS(QUARTER_DURATION_MS - time, 0, 2)}
+      </span>
+    );
+  },
+  resumeCurrentQuarter: ({ action, state }) => {
+    return <span>Clock resumed</span>;
+  },
+  startNextQuarter: () => <span>Started next quarter</span>,
+};
+
+export function RenderScore(props: { state: State }) {
   console.log("RenderScore rendered!", props.state);
   return (
     <TypographyStylesProvider>
@@ -189,44 +234,11 @@ export function RenderScore(props: { state: State; actions: React.ReactNode }) {
         Home {props.state.scoreHome} - Away {props.state.scoreAway}
       </h1>
       <small>Quarter {props.state.quarters.length}</small>
-      <div>
-        <RenderClock
-          clock={props.state.clock}
-          precisionMs={0}
-          precisionHigh={2}
-        />
-      </div>
-      {props.actions}
-      <h2>Goals</h2>
-      <ul>
-        {props.state.quarters
-          .flatMap((x, q) =>
-            x.goals.slice().map((goal) => ({ ...goal, quarter: q + 1 }))
-          )
-          .reverse()
-          .map((goal) => {
-            const player =
-              goal.player &&
-              // @ts-expect-error goal.side indexing is strange
-              props.state.players[goal.side].find(
-                (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
-              );
-            const tag = player
-              ? `${player.name} (${
-                  player.position ? player.position + ", " : ""
-                }${goal.side})`
-              : goal.side;
-            return (
-              <li key={goal.quarter + "" + goal.time}>
-                {tag} at{" "}
-                {Math.floor(
-                  (QUARTER_DURATION_MS - goal.time) / 60 / 1000
-                ).toFixed(0)}{" "}
-                minutes (Q{goal.quarter})
-              </li>
-            );
-          })}
-      </ul>
+      <RenderClock
+        clock={props.state.clock}
+        precisionHigh={2}
+        precisionMs={0}
+      />
     </TypographyStylesProvider>
   );
 }
