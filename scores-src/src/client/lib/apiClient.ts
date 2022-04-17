@@ -263,3 +263,47 @@ export function usePOSTLogin() {
     return result;
   };
 }
+
+export function usePOSTEventUndo() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (type: string, id: string, ts: number) => {
+    const result = (await fetcher(navigate)(
+      `/events/${type}/${id}/_undo`,
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ts }),
+      },
+      200
+    )) as BaseEventType;
+    mutate("/events");
+    mutate(`/events/${type}/${result.id}`, result, false);
+    return result;
+  };
+}
+
+export function usePOSTEventRedo() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (type: string, id: string, ts: number) => {
+    const result = (await fetcher(navigate)(
+      `/events/${type}/${id}/_redo`,
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ts }),
+      },
+      200
+    )) as BaseEventType;
+    mutate("/events");
+    mutate(`/events/${type}/${result.id}`, result, false);
+    return result;
+  };
+}
