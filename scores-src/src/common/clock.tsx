@@ -35,10 +35,6 @@ function isDownward(clock: ClockType): clock is DownwardClockType {
   return clock.type === "downward";
 }
 
-export function currentTime(clock: ClockType): number {
-  return clockTimeAt(clock, new Date().valueOf());
-}
-
 export function clockTimeAt(clock: ClockType, wallClock: number): number {
   if (clock.state === "stopped") {
     return clock.timeLastStartedOrStopped;
@@ -60,10 +56,6 @@ export function clockTimeAt(clock: ClockType, wallClock: number): number {
   }
 }
 
-export function startClockNow(clock: ClockType, countDownFrom?: number) {
-  startClockAt(clock, new Date().valueOf(), countDownFrom);
-}
-
 export function startClockAt(
   clock: ClockType,
   wallClock: number,
@@ -76,8 +68,8 @@ export function startClockAt(
   }
 }
 
-export function stopClock(clock: ClockType) {
-  clock.timeLastStartedOrStopped = currentTime(clock);
+export function stopClockAt(clock: ClockType, wallClock: number) {
+  clock.timeLastStartedOrStopped = clockTimeAt(clock, wallClock);
   clock.state = "stopped";
 }
 

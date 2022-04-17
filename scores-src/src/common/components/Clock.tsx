@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ClockType, currentTime, formatMMSSMS } from "../clock";
+import { ClockType, clockTimeAt, formatMMSSMS } from "../clock";
 import { Text, Title } from "@mantine/core";
 
 export function RenderClock({
@@ -11,14 +11,15 @@ export function RenderClock({
   precisionMs: number;
   precisionHigh: number;
 }) {
-  const [time, setTime] = useState(() => currentTime(clock));
+  const [time, setTime] = useState(() =>
+    clockTimeAt(clock, new Date().valueOf())
+  );
   useEffect(() => {
     if (clock.state === "stopped") {
-      setTime(currentTime(clock));
-      return;
+      setTime(clockTimeAt(clock, new Date().valueOf()));
     }
     function tick() {
-      setTime(currentTime(clock));
+      setTime(clockTimeAt(clock, new Date().valueOf()));
     }
     const interval = setInterval(tick, 20);
     return () => clearInterval(interval);

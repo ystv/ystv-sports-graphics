@@ -4,7 +4,7 @@ import {
   clockTimeAt,
   DownwardClock,
   startClockAt,
-  stopClock,
+  stopClockAt,
 } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { SelectField, ArrayField, RandomUUIDField } from "../../formFields";
@@ -103,7 +103,7 @@ const slice = createSlice({
         return wrapAction({ payload });
       },
     },
-    startQuarter: {
+    startNextQuarter: {
       reducer(state, action) {
         state.quarters.push({
           goals: [],
@@ -114,22 +114,28 @@ const slice = createSlice({
         return wrapAction({});
       },
     },
-    pauseClock(state) {
-      stopClock(state.clock);
+    pauseClock: {
+      reducer(state, action) {
+        stopClockAt(state.clock, action.meta.ts);
+      },
+      prepare() {
+        return wrapAction({});
+      },
     },
     resumeCurrentQuarter: {
       reducer(state, action) {
         state.quarters.push({
           goals: [],
         });
-        startClockAt(state.clock, action.meta.ts, QUARTER_DURATION_MS);
+        startClockAt(
+          state.clock,
+          action.meta.ts,
+          state.clock.timeLastStartedOrStopped
+        );
       },
       prepare() {
         return wrapAction({});
       },
-    },
-    endCurrentQuarter(state) {
-      stopClock(state.clock);
     },
   },
 });
@@ -156,8 +162,7 @@ export const actionPayloadValidators: ActionPayloadValidators<
     side: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).required(),
     player: Yup.string().uuid().nullable().default(null),
   }),
-  startQuarter: Yup.object({}),
-  endCurrentQuarter: Yup.object({}),
+  startNextQuarter: Yup.object({}),
   pauseClock: Yup.object({}),
   resumeCurrentQuarter: Yup.object({}),
 };
@@ -168,7 +173,10 @@ export const actionValidChecks: ActionValidChecks<
 > = {
   goal: (state) => state.quarters.length > 0,
   pauseClock: (state) => state.clock.state === "running",
-  endCurrentQuarter: (state) => state.quarters.length > 0,
+  startNextQuarter: (state) =>
+    // Safe to use current time here because this isn't called from reducers
+    state.quarters.length === 0 ||
+    clockTimeAt(state.clock, new Date().valueOf()) === 0,
   resumeCurrentQuarter: (state) =>
     state.quarters.length > 0 && state.clock.state === "stopped",
 };
@@ -209,7 +217,7 @@ export function RenderScore(props: { state: State; actions: React.ReactNode }) {
                 }${goal.side})`
               : goal.side;
             return (
-              <li key={goal.time}>
+              <li key={goal.quarter + "" + goal.time}>
                 {tag} at{" "}
                 {Math.floor(
                   (QUARTER_DURATION_MS - goal.time) / 60 / 1000

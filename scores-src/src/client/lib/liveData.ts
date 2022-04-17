@@ -7,7 +7,11 @@ import type {
 import invariant from "tiny-invariant";
 import { stringify as stringifyQS } from "qs";
 import { getAuthToken } from "./apiClient";
-import { Action, wrapReducer } from "../../common/eventStateHelpers";
+import {
+  Action,
+  resolveEventState,
+  wrapReducer,
+} from "../../common/eventStateHelpers";
 import { EVENT_TYPES } from "../../common/sports";
 import { pick } from "lodash-es";
 
@@ -54,7 +58,10 @@ export function useLiveData(eventId: string) {
   const [status, setStatus] = useState<LiveDataStatus>("NOT_CONNECTED");
   const [error, setError] = useState<string | null>(null);
   const [history, addToHistory] = useReducer(historyReducer, []);
-  const [state, dispatch] = useReducer(stateReducer(type), null as any);
+  const state =
+    history.length === 0
+      ? null
+      : resolveEventState(EVENT_TYPES[type].reducer, history);
 
   const messageQueue = useRef<LiveClientMessage[]>([]);
   const sid = useRef<string | null>(null);
@@ -134,8 +141,6 @@ export function useLiveData(eventId: string) {
         );
         const history = payload.current;
         addToHistory({ type: "_resync", history: history });
-        dispatch({ type: "_resync" });
-        history.forEach((action) => dispatch(action));
         break;
       }
       case "UNSUBSCRIBE_OK":
@@ -150,7 +155,6 @@ export function useLiveData(eventId: string) {
         const action = pick(payload, "type", "payload", "meta");
 
         addToHistory(action);
-        dispatch(action);
         lastMid.current = payload.mid;
         break;
       }
@@ -160,8 +164,6 @@ export function useLiveData(eventId: string) {
           break;
         }
         addToHistory({ type: "_resync", history: payload.actions });
-        dispatch({ type: "_resync" });
-        payload.actions.forEach((action) => dispatch(action));
         break;
       case "ERROR":
         setError(payload.error);
