@@ -40,7 +40,7 @@ module.exports = {
   platform: "node",
   target: ["node16"],
   treeShaking: true,
-  sourcemap: false,
+  sourcemap: true,
   bundle: true,
   plugins: [nativeNodeModulesPlugin],
   outfile: "./dist/index.server.js",
