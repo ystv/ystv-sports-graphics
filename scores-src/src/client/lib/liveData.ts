@@ -27,13 +27,17 @@ export function useLiveData<T>(eventId: string) {
   const lastMid = useRef<string | null>(null);
   const lastPingAt = useRef<number>(0);
   const pingInterval = useRef<number | null>(null);
+  const missedPings = useRef<number>(0);
 
   function maybePing() {
     const PING_THRESHOLD_MS = 7_500;
     if (new Date().valueOf() - lastPingAt.current > PING_THRESHOLD_MS) {
       logger.info("Last ping was at", lastPingAt.current, "pinging now");
-      setStatus("POSSIBLY_DISCONNECTED");
       send({ kind: "PING" });
+      missedPings.current++;
+      if (missedPings.current >= 2) {
+        setStatus("POSSIBLY_DISCONNECTED");
+      }
     }
   }
 
@@ -81,6 +85,7 @@ export function useLiveData<T>(eventId: string) {
     );
     logger.debug("WS", payload.kind);
     lastPingAt.current = new Date().valueOf();
+    missedPings.current = 0;
     setStatus("READY");
     switch (payload.kind) {
       case "HELLO":
