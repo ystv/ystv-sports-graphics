@@ -3,7 +3,11 @@ import { useLiveData } from "../lib/liveData";
 import invariant from "tiny-invariant";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
-import { usePOSTEventAction } from "../lib/apiClient";
+import {
+  usePOSTEventAction,
+  usePOSTEventRedo,
+  usePOSTEventUndo,
+} from "../lib/apiClient";
 import { startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
@@ -83,16 +87,18 @@ function EventActionModal(props: {
   );
 }
 
-function Timeline(props: { type: string; history: Action[] }) {
+function Timeline(props: { type: string; eventId: string; history: Action[] }) {
+  const undo = usePOSTEventUndo();
+  const redo = usePOSTEventRedo();
   const result: JSX.Element[] = [];
   let state = {};
   const reducer = wrapReducer(EVENT_TYPES[props.type].reducer);
-  const undone = findUndoneActions(props.history);
+  const allUndoneActions = findUndoneActions(props.history);
   for (const action of props.history) {
-    if (undone.has(action.meta.ts)) {
-      continue;
+    const undone = allUndoneActions.has(action.meta.ts);
+    if (!undone) {
+      state = reducer(state, action);
     }
-    state = reducer(state, action);
     if (action.type[0] === "@") {
       continue;
     }
@@ -100,9 +106,32 @@ function Timeline(props: { type: string; history: Action[] }) {
       actionRenderers[
         action.type.replace(/^.*?\//, "") as keyof typeof actionRenderers
       ];
+    const Wrapper = ({ children }: { children: JSX.Element }) =>
+      undone ? <s>{children}</s> : children;
     result.push(
       <li key={action.type + action.meta.ts}>
-        <Entry action={action as any} state={state as any} />
+        <Wrapper>
+          <>
+            <Entry action={action as any} state={state as any} />
+            {undone ? (
+              <Button
+                compact
+                color="orange"
+                onClick={() => redo(props.type, props.eventId, action.meta.ts)}
+              >
+                Redo
+              </Button>
+            ) : (
+              <Button
+                compact
+                variant="subtle"
+                onClick={() => undo(props.type, props.eventId, action.meta.ts)}
+              >
+                Undo
+              </Button>
+            )}
+          </>
+        </Wrapper>
       </li>
     );
   }
@@ -155,7 +184,7 @@ export function LiveScores() {
         </Group>
 
         <Title order={2}>Timeline</Title>
-        <Timeline type={type} history={history} />
+        <Timeline type={type} eventId={id} history={history} />
         {error !== null && <Alert>{error}</Alert>}
         {status === "POSSIBLY_DISCONNECTED" && (
           <Alert>
