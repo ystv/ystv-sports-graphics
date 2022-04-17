@@ -14,9 +14,10 @@ import { Request, Router } from "express";
 import { activeStreamConnections } from "./metrics";
 import { verifySessionID } from "./auth";
 import { URLSearchParams } from "url";
-import { Action, resolveEventState } from "../common/eventStateHelpers";
+import { resolveEventState } from "../common/eventStateHelpers";
 import invariant from "tiny-invariant";
 import { EVENT_TYPES } from "../common/sports";
+import { Action } from "../common/types";
 
 type SocketMode = "actions" | "state";
 

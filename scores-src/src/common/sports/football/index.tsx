@@ -4,7 +4,7 @@ import {
   ActionRenderers,
   BaseEvent,
   BaseEventType,
-  EventActionTypes,
+  EventComponents,
   EventTypeInfo,
 } from "../../types";
 import {
@@ -14,7 +14,6 @@ import {
   SegmentedSelectField,
   SelectField,
 } from "../../formFields";
-import type { EventActionFunctions } from "../../types";
 import { useFormikContext } from "formik";
 import { RenderClock } from "../../components/Clock";
 import { Mark, Stack, Title, Text, Table, Button } from "@mantine/core";
@@ -33,8 +32,8 @@ import {
   Action,
   ActionPayloadValidators,
   ActionValidChecks,
-  wrapAction,
-} from "../../eventStateHelpers";
+} from "../../types";
+import { wrapAction } from "../../eventStateHelpers";
 
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
@@ -111,7 +110,7 @@ const slice = createSlice({
       },
     },
     startHalf: {
-      reducer(state, action) {
+      reducer(state, action: Action) {
         state.halves.push({
           goals: [],
           stoppageTime: 0,
@@ -128,23 +127,23 @@ const slice = createSlice({
         startClockAt(state.clock, action.meta.ts);
       },
       prepare() {
-        return wrapAction({});
+        return wrapAction({ payload: {} });
       },
     },
     resumeCurrentHalf: {
-      reducer(state, action) {
+      reducer(state, action: Action) {
         startClockAt(state.clock, action.meta.ts);
       },
       prepare() {
-        return wrapAction({});
+        return wrapAction({ payload: {} });
       },
     },
     endHalf: {
-      reducer(state, action) {
+      reducer(state, action: Action) {
         stopClockAt(state.clock, action.meta.ts);
       },
       prepare() {
-        return wrapAction({});
+        return wrapAction({ payload: {} });
       },
     },
     addStoppageTime(state, action: PayloadAction<{ minutes: number }>) {
@@ -246,7 +245,7 @@ export const actionRenderers: ActionRenderers<
   ),
 };
 
-export function GoalForm(props: ActionFormProps<typeof schema>) {
+export function GoalForm(props: ActionFormProps<State>) {
   const { values } =
     useFormikContext<Yup.InferType<typeof actionPayloadValidators["goal"]>>();
   const players =
@@ -350,3 +349,21 @@ export function RenderScore(props: { state: State }) {
     </Stack>
   );
 }
+
+export const typeInfo: EventTypeInfo<State, typeof actions> = {
+  reducer,
+  schema,
+  actionCreators: actions,
+  actionPayloadValidators,
+  actionRenderers,
+  actionValidChecks,
+};
+
+export const components: EventComponents<typeof actions> = {
+  EditForm,
+  RenderScore,
+  actionForms: {
+    goal: GoalForm,
+    addStoppageTime: StoppageTimeForm,
+  },
+};

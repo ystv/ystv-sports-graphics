@@ -9,15 +9,21 @@ import {
 } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { SelectField, ArrayField, RandomUUIDField } from "../../formFields";
-import { createSlice } from "@reduxjs/toolkit";
-import { ActionRenderers, BaseEvent, BaseEventType } from "../../types";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  ActionRenderers,
+  BaseEvent,
+  BaseEventType,
+  EventComponents,
+  EventTypeInfo,
+} from "../../types";
 import {
   Action,
   ActionPayloadValidators,
   ActionValidChecks,
-  wrapAction,
-} from "../../eventStateHelpers";
+} from "../../types";
 import { TypographyStylesProvider } from "@mantine/core";
+import { wrapAction } from "../../eventStateHelpers";
 
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
@@ -98,26 +104,26 @@ const slice = createSlice({
       },
     },
     startNextQuarter: {
-      reducer(state, action) {
+      reducer(state, action: Action) {
         state.quarters.push({
           goals: [],
         });
         startClockAt(state.clock, action.meta.ts, QUARTER_DURATION_MS);
       },
       prepare() {
-        return wrapAction({});
+        return wrapAction({ payload: {} });
       },
     },
     pauseClock: {
-      reducer(state, action) {
+      reducer(state, action: Action) {
         stopClockAt(state.clock, action.meta.ts);
       },
       prepare() {
-        return wrapAction({});
+        return wrapAction({ payload: {} });
       },
     },
     resumeCurrentQuarter: {
-      reducer(state, action) {
+      reducer(state, action: Action) {
         state.quarters.push({
           goals: [],
         });
@@ -128,7 +134,7 @@ const slice = createSlice({
         );
       },
       prepare() {
-        return wrapAction({});
+        return wrapAction({ payload: {} });
       },
     },
   },
@@ -316,3 +322,20 @@ export function EditForm() {
     </div>
   );
 }
+
+export const typeInfo: EventTypeInfo<State, typeof actions> = {
+  reducer,
+  schema,
+  actionCreators: actions,
+  actionPayloadValidators,
+  actionRenderers,
+  actionValidChecks,
+};
+
+export const components: EventComponents<typeof actions> = {
+  EditForm,
+  RenderScore,
+  actionForms: {
+    goal: GoalForm,
+  },
+};

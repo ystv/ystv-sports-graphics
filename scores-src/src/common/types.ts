@@ -19,41 +19,42 @@ export interface BaseEventType {
   worthPoints: number;
 }
 
-export interface EventActionTypes<TEventSchema extends Yup.AnySchema> {
-  readonly [K: string]: {
-    schema: Yup.AnyObjectSchema;
-    valid?: (state: Yup.InferType<TEventSchema>) => boolean;
-  };
+export interface ActionMeta {
+  ts: number;
+  undone?: boolean;
 }
 
-export type EventActionFunctions<
-  TEventSchema extends Yup.AnyObjectSchema,
-  TActionTypes extends EventActionTypes<TEventSchema>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface Action<TPayload = any> {
+  type: string;
+  payload: TPayload;
+  meta: ActionMeta;
+}
+
+export type Reducer<TState> = (state: TState, action: Action) => TState;
+
+export type ActionPayloadValidators<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TActions extends { [K: string]: (payload: any) => any }
 > = {
-  [K in keyof TActionTypes]: (
-    value: Yup.InferType<TEventSchema>,
-    data: Yup.InferType<TActionTypes[K]["schema"]>
-  ) => void;
+  [K in keyof TActions]: Parameters<TActions[K]>[0] extends Record<
+    string,
+    unknown
+  >
+    ? Yup.SchemaOf<Parameters<TActions[K]>[0]>
+    : Yup.AnySchema;
 };
 
-export interface ActionFormProps<TEventSchema extends TypedSchema> {
-  currentState: Yup.InferType<TEventSchema>;
-}
+export type ActionValidChecks<
+  TState,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TActions extends { [K: string]: (payload: any) => any }
+> = {
+  [K in keyof TActions]?: (state: TState) => boolean;
+};
 
-interface EventActionInfo<TEventSchema extends TypedSchema> {
-  schema: Yup.AnyObjectSchema;
-  Form: (props: ActionFormProps<TEventSchema>) => JSX.Element;
-  valid?: (state: Yup.InferType<TEventSchema>) => boolean;
-}
-
-export interface EventTypeInfo<T extends Yup.AnyObjectSchema> {
-  schema: T;
-  EditForm: () => JSX.Element;
-  RenderScore: (props: {
-    value: Yup.InferType<T>;
-    actions: React.ReactNode;
-  }) => JSX.Element;
-  actions: Record<string, EventActionInfo<T>>;
+export interface ActionFormProps<TState> {
+  currentState: TState;
 }
 
 export type Permission = "SUDO" | "read" | "write" | "admin";
@@ -78,3 +79,24 @@ export type ActionRenderers<
     state: TState;
   }) => JSX.Element;
 };
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export interface EventTypeInfo<
+  TState,
+  TActions extends { [K: string]: (payload?: any) => { type: string } }
+> {
+  reducer: Reducer<TState>;
+  schema: Yup.SchemaOf<TState> & Yup.AnyObjectSchema;
+  actionCreators: TActions;
+  actionPayloadValidators: ActionPayloadValidators<TActions>;
+  actionValidChecks: ActionValidChecks<TState, TActions>;
+  actionRenderers: ActionRenderers<TActions, any, TState>;
+}
+
+export interface EventComponents<TActions> {
+  EditForm: () => JSX.Element;
+  RenderScore: (props: { state: any }) => JSX.Element;
+  actionForms: {
+    [K in keyof TActions]?: (props: { currentState: any }) => JSX.Element;
+  };
+}
