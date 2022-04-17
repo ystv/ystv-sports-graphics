@@ -162,7 +162,7 @@ export function createLiveRouter() {
       }
     }
 
-    let lastMid = "0";
+    let lastMid: string;
 
     if ("last_mid" in req.query) {
       ensure(
@@ -171,21 +171,26 @@ export function createLiveRouter() {
         "invalid last_mid type"
       );
       lastMid = req.query.last_mid;
-    }
-    for (;;) {
-      const data = await getActions(logger, lastMid);
-      if (data === null || data.length === 0) {
-        logger.debug("Caught up, continuing");
-        break;
-      }
-      logger.debug("Catch-up: got data", { len: data.length });
-      for (const msg of data) {
-        if (subs.has(msg.data.id)) {
-          handleAction(msg.mid, msg.data);
+      for (;;) {
+        const data = await getActions(logger, lastMid);
+        if (data === null || data.length === 0) {
+          logger.debug("Caught up, continuing");
+          break;
         }
-        lastMid = msg.mid;
-        logger.debug("Catch-up: last MID now " + lastMid);
+        logger.debug("Catch-up: got data", { len: data.length });
+        for (const msg of data) {
+          if (subs.has(msg.data.id)) {
+            handleAction(msg.mid, msg.data);
+          }
+          lastMid = msg.mid;
+          logger.debug("Catch-up: last MID now " + lastMid);
+        }
       }
+    } else {
+      // Setting the MID to the current time means that Redis will send us all messages
+      // from now. Note that we do NOT use $, because that could result in us losing
+      // messages that come in while we're disconnected (which happens every 5 seconds)!
+      lastMid = new Date().valueOf().toString(10);
     }
 
     ws.on("message", async (msg) => {
@@ -305,9 +310,6 @@ export function createLiveRouter() {
         return;
       }
       if (data === null) {
-        // Redis has nothing to give us now, so we can replace the MID with $,
-        // then next time round we'll get the latest
-        lastMid = "$";
         send({ kind: "PING" });
         continue;
       }
