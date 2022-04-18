@@ -61,6 +61,10 @@ pipeline {
                     string(name: 'JOB_FILE', value: 'sports-graphics.nomad'),
                     text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/server:${env.BUILD_NUMBER} registry.comp.ystv.co.uk/sports-scores/client:${env.BUILD_NUMBER}")
                 ]
+                build job: 'Deploy Nomad Job', parameters: [
+                    string(name: 'JOB_FILE', value: 'sports-graphics-bundle.nomad'),
+                    text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/bundle:${env.BUILD_NUMBER}")
+                ]
             }
         }
     }
