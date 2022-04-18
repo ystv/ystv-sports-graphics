@@ -62,7 +62,7 @@ export function CreateEventModal() {
               helper="How many Roses points will the winner get?"
             />
             <EditForm />
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
+            <Button onClick={() => handleSubmit} disabled={isSubmitting}>
               Create
             </Button>
             {submitError !== null && (
