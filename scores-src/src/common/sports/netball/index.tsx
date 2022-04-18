@@ -231,6 +231,7 @@ export function RenderScore(props: { state: State }) {
       </h1>
       <small>Quarter {props.state.quarters.length}</small>
       <RenderClock
+        key={props.state.clock.state}
         clock={props.state.clock}
         precisionHigh={2}
         precisionMs={0}

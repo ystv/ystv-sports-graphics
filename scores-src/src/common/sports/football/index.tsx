@@ -338,6 +338,7 @@ export function RenderScore(props: { state: State }) {
       </Title>
       <div>
         <RenderClock
+          key={props.state.clock.state}
           clock={props.state.clock}
           precisionMs={0}
           precisionHigh={2}
