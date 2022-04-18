@@ -3,10 +3,11 @@ import { ListEvents } from "./pages/ListEvents";
 import { Wrapper } from "./components/Wrapper";
 
 import { CreateEventModal } from "./pages/CreateEventModal";
-import { EditEventForm, EditEventModal } from "./pages/EditEventModal";
+import { EditEventModal } from "./pages/EditEventModal";
 import { LiveScores } from "./pages/LiveScores";
 
 import { MantineProvider } from "@mantine/core";
+import { NotificationsProvider } from "@mantine/notifications";
 import { BootstrapScreen } from "./pages/Bootstrap";
 import { LoginScreen } from "./pages/Login";
 
@@ -31,9 +32,11 @@ function AppRoutes() {
 export function App() {
   return (
     <MantineProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <NotificationsProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </NotificationsProvider>
     </MantineProvider>
   );
 }

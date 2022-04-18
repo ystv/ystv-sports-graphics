@@ -13,6 +13,7 @@ import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
 import { findUndoneActions, wrapReducer } from "../../common/eventStateHelpers";
 import { Action } from "../../common/types";
+import { showNotification } from "@mantine/notifications";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENT_TYPES;
@@ -81,6 +82,8 @@ function EventActionModal(props: {
 }
 
 function Timeline(props: { type: string; eventId: string; history: Action[] }) {
+  const [loading, setLoading] = useState<number | null>(null);
+
   const undo = usePOSTEventUndo();
   const redo = usePOSTEventRedo();
   const result: JSX.Element[] = [];
@@ -88,6 +91,25 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
   const reducer = wrapReducer(EVENT_TYPES[props.type].reducer);
   const actionRenderers = EVENT_TYPES[props.type].actionRenderers;
   const allUndoneActions = findUndoneActions(props.history);
+
+  async function perform(action: "undo" | "redo", ts: number) {
+    setLoading(ts);
+    try {
+      if (action === "undo") {
+        await undo(props.type, props.eventId, ts);
+      } else {
+        await redo(props.type, props.eventId, ts);
+      }
+    } catch (e) {
+      showNotification({
+        message: "Failed to " + action + ": " + String(e),
+        color: "orange",
+      });
+    } finally {
+      setLoading(null);
+    }
+  }
+
   for (const action of props.history) {
     const undone = allUndoneActions.has(action.meta.ts);
     if (!undone) {
@@ -105,23 +127,15 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
           <>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Entry action={action as any} state={state as any} />
-            {undone ? (
-              <Button
-                compact
-                color="orange"
-                onClick={() => redo(props.type, props.eventId, action.meta.ts)}
-              >
-                Redo
-              </Button>
-            ) : (
-              <Button
-                compact
-                variant="subtle"
-                onClick={() => undo(props.type, props.eventId, action.meta.ts)}
-              >
-                Undo
-              </Button>
-            )}
+            <Button
+              compact
+              variant={undone ? "default" : "subtle"}
+              loading={loading === action.meta.ts}
+              disabled={loading !== null}
+              onClick={() => perform(undone ? "redo" : "undo", action.meta.ts)}
+            >
+              {undone ? "Redo" : "Undo"}
+            </Button>
           </>
         </Wrapper>
       </li>

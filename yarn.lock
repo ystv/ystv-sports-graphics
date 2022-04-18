@@ -3287,17 +3287,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/notifications@npm:^4.1.2":
-  version: 4.1.2
-  resolution: "@mantine/notifications@npm:4.1.2"
+"@mantine/notifications@npm:^4.1.4":
+  version: 4.1.4
+  resolution: "@mantine/notifications@npm:4.1.4"
   dependencies:
     react-transition-group: ^4.4.2
   peerDependencies:
-    "@mantine/core": 4.1.2
-    "@mantine/hooks": 4.1.2
+    "@mantine/core": 4.1.4
+    "@mantine/hooks": 4.1.4
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 246554ea21e01d5fcf71debfc4eba59d10df8235adbf5eac418ae200b9f62796ca59aebce2915468b61848cc651de3dff6e7b1794cec5ee40a1cd2186930662d
+  checksum: dcc1ff71ebc0e685977890dac9d63b71c8ced4360c9f2ee73ddef16e78e4af6cf9d0193d95c4b02b2896a8c9bb231cdf071893dcce680cd820872b450ef74b6d
   languageName: node
   linkType: hard
 
@@ -6270,7 +6270,7 @@ __metadata:
     "@mantine/dates": ^4.1.2
     "@mantine/form": ^4.1.2
     "@mantine/hooks": ^4.1.2
-    "@mantine/notifications": ^4.1.2
+    "@mantine/notifications": ^4.1.4
     "@popperjs/core": ^2.11.2
     "@reduxjs/toolkit": ^1.8.1
     "@tabler/icons": ^1.64.0
