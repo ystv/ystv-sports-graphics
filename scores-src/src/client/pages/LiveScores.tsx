@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useLiveData } from "../lib/liveData";
 import invariant from "tiny-invariant";
 import { Form, Formik, FormikHelpers } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   usePOSTEventAction,
   usePOSTEventRedo,
@@ -83,14 +83,8 @@ function EventActionModal(props: {
 
 function Timeline(props: { type: string; eventId: string; history: Action[] }) {
   const [loading, setLoading] = useState<number | null>(null);
-
   const undo = usePOSTEventUndo();
   const redo = usePOSTEventRedo();
-  const result: JSX.Element[] = [];
-  let state = {};
-  const reducer = wrapReducer(EVENT_TYPES[props.type].reducer);
-  const actionRenderers = EVENT_TYPES[props.type].actionRenderers;
-  const allUndoneActions = findUndoneActions(props.history);
 
   async function perform(action: "undo" | "redo", ts: number) {
     setLoading(ts);
@@ -109,6 +103,15 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
       setLoading(null);
     }
   }
+
+  const result: JSX.Element[] = [];
+  let state = {};
+  const reducer = wrapReducer(EVENT_TYPES[props.type].reducer);
+  const actionRenderers = EVENT_TYPES[props.type].actionRenderers;
+  const allUndoneActions = useMemo(
+    () => findUndoneActions(props.history),
+    [props.history]
+  );
 
   for (const action of props.history) {
     const undone = allUndoneActions.has(action.meta.ts);
