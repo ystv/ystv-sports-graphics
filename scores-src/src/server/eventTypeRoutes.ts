@@ -149,6 +149,19 @@ export function makeEventAPIFor<
       const undoAction = wrapAction(Undo({ ts }));
       currentActions.push(undoAction);
 
+      // Try to resolve the state with the new history. If this would crash the reducer,
+      // we're in an invalid state.
+      try {
+        resolveEventState(reducer, currentActions);
+      } catch (e) {
+        logger.info("Test-resolve of undo failed", {
+          error: e instanceof Error ? e.message : e,
+        });
+        throw new PreconditionFailed(
+          "undoing that would result in an invalid state"
+        );
+      }
+
       await DB.collection("_default").mutateIn(
         key(id),
         [MutateInSpec.arrayAppend("", undoAction)],
@@ -196,6 +209,19 @@ export function makeEventAPIFor<
         });
         currentActions.push(redoAction);
         spec.push(MutateInSpec.arrayAppend("", redoAction));
+      }
+
+      // Try to resolve the state with the new history. If this would crash the reducer,
+      // we're in an invalid state.
+      try {
+        resolveEventState(reducer, currentActions);
+      } catch (e) {
+        logger.info("Test-resolve of redo failed", {
+          error: e instanceof Error ? e.message : e,
+        });
+        throw new PreconditionFailed(
+          "redoing that would result in an invalid state"
+        );
       }
 
       await DB.collection("_default").mutateIn(key(id), spec, {
