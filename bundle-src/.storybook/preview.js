@@ -1,4 +1,4 @@
-import "../src/graphics/global.css";
+import "!style-loader!css-loader!../src/graphics/global.css";
 
 const customViewports = {
   tv1080: {
