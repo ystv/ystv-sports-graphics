@@ -1,6 +1,15 @@
 import { Link, Outlet } from "react-router-dom";
 import { useGETEvents } from "../lib/apiClient";
-import { Table, Card, Text, Button, Title, Group, Stack } from "@mantine/core";
+import {
+  Table,
+  Card,
+  Text,
+  Button,
+  Title,
+  Group,
+  Stack,
+  TypographyStylesProvider,
+} from "@mantine/core";
 
 export function ListEvents() {
   const { data: events, loading, error } = useGETEvents();
@@ -26,7 +35,7 @@ export function ListEvents() {
       message = JSON.stringify(error);
     }
     return (
-      <div>
+      <TypographyStylesProvider>
         <h1>Sorry, something went wrong!</h1>
         <p>
           Please check your network connection and try again. If you still have
@@ -34,7 +43,7 @@ export function ListEvents() {
           Team.
         </p>
         <code>{message}</code>
-      </div>
+      </TypographyStylesProvider>
     );
   }
 
