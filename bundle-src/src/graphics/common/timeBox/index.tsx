@@ -1,8 +1,15 @@
 import styles from "./index.module.css";
-export default function TimeBox({ time = "00:00" }: { time?: string }) {
+
+export interface Props {
+  time: string;
+}
+
+export function Component({ time }: Props) {
   return (
     <div className={styles.Background}>
-      <time>{time}</time>
+      <div>{time}</div>
     </div>
   );
 }
+
+export default Component;

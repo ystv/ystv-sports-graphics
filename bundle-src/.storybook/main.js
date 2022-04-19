@@ -23,14 +23,12 @@ module.exports = {
     fastRefresh: true,
     strictMode: true,
   },
-  typescript: {
-    check: true,
-    checkOptions: {},
-    reactDocgen: "react-docgen-typescript",
-    reactDocgenTypescriptOptions: {
-      shouldExtractLiteralValuesFromEnum: true,
-      propFilter: (prop) =>
-        prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
-    },
-  },
+  // typescript: {
+  //   check: true,
+  //   checkOptions: {},
+  //   reactDocgenTypescriptOptions: {
+  //     propFilter: (prop) => ["label", "disabled"].includes(prop.name),
+  //   },
+  // },
+  staticDirs: [{ from: "../public", to: "public" }],
 };

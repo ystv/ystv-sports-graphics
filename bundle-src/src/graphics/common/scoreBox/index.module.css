@@ -1,13 +1,14 @@
 .Background {
-	width: 90rem;
+	width: 46rem;
 	height: 40rem;
-	background-color: var(--ystv-dark);
-}
-
-.Background div {
-	width: 90rem;
+	box-shadow: inset 0 7rem 1rem 0 rgba(255, 255, 255, 0.26), inset 1rem 0 4rem 0 rgba(0, 0, 0, 0.25);
+	background-color: var(--lancaster-red);
+  }
+  
+.Score {
+	width: 46rem;
 	height: 40rem;
-	text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+	text-shadow: 0 0 6rem rgba(0, 0, 0, 0.35);
 	font-family: OpenSans;
 	font-size: 24rem;
 	font-weight: 800;
@@ -18,4 +19,4 @@
 	text-align: center;
 	color: #fff;
 	font-variant-numeric: tabular-nums;
-}
+  }
