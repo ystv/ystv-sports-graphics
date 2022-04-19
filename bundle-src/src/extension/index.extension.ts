@@ -33,6 +33,19 @@ export = async (nodecg: NodeCG) => {
     defaultValue: null,
   });
 
+  const router = nodecg.Router();
+  router.get("/healthz", (_, res) => {
+    if (
+      stateRep.value === "DISCONNECTED" ||
+      stateRep.value === "NOT_CONNECTED"
+    ) {
+      res.status(503).send("state: " + stateRep.value);
+    } else {
+      res.status(200).send("state: " + stateRep.value);
+    }
+  });
+  nodecg.mount("/ystv-sports-graphics", router);
+
   let sid = "";
   let lastMID = "";
   let token = "";
