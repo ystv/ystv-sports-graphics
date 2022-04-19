@@ -5,7 +5,8 @@ export default {
   title: "Common/Team Name Box",
   component: Component,
   args: {
-    name: "Lancaster",
+    name: "York University",
+    primaryColor: "#faaf18",
   },
 } as ComponentMeta<typeof Component>;
 

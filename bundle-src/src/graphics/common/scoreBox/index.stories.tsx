@@ -6,6 +6,7 @@ export default {
   component: Component,
   args: {
     score: 0,
+    primaryColor: "#faaf18",
   },
 } as ComponentMeta<typeof Component>;
 
