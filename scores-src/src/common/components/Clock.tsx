@@ -23,7 +23,7 @@ export function RenderClock({
     }
     const interval = setInterval(tick, 20);
     return () => clearInterval(interval);
-  }, [clock.state]);
+  }, [clock]);
   return (
     <Title order={3} style={{ fontVariantNumeric: "tabular-nums" }}>
       {formatMMSSMS(time, precisionMs, precisionHigh)}
