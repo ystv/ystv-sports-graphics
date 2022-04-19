@@ -11,6 +11,7 @@ import type { EventID } from "common/types/eventID";
 import qs from "qs";
 import axios from "axios";
 import { UnhandledListenForCb } from "../../../../../types/lib/nodecg-instance";
+import { Request, Response } from "express-serve-static-core";
 
 export = async (nodecg: NodeCG) => {
   const config: Configschema = nodecg.bundleConfig;
@@ -32,6 +33,19 @@ export = async (nodecg: NodeCG) => {
   const eventStateRep = nodecg.Replicant<any>("eventState", {
     defaultValue: null,
   });
+
+  const router = nodecg.Router();
+  router.get("/healthz", (_: Request, res: Response) => {
+    if (
+      stateRep.value === "DISCONNECTED" ||
+      stateRep.value === "NOT_CONNECTED"
+    ) {
+      res.status(503).send("state: " + stateRep.value);
+    } else {
+      res.status(200).send("state: " + stateRep.value);
+    }
+  });
+  nodecg.mount("/ystv-sports-graphics", router);
 
   let sid = "";
   let lastMID = "";
