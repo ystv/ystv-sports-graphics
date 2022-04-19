@@ -12,6 +12,7 @@ import qs from "qs";
 import axios from "axios";
 import { UnhandledListenForCb } from "../../../../../types/lib/nodecg-instance";
 import { Request, Response } from "express-serve-static-core";
+import * as metrics from "./metrics";
 
 export = async (nodecg: NodeCG) => {
   const config: Configschema = nodecg.bundleConfig;
@@ -26,6 +27,11 @@ export = async (nodecg: NodeCG) => {
       defaultValue: "NOT_CONNECTED",
     }
   );
+  stateRep.on("change", (val) => {
+    metrics.gaugeServerConnectionState.set(
+      metrics.CONNECTION_STATE_TO_NUMBER[val]
+    );
+  });
   const eventIDRep = nodecg.Replicant<EventID>("eventID", {
     defaultValue: null,
   });
@@ -45,6 +51,8 @@ export = async (nodecg: NodeCG) => {
       res.status(200).send("state: " + stateRep.value);
     }
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  router.get("/metrics", metrics.handler as any);
   nodecg.mount("/ystv-sports-graphics", router);
 
   let sid = "";
@@ -57,6 +65,10 @@ export = async (nodecg: NodeCG) => {
     auth: {
       username: config.scoresService.username,
       password: config.scoresService.password,
+    },
+    validateStatus(status) {
+      metrics.counterHttpResponses.labels(status.toString()).inc();
+      return status >= 200 && status < 300;
     },
   });
 
@@ -193,6 +205,7 @@ export = async (nodecg: NodeCG) => {
     };
     ws.onerror = (e: unknown) => {
       nodecg.log.error("WebSocket Error", e);
+      metrics.counterWebSocketErrors.inc();
     };
     ws.onmessage = (e) => {
       invariant(
@@ -201,6 +214,7 @@ export = async (nodecg: NodeCG) => {
       );
       const payload: LiveServerMessage = JSON.parse(e.data);
       nodecg.log.debug("WebSocket Message", payload.kind);
+      metrics.counterWebSocketMessages.labels(payload.kind).inc();
       switch (payload.kind) {
         case "HELLO":
           sid = payload.sid;

@@ -142,6 +142,9 @@ const config = [
     name: "extension",
     mode: "development",
     entry: "./src/extension/index.extension.ts",
+    resolve: {
+      extensions: [".ts", ".tsx", ".js"],
+    },
     target: "node",
     module: {
       rules: [
