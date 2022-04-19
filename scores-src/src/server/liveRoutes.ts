@@ -293,14 +293,26 @@ export function createLiveRouter() {
           }
         }
       } catch (e) {
+        let msg: string;
         if (e instanceof UserError) {
-          send({
-            kind: "ERROR",
-            error: e.message,
+          logger.info("User error", { error: e.message });
+          msg = e.message;
+        } else if (e instanceof Error) {
+          logger.error("OnMessage error", {
+            error: e.name,
+            message: e.message,
+            stack: e.stack,
           });
+          msg = e.name + " " + e.message;
+          logger;
         } else {
-          throw e;
+          logger.error("OnMessage error", { error: e });
+          msg = JSON.stringify(e);
         }
+        send({
+          kind: "ERROR",
+          error: msg,
+        });
       }
     });
 
