@@ -158,7 +158,11 @@ export function LiveScores() {
   const RenderScore = EVENT_COMPONENTS[type].RenderScore;
   const actionValidChecks = EVENT_TYPES[type].actionValidChecks;
   const actionPayloadValidators = EVENT_TYPES[type].actionPayloadValidators;
-  const hiddenActions = EVENT_TYPES[type].hiddenActions ?? new Set<any>();
+  const hiddenActions = useMemo(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => EVENT_TYPES[type].hiddenActions ?? new Set<any>(),
+    [type]
+  );
   const doAction = usePOSTEventAction();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
