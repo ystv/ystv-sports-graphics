@@ -35,7 +35,6 @@ export = async (nodecg: NodeCG) => {
   });
 
   const router = nodecg.Router();
-  // @ts-expect-error for some reason the express types are confused
   router.get("/healthz", (_: Request, res: Response) => {
     if (
       stateRep.value === "DISCONNECTED" ||
