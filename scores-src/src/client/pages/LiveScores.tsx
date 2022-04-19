@@ -158,8 +158,23 @@ export function LiveScores() {
   const RenderScore = EVENT_COMPONENTS[type].RenderScore;
   const actionValidChecks = EVENT_TYPES[type].actionValidChecks;
   const actionPayloadValidators = EVENT_TYPES[type].actionPayloadValidators;
+  const hiddenActions = EVENT_TYPES[type].hiddenActions ?? new Set<any>();
+  const doAction = usePOSTEventAction();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
+
+  async function act(actionType: string, payload: Record<string, unknown>) {
+    invariant(typeof type === "string", "no type");
+    invariant(typeof id === "string", "no id");
+    try {
+      await doAction(type, id, actionType, payload);
+    } catch (e) {
+      showNotification({
+        message: "Failed to " + actionType + ": " + String(e),
+        color: "orange",
+      });
+    }
+  }
 
   if (status === "READY" || status === "POSSIBLY_DISCONNECTED") {
     console.log("State:", state);
@@ -173,10 +188,12 @@ export function LiveScores() {
 
     return (
       <>
-        <RenderScore state={state} />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <RenderScore state={state} act={act as any} />
 
         <Group>
           {Object.keys(actionPayloadValidators)
+            .filter((x) => !hiddenActions.has(x))
             .filter((type) => {
               const validFn = actionValidChecks[type];
               if (!validFn) {

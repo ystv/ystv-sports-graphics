@@ -338,7 +338,7 @@ export const typeInfo: EventTypeInfo<State, typeof actions> = {
   actionValidChecks,
 };
 
-export const components: EventComponents<typeof actions> = {
+export const components: EventComponents<typeof actions, State> = {
   EditForm,
   RenderScore,
   actionForms: {
