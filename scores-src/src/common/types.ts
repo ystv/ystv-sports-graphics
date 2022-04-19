@@ -91,11 +91,23 @@ export interface EventTypeInfo<
   actionPayloadValidators: ActionPayloadValidators<TActions>;
   actionValidChecks: ActionValidChecks<TState, TActions>;
   actionRenderers: ActionRenderers<TActions, any, TState>;
+  hiddenActions?: Set<keyof TActions>;
 }
 
-export interface EventComponents<TActions> {
+export interface EventComponents<
+  TActions extends { [K: string]: (payload?: any) => { type: string } },
+  TState
+> {
   EditForm: () => JSX.Element;
-  RenderScore: (props: { state: any }) => JSX.Element;
+  RenderScore: (props: {
+    state: TState;
+    act: <K extends keyof TActions>(
+      type: K,
+      payload: TActions[K] extends { prepare: (payload: any) => any }
+        ? Parameters<TActions[K]["prepare"]>[0]
+        : Parameters<TActions[K]>[0]
+    ) => Promise<void>;
+  }) => JSX.Element;
   actionForms: {
     [K in keyof TActions]?: (props: { currentState: any }) => JSX.Element;
   };
