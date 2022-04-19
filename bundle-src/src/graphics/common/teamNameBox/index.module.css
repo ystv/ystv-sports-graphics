@@ -18,4 +18,6 @@
 	letter-spacing: normal;
 	text-align: center;
 	color: #fff;
+	display: table-cell;
+  	vertical-align: middle;
   }

@@ -7,7 +7,7 @@ export interface Props {
 export function Component({ time }: Props) {
   return (
     <div className={styles.Background}>
-      <div>{time}</div>
+      <h5>{time}</h5>
     </div>
   );
 }
