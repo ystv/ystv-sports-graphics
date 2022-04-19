@@ -11,6 +11,7 @@ import type { EventID } from "common/types/eventID";
 import qs from "qs";
 import axios from "axios";
 import { UnhandledListenForCb } from "../../../../../types/lib/nodecg-instance";
+import { Request, Response } from "express-serve-static-core";
 
 export = async (nodecg: NodeCG) => {
   const config: Configschema = nodecg.bundleConfig;
@@ -34,7 +35,8 @@ export = async (nodecg: NodeCG) => {
   });
 
   const router = nodecg.Router();
-  router.get("/healthz", (_, res) => {
+  // @ts-expect-error for some reason the express types are confused
+  router.get("/healthz", (_: Request, res: Response) => {
     if (
       stateRep.value === "DISCONNECTED" ||
       stateRep.value === "NOT_CONNECTED"
