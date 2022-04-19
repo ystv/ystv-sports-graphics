@@ -13,6 +13,7 @@ import {
   ArrayField,
   RandomUUIDField,
   Field,
+  SegmentedSelectField,
 } from "../../formFields";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
@@ -27,7 +28,7 @@ import {
   ActionPayloadValidators,
   ActionValidChecks,
 } from "../../types";
-import { TypographyStylesProvider } from "@mantine/core";
+import { Title, TypographyStylesProvider } from "@mantine/core";
 import { wrapAction } from "../../eventStateHelpers";
 
 const playerSchema = Yup.object({
@@ -259,7 +260,7 @@ export function GoalForm(props: ActionFormProps<State>) {
       : [];
   return (
     <div>
-      <SelectField
+      <SegmentedSelectField
         name="side"
         title="Side"
         values={[
@@ -284,10 +285,10 @@ export function GoalForm(props: ActionFormProps<State>) {
 
 export function EditForm() {
   return (
-    <div>
+    <>
       <Field name="name" title="Name" independent />
       <fieldset>
-        <label>Home Side</label>
+        <Title order={3}>Home Side</Title>
         <ArrayField
           name="players.home"
           title="Players"
@@ -306,7 +307,7 @@ export function EditForm() {
         />
       </fieldset>
       <fieldset>
-        <label>Away Side</label>
+        <Title order={3}>Away Side</Title>
         <ArrayField
           name="players.away"
           title="Players"
@@ -324,7 +325,7 @@ export function EditForm() {
           )}
         />
       </fieldset>
-    </div>
+    </>
   );
 }
 
