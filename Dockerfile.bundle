@@ -1,36 +1,30 @@
 ARG NODECG_VERSION=1.8.1
-FROM node:16-slim AS build
+FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION} AS build
 ENV CI=true
 RUN apt-get update && apt-get install build-essential python3 -y
 
-WORKDIR /app
-COPY .yarnrc.yml /app/
-COPY .yarn /app/.yarn
+WORKDIR /usr/src/app/bundles/ystv-sports-graphics
+COPY .yarnrc.yml /usr/src/app/bundles/ystv-sports-graphics/
+COPY .yarn /usr/src/app/bundles/ystv-sports-graphics/.yarn
 
-COPY patches/ /app/patches/
-COPY package.json /app/
-COPY scores-src/package.json /app/scores-src/
-COPY bundle-src/package.json /app/bundle-src/
-COPY yarn.lock /app/
+COPY patches/ /usr/src/app/bundles/ystv-sports-graphics/patches/
+COPY package.json /usr/src/app/bundles/ystv-sports-graphics/
+COPY scores-src/package.json /usr/src/app/bundles/ystv-sports-graphics/scores-src/
+COPY bundle-src/package.json /usr/src/app/bundles/ystv-sports-graphics/bundle-src/
+COPY yarn.lock /usr/src/app/bundles/ystv-sports-graphics/
 
 RUN yarn --immutable --inline-builds && rm .yarn/cache/*
 # Everything up to here *must* be identical to Dockerfile.common
 
-# Mildly filthy hack: we need to build _inside_ a nodecg, because we
-# use relative references to its types
-FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION} AS bundle_build
-
-COPY .yarnrc.yml /usr/src/app/bundles/ystv-sports-graphics/
-COPY .yarn/ /usr/src/app/bundles/ystv-sports-graphics/.yarn/
-COPY package.json yarn.lock /usr/src/app/bundles/ystv-sports-graphics/
 COPY scores-src/ /usr/src/app/bundles/ystv-sports-graphics/scores-src/
 COPY bundle-src/ /usr/src/app/bundles/ystv-sports-graphics/bundle-src/
-COPY --from=build /app/node_modules/ /usr/src/app/bundles/ystv-sports-graphics/node_modules/
-WORKDIR /usr/src/app/bundles/ystv-sports-graphics
 RUN yarn bundle:build
 
 FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION}
-COPY --from=bundle_build /usr/src/app/bundles/ystv-sports-graphics/ /usr/src/app/bundles/ystv-sports-graphics/
+COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/package.json /usr/src/app/bundles/ystv-sports-graphics/package.json
+COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/extension.js /usr/src/app/bundles/ystv-sports-graphics/extension.js
+COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/dashboard/ /usr/src/app/bundles/ystv-sports-graphics/dashboard/
+COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/graphics/ /usr/src/app/bundles/ystv-sports-graphics/graphics/
 
 ARG GIT_REV=unknown
 LABEL ystv.git-rev=${GIT_REV}
