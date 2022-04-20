@@ -87,5 +87,6 @@
       "limit": "1.5 mb",
       "running": false
     }
-  ]
+  ],
+  "_test": {}
 }
