@@ -12,9 +12,19 @@ You will need [Node.js](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/g
 
 There is a docker-compose.yml file that should set all this up if you run `docker compose up` - though it hasn't been updated in a while so might not fully work.
 
-First, [install NodeCG](https://www.nodecg.dev/docs/installing) - we're using 1.8.1 (though we should move to 1.9.0).
+First, install NodeCG - we're using our own fork that has some small fixups:
 
-Then, clone this repo inside the `bundles` folder. Open it and run `yarn`.
+```shell
+$ git clone --branch ystv https://github.com/ystv/nodecg.git
+```
+
+Then, clone this repo inside the `bundles` folder:
+
+```shell
+$ git clone https://github.com/ystv/ystv-sports-graphics.git bundles/ystv-sports-graphics
+```
+
+Open it and run `yarn`.
 
 ### Backend/UI
 
