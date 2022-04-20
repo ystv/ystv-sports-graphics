@@ -14,8 +14,8 @@ jobs:
       - name: Checkout NodeCG
         uses: actions/checkout@v3
         with:
-          repository: nodecg/nodecg
-          ref: v1.8.1
+          repository: ystv/nodecg
+          ref: ystv
           path: ./nodecg
 
       - uses: actions/checkout@v3
