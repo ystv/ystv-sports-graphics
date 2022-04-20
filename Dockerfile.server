@@ -1,4 +1,4 @@
-ARG NODECG_VERSION=1.8.1
+ARG NODECG_VERSION=1.9.0-ystv
 FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION} AS build
 ENV CI=true
 RUN apt-get update && apt-get install build-essential python3 -y
