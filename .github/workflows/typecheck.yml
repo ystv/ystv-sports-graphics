@@ -35,9 +35,9 @@ jobs:
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
+          key: ${{ runner.os }}-yarn-INVALID
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-yarn-INVALID
 
       - name: Install Dependencies
         working-directory: ./nodecg/bundles/ystv-sports-graphics
