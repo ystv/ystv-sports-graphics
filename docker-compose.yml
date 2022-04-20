@@ -44,7 +44,7 @@ services:
       #   condition: service_healthy
 
   nodecg:
-    image: nodecg/nodecg
+    image: registry.comp.ystv.co.uk/nodecg/nodecg:v1.9.0-ystv
     volumes:
     - .:/usr/src/app/bundles/ystv-sports-graphics
     ports: 
