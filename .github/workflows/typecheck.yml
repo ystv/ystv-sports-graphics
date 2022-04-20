@@ -14,8 +14,8 @@ jobs:
       - name: Checkout NodeCG
         uses: actions/checkout@v3
         with:
-          repository: nodecg/nodecg
-          ref: v1.8.1
+          repository: ystv/nodecg
+          ref: ystv
           path: ./nodecg
 
       - uses: actions/checkout@v3
@@ -35,9 +35,9 @@ jobs:
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-INVALID
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-INVALID
+            ${{ runner.os }}-yarn-
 
       - name: Install Dependencies
         working-directory: ./nodecg/bundles/ystv-sports-graphics
