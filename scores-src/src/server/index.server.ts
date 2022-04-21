@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "dotenv-flow/config";
 import "./loggingSetup";
 import config from "./config";
 import * as logging from "./loggingSetup";
