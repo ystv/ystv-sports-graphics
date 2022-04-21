@@ -177,8 +177,8 @@ export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
     )
     .default([]),
   players: Yup.object({
-    home: Yup.array().of(playerSchema).required(),
-    away: Yup.array().of(playerSchema).required(),
+    home: Yup.array().of(playerSchema).required().default([]),
+    away: Yup.array().of(playerSchema).required().default([]),
   }),
 });
 
