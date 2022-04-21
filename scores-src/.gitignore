@@ -2,4 +2,4 @@ dist/
 node_modules/
 addon-build/
 
-.env
+!.env
