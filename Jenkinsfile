@@ -1,3 +1,5 @@
+@Library('ystv-jenkins')
+
 def imageNamePrefix = ''
 pipeline {
     agent {
@@ -11,6 +13,7 @@ pipeline {
     stages {
         stage('Prepare') {
             steps {
+                ciSkip action: 'check'
                 script {
                     if (env.BRANCH_NAME != 'main') {
                         imageNamePrefix = "${env.BRANCH_NAME}-"
@@ -84,5 +87,8 @@ pipeline {
         }
     }
 
-    post { always { cleanWs() }}
+    post { always {
+        ciSkip action: 'postProcess'
+        cleanWs()
+    }}
 }
