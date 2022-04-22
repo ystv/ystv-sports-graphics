@@ -35,8 +35,9 @@ def findSHAOfImage(image) {
 }
 
 node('docker') {
-    def bldNum = (env.BUILD =~ /\/(\d+)\/?$/)[0][1]
+    def deployBldNum = (env.BUILD =~ /\/(\d+)\/?$/)[0][1]
     def issueKeys = []
+    def isRollBack = false
 
     stage('Checkout') {
         checkout(
@@ -53,25 +54,40 @@ node('docker') {
     }
 
     stage('Preparation') {
-        // Find the build that is currently live
-        def currentJSON = sh returnStdout: true, script: 'nomad job inspect sports-scores-prod'
-        def current = readJSON(text: currentJSON)
+        def currentSHAs = []
+        for (job in ["sports-graphics-prod", "sports-graphics-bundle-prod"]) {
+            // Find the build that is currently live
+            def currentJSON = sh returnStdout: true, script: "nomad job inspect $job"
+            def current = readJSON(text: currentJSON)
 
-        // Find the git SHAs of its images
-        def images = current.Job.TaskGroups.collectMany { group -> 
-            group.Tasks.collect { it.Config.image }
-        }.findAll { it.contains("registry.comp.ystv.co.uk/sports-scores") }
-        def currentSHAs = images.collect { findSHAOfImage(it) }.unique(false)
+            // Find the git SHAs of its images
+            def images = current.Job.TaskGroups.collectMany { group -> 
+                group.Tasks.collect { it.Config.image }
+            }.findAll { it.contains("registry.comp.ystv.co.uk/sports-scores") }
+            def shas = images.collect { findSHAOfImage(it) }.unique(false)
+            currentSHAs.addAll(shas)
+
+            def currentBuildNum = current.Job.Meta['build_num']
+            if (currentBuildNum != null && currentBuildNum.isInteger()) {
+                if ((currentBuildNum as Integer) > deployBldNum) {
+                    isRollBack = true
+                }
+            }
+        }
 
         def nextSHAs = [
-            "registry.comp.ystv.co.uk/sports-scores/client:$bldNum",
-            "registry.comp.ystv.co.uk/sports-scores/server:$bldNum",
-            "registry.comp.ystv.co.uk/sports-scores/bundle:$bldNum"
+            "registry.comp.ystv.co.uk/sports-scores/client:$deployBldNum",
+            "registry.comp.ystv.co.uk/sports-scores/server:$deployBldNum",
+            "registry.comp.ystv.co.uk/sports-scores/bundle:$deployBldNum"
         ].collect { findSHAOfImage(it) }.unique(false)
         
         for (sha1 in currentSHAs) {
             for (sha2 in nextSHAs) {
-                def issueKeyStrs = (sh(returnStdout: true, script: "git log ${sha1}..${sha2} | grep -ohE '[A-Z][A-Z0-9]*-[0-9]+'")).split("\n")
+                def issueKeyStrs = (sh(returnStdout: true, script: "git log ${sha1}..${sha2} | grep -ohE '[A-Z][A-Z0-9]*-[0-9]+' || test $? = 1")).split("\n")
+                // If this is a rollback, we may have to check backwards
+                if (issueKeyStrs.size() == 0 && isRollBack) {
+                    issueKeyStrs = (sh(returnStdout: true, script: "git log ${sha2}..${sha1} | grep -ohE '[A-Z][A-Z0-9]*-[0-9]+' || test $? = 1")).split("\n")
+                }
                 issueKeys.addAll(issueKeyStrs)
             }
         }
@@ -91,11 +107,11 @@ node('docker') {
         try {
             build job: 'Deploy Nomad Job', parameters: [
                 string(name: 'JOB_FILE', value: 'sports-graphics-prod.nomad'),
-                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/server:${bldNum} registry.comp.ystv.co.uk/sports-scores/client:${bldNum}")
+                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/server:${deployBldNum} registry.comp.ystv.co.uk/sports-scores/client:${deployBldNum}")
             ]
             build job: 'Deploy Nomad Job', parameters: [
                 string(name: 'JOB_FILE', value: 'sports-graphics-bundle-prod.nomad'),
-                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/bundle:${bldNum}")
+                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/bundle:${deployBldNum}")
             ]
             jiraSendDeploymentInfo(
                 environmentType: 'production',
@@ -103,7 +119,7 @@ node('docker') {
                 environmentName: 'production',
                 issueKeys: issueKeys,
                 site: 'ystv.atlassian.net',
-                state: 'successful'
+                state: isRollBack ? 'rolled_back' : 'successful'
             )
         } catch (Exception e) {
             jiraSendDeploymentInfo(
