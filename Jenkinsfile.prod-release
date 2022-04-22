@@ -91,7 +91,11 @@ node('docker') {
         try {
             build job: 'Deploy Nomad Job', parameters: [
                 string(name: 'JOB_FILE', value: 'sports-graphics-prod.nomad'),
-                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/server:${bldNum} registry.comp.ystv.co.uk/sports-scores/client:${bldNum} registry.comp.ystv.co.uk/sports-scores/bundle:${bldNum}")
+                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/server:${bldNum} registry.comp.ystv.co.uk/sports-scores/client:${bldNum}")
+            ]
+            build job: 'Deploy Nomad Job', parameters: [
+                string(name: 'JOB_FILE', value: 'sports-graphics-bundle-prod.nomad'),
+                text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/bundle:${bldNum}")
             ]
             jiraSendDeploymentInfo(
                 environmentType: 'production',
