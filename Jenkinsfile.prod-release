@@ -55,7 +55,7 @@ node('docker') {
 
     stage('Preparation') {
         def currentSHAs = []
-        for (job in ["sports-graphics-prod", "sports-graphics-bundle-prod"]) {
+        for (job in ["sports-scores-prod", "sports-scores-bundle-prod"]) {
             // Find the build that is currently live
             def currentJSON = sh returnStdout: true, script: "nomad job inspect $job"
             def current = readJSON(text: currentJSON)
