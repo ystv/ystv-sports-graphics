@@ -1,5 +1,5 @@
 import { Outlet, NavLink, NavLinkProps, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
 import {
   AppShell,
@@ -16,6 +16,8 @@ import {
 
 import { IconCalendarEvent, IconUser, IconShieldLock } from "@tabler/icons";
 import { setAuthToken } from "../lib/apiClient";
+import { Permission } from "../../common/types";
+import { PermGate } from "./PermGate";
 
 export function Wrapper() {
   const [opened, setOpened] = useState(false);
@@ -56,10 +58,24 @@ export function Wrapper() {
         </Group>
       </UnstyledButton>
     );
+    const Wrapper = ({ children }: { children: JSX.Element }) => {
+      if (props.require) {
+        return (
+          <PermGate require={props.require} fallback={<></>}>
+            {children}
+          </PermGate>
+        );
+      }
+      return children;
+    };
     if ("link" in props) {
-      return <NavLink to={props.link}>{contents}</NavLink>;
+      return (
+        <Wrapper>
+          <NavLink to={props.link}>{contents}</NavLink>
+        </Wrapper>
+      );
     }
-    return contents;
+    return <Wrapper>{contents}</Wrapper>;
   }
   return (
     <>
@@ -80,12 +96,14 @@ export function Wrapper() {
                 color: "blue",
                 label: "Events",
                 link: "/events",
+                require: "read" as Permission,
               },
               {
                 icon: <IconShieldLock size={16} />,
                 color: "orange",
                 label: "Users",
                 link: "/users",
+                require: "admin" as Permission,
               },
               {
                 icon: <IconUser size={16} />,
@@ -129,4 +147,5 @@ type MainLinkProps = {
   icon: React.ReactNode;
   color: string;
   label: string;
+  require?: Permission;
 } & ({ link: string } | { onClick: () => unknown });

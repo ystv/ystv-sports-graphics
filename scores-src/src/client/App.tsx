@@ -11,6 +11,7 @@ import { NotificationsProvider } from "@mantine/notifications";
 import { BootstrapScreen } from "./pages/Bootstrap";
 import { LoginScreen } from "./pages/Login";
 import { ListUsersScreen } from "./pages/ListUsers";
+import { PermGate } from "./components/PermGate";
 
 function AppRoutes() {
   return (
@@ -18,13 +19,48 @@ function AppRoutes() {
       <Route path="/bootstrap" element={<BootstrapScreen />} />
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/" element={<Wrapper />}>
-        <Route path="events/:type/:id" element={<LiveScores />} />
-        <Route path="events" element={<ListEvents />}>
-          <Route path=":type/:id/edit" element={<EditEventModal />} />
-          <Route path="new" element={<CreateEventModal />} />
+        <Route
+          path="events/:type/:id"
+          element={
+            <PermGate require="read">
+              <LiveScores />
+            </PermGate>
+          }
+        />
+        <Route
+          path="events"
+          element={
+            <PermGate require="read">
+              <ListEvents />
+            </PermGate>
+          }
+        >
+          <Route
+            path=":type/:id/edit"
+            element={
+              <PermGate require="write">
+                <EditEventModal />
+              </PermGate>
+            }
+          />
+          <Route
+            path="new"
+            element={
+              <PermGate require="write">
+                <CreateEventModal />
+              </PermGate>
+            }
+          />
         </Route>
 
-        <Route path="users" element={<ListUsersScreen />} />
+        <Route
+          path="users"
+          element={
+            <PermGate require="admin">
+              <ListUsersScreen />
+            </PermGate>
+          }
+        />
 
         <Route path="/" element={<Navigate replace to="/events" />} />
       </Route>

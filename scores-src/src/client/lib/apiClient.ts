@@ -314,6 +314,11 @@ export function usePOSTEventRedo() {
   };
 }
 
+export function useGETAuthMe() {
+  const retval = useAPIRoute<User>("/auth/me", {}, 200);
+  return retval;
+}
+
 export function useGETUsers() {
   const retval = useAPIRoute<User[]>("/users", {}, 200);
   return retval;
@@ -367,6 +372,7 @@ export function usePUTUsersUsername() {
       200
     )) as User;
     mutate("/users");
+    mutate("/auth/me");
     mutate(`/users/${result.username}`, result, false);
     return result;
   };
