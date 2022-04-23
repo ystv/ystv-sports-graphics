@@ -26,10 +26,16 @@ export function ListEvents() {
     console.dir(error);
     let message;
     if (error instanceof Error) {
-      message = error.message;
+      message = error.name + ": " + error.message;
       if ("status" in error) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         message += ` [status: ${(error as any).status}]`;
+      }
+      if ("stack" in error) {
+        message += "\n" + error.stack;
+      }
+      if ("cause" in error) {
+        message += "\n" + error.cause;
       }
     } else {
       message = JSON.stringify(error);
