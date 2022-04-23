@@ -13,7 +13,11 @@ import onFinished from "on-finished";
 import { createEventTypesRouter } from "./eventTypeRoutes";
 import * as db from "./db";
 import * as redis from "./redis";
-import { DocumentNotFoundError } from "couchbase";
+import {
+  CasMismatchError,
+  DocumentLockedError,
+  DocumentNotFoundError,
+} from "couchbase";
 import { ValidationError } from "yup";
 import { isHttpError, NotFound } from "http-errors";
 import { createEventsRouter } from "./eventsRoutes";
@@ -38,9 +42,33 @@ const errorHandler: (
     let code: number;
     let message: string;
     let extra = {};
+
+    if (!isHttpError(err) && !(err instanceof ValidationError)) {
+      let errType: string;
+      let errMsg: string;
+      if (err instanceof Error) {
+        errType = err.name;
+        errMsg = err.message + " " + JSON.stringify(err.stack);
+      } else {
+        errType = typeof err;
+        errMsg = JSON.stringify(err);
+      }
+      httpLogger.error(`Uncaught handler error`, {
+        url: req.baseUrl,
+        type: errType,
+        error: errMsg,
+      });
+    }
+
     if (err instanceof DocumentNotFoundError) {
       code = 404;
       message = "entity not found";
+    } else if (
+      err instanceof DocumentLockedError ||
+      err instanceof CasMismatchError
+    ) {
+      code = 409;
+      message = "someone edited that at the same time as you";
     } else if (isHttpError(err)) {
       code = err.statusCode;
       message = err.message;
@@ -55,20 +83,6 @@ const errorHandler: (
         })),
       };
     } else {
-      let errType: string;
-      let errMsg: string;
-      if (err instanceof Error) {
-        errType = err.name;
-        errMsg = err.message + "\n" + err.stack;
-      } else {
-        errType = typeof err;
-        errMsg = JSON.stringify(err);
-      }
-      httpLogger.error(`Uncaught handler error`, {
-        url: req.baseUrl,
-        type: errType,
-        error: errMsg,
-      });
       code = 500;
       message = "internal server error, sorry";
     }
