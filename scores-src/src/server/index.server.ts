@@ -7,12 +7,17 @@ import Express, { NextFunction, Request, Response, Router } from "express";
 import ExpressWS from "express-ws";
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
+import cookieParser from "cookie-parser";
 import onFinished from "on-finished";
 
 import { createEventTypesRouter } from "./eventTypeRoutes";
 import * as db from "./db";
 import * as redis from "./redis";
-import { DocumentNotFoundError } from "couchbase";
+import {
+  CasMismatchError,
+  DocumentLockedError,
+  DocumentNotFoundError,
+} from "couchbase";
 import { ValidationError } from "yup";
 import { isHttpError, NotFound } from "http-errors";
 import { createEventsRouter } from "./eventsRoutes";
@@ -26,7 +31,8 @@ import {
 import asyncHandler from "express-async-handler";
 import { Logger } from "winston";
 import { createBootstrapRouter, maybeSetupBootstrap } from "./bootstrap";
-import { createAuthRouter } from "./auth";
+import { createAuthRouter } from "./authRoutes";
+import { createUserManagementRouter } from "./userManagementRoutes";
 
 const errorHandler: (
   log: Logger
@@ -36,9 +42,33 @@ const errorHandler: (
     let code: number;
     let message: string;
     let extra = {};
+
+    if (!isHttpError(err) && !(err instanceof ValidationError)) {
+      let errType: string;
+      let errMsg: string;
+      if (err instanceof Error) {
+        errType = err.name;
+        errMsg = err.message + " " + JSON.stringify(err.stack);
+      } else {
+        errType = typeof err;
+        errMsg = JSON.stringify(err);
+      }
+      httpLogger.error(`Uncaught handler error`, {
+        url: req.baseUrl,
+        type: errType,
+        error: errMsg,
+      });
+    }
+
     if (err instanceof DocumentNotFoundError) {
       code = 404;
       message = "entity not found";
+    } else if (
+      err instanceof DocumentLockedError ||
+      err instanceof CasMismatchError
+    ) {
+      code = 409;
+      message = "someone edited that at the same time as you";
     } else if (isHttpError(err)) {
       code = err.statusCode;
       message = err.message;
@@ -53,20 +83,6 @@ const errorHandler: (
         })),
       };
     } else {
-      let errType: string;
-      let errMsg: string;
-      if (err instanceof Error) {
-        errType = err.name;
-        errMsg = err.message + "\n" + err.stack;
-      } else {
-        errType = typeof err;
-        errMsg = JSON.stringify(err);
-      }
-      httpLogger.error(`Uncaught handler error`, {
-        url: req.baseUrl,
-        type: errType,
-        error: errMsg,
-      });
       code = 500;
       message = "internal server error, sorry";
     }
@@ -104,6 +120,8 @@ const errorHandler: (
 
   const app = Express();
   const ws = ExpressWS(app);
+
+  app.set("etag", false);
 
   const httpLogger = logging.getLogger("http");
 
@@ -149,6 +167,7 @@ const errorHandler: (
   );
 
   app.use(jsonParser());
+  app.use(cookieParser());
 
   const baseRouter = Router();
 
@@ -157,6 +176,7 @@ const errorHandler: (
   baseRouter.use("/events", createEventTypesRouter());
   ``;
   baseRouter.use("/events", createEventsRouter());
+  baseRouter.use("/users", createUserManagementRouter());
 
   app.use(config.pathPrefix, baseRouter);
   app.use(config.pathPrefix, createLiveRouter());
@@ -193,7 +213,7 @@ const errorHandler: (
 
   // 404 handler
   app.use("*", (req, res, next) => {
-    next(new NotFound(`Cannot ${req.method} ${req.path}`));
+    next(new NotFound(`Cannot ${req.method} ${req.baseUrl}`));
   });
 
   // Error handler

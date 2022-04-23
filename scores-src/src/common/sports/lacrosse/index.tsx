@@ -34,14 +34,14 @@ import { wrapAction } from "../../eventStateHelpers";
 const playerSchema = Yup.object({
   id: Yup.string().uuid().required(),
   name: Yup.string().required(),
-  position: Yup.string()
-    .optional()
-    .oneOf(["GS", "GA", "WA", "C", "WD", "GD", "GK"]),
+  number: Yup.string().optional(),
 });
 
 type PlayerType = Yup.InferType<typeof playerSchema>;
 
 const QUARTER_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const OVERTIME_DURATION_MS = 4 * 60 * 1000; // 4 minutes
+const MAX_QUARTERS_WITHOUT_OVERTIME = 4;
 
 const quarterSchema = Yup.object({
   goals: Yup.array()
@@ -68,10 +68,10 @@ export interface State extends BaseEventType {
 }
 
 const slice = createSlice({
-  name: "netball",
+  name: "lacrosse",
   initialState: {
     id: "INVALID",
-    type: "netball",
+    type: "lacrosse",
     name: "",
     worthPoints: 0,
     players: {
@@ -114,7 +114,13 @@ const slice = createSlice({
         state.quarters.push({
           goals: [],
         });
-        startClockAt(state.clock, action.meta.ts, QUARTER_DURATION_MS);
+        startClockAt(
+          state.clock,
+          action.meta.ts,
+          state.quarters.length <= MAX_QUARTERS_WITHOUT_OVERTIME
+            ? QUARTER_DURATION_MS
+            : OVERTIME_DURATION_MS
+        );
       },
       prepare() {
         return wrapAction({ payload: {} });
@@ -177,9 +183,7 @@ export const actionValidChecks: ActionValidChecks<
   goal: (state) => state.quarters.length > 0,
   pauseClock: (state) => state.clock.state === "running",
   startNextQuarter: (state) =>
-    // Safe to use current time here because this isn't called from reducers
-    state.quarters.length === 0 ||
-    clockTimeAt(state.clock, new Date().valueOf()) === 0,
+    state.quarters.length === 0 || state.clock.state === "stopped",
   resumeCurrentQuarter: (state) =>
     state.quarters.length > 0 && state.clock.state === "stopped",
 };
@@ -197,15 +201,18 @@ export const actionRenderers: ActionRenderers<
         (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
       );
     const tag = player
-      ? `${player.name} (${player.position ? player.position + ", " : ""}${
+      ? `${player.name} (${player.number ? player.number + ", " : ""}${
           goal.side
         })`
       : goal.side;
     const time = clockTimeAt(state.clock, action.meta.ts);
+    const quarterDuration =
+      state.quarters.length <= MAX_QUARTERS_WITHOUT_OVERTIME
+        ? QUARTER_DURATION_MS
+        : OVERTIME_DURATION_MS;
     return (
       <span>
-        {tag} at{" "}
-        {Math.floor((QUARTER_DURATION_MS - time) / 60 / 1000).toFixed(0)}{" "}
+        {tag} at {Math.floor((quarterDuration - time) / 60 / 1000).toFixed(0)}{" "}
         minutes (Q
         {state.quarters.length})
       </span>
@@ -213,10 +220,12 @@ export const actionRenderers: ActionRenderers<
   },
   pauseClock: ({ action, state }) => {
     const time = clockTimeAt(state.clock, action.meta.ts);
+    const quarterDuration =
+      state.quarters.length <= MAX_QUARTERS_WITHOUT_OVERTIME
+        ? QUARTER_DURATION_MS
+        : OVERTIME_DURATION_MS;
     return (
-      <span>
-        Clock paused at {formatMMSSMS(QUARTER_DURATION_MS - time, 0, 2)}
-      </span>
+      <span>Clock paused at {formatMMSSMS(quarterDuration - time, 0, 2)}</span>
     );
   },
   resumeCurrentQuarter: ({ action, state }) => {
@@ -275,7 +284,7 @@ export function GoalForm(props: ActionFormProps<State>) {
         values={[[null, "Unknown"]].concat(
           players.map((player) => [
             player.id,
-            `${player.name} (${player.position})`,
+            `${player.name} (${player.number})`,
           ])
         )}
       />

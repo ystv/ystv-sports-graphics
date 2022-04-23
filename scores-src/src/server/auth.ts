@@ -71,6 +71,26 @@ const requestersToNotSendWWWAuthenticateFor = new Set([
   "fetch",
 ]);
 
+async function findUserFromAuthHeader(value: string): Promise<User> {
+  const [scheme, ...rest] = value.split(" ");
+  switch (scheme) {
+    case "Bearer": {
+      ensure(rest.length > 0, Unauthorized, "missing token");
+      const token = rest[0];
+      return await getUserForSession(token);
+    }
+    case "Basic": {
+      ensure(rest.length > 0, Unauthorized, "missing credentials");
+      const [username, ...password] = Buffer.from(rest[0], "base64")
+        .toString("utf-8")
+        .split(":");
+      return await authenticateUser(username, password.join(":"));
+    }
+    default:
+      throw new Unauthorized("invalid auth scheme");
+  }
+}
+
 /**
  * authenticate creates an Express middleware that will authenticate the user,
  * setting `req.user`, and verify if they have the required permissions.
@@ -86,37 +106,22 @@ export function authenticate(...permissions: Permission[]) {
       if ((await isBootstrapped()) !== true) {
         throw new Forbidden("Server is not yet bootstrapped");
       }
-      let user: User;
 
       ensure(!!req.headers, BadRequest, "no headers?");
       const authHeader = req.headers["authorization"];
-      ensure(
-        typeof authHeader === "string",
-        Unauthorized,
-        "no auth credentials supplied"
-      );
+      const cookie: string | undefined = (req.cookies ?? {})[cookieKey];
+      let user: User;
 
-      const [scheme, ...rest] = authHeader.split(" ");
-      switch (scheme) {
-        case "Bearer": {
-          ensure(rest.length > 0, Unauthorized, "missing token");
-          const token = rest[0];
-          user = await getUserForSession(token);
-          break;
-        }
-        case "Basic": {
-          ensure(rest.length > 0, Unauthorized, "missing credentials");
-          const [username, ...password] = Buffer.from(rest[0], "base64")
-            .toString("utf-8")
-            .split(":");
-          user = await authenticateUser(username, password.join(":"));
-          break;
-        }
-        default:
-          throw new Unauthorized("invalid auth scheme");
+      if (authHeader?.length) {
+        user = await findUserFromAuthHeader(authHeader);
+      } else if (cookie?.length) {
+        user = await getUserForSession(cookie);
+      } else {
+        ensure(false, Unauthorized, "no credentials supplied");
       }
 
       const hasPerms =
+        permissions.length === 0 ||
         user.permissions.includes("SUDO") ||
         user.permissions.some((x) => permissions.includes(x));
       ensure(hasPerms, Forbidden, "insufficient permissions");
@@ -157,7 +162,7 @@ const sessionTTLSeconds = 60 * 60 * 24 * 7;
  * @param username
  * @returns the session ID
  */
-async function createSessionForUser(username: string): Promise<string> {
+export async function createSessionForUser(username: string): Promise<string> {
   for (;;) {
     try {
       const sid = randomUUID();
@@ -183,13 +188,14 @@ async function createSessionForUser(username: string): Promise<string> {
  */
 export async function createLocalUser(
   username: string,
-  password: string
+  password: string,
+  permissions: Permission[]
 ): Promise<User> {
   const pwHash = await hash(password);
   const data: User = {
     username,
     passwordHash: pwHash,
-    permissions: ["SUDO"],
+    permissions,
   };
   await DB.collection("_default").insert(`User/${username}`, data);
   delete data.passwordHash;
@@ -204,7 +210,7 @@ export async function createLocalUser(
  * @returns User
  * @throws Unauthorized if the username or password is incorrect
  */
-async function authenticateUser(
+export async function authenticateUser(
   username: string,
   password: string
 ): Promise<User> {
@@ -218,42 +224,11 @@ async function authenticateUser(
   return user;
 }
 
-export function createAuthRouter() {
-  const router = Router();
-
-  router.get(
-    "/me",
-    authenticate(),
-    expressAsyncHandler(async (req, res) => {
-      invariant(
-        typeof req.user !== "undefined",
-        "made it into /me without a user"
-      );
-      res.status(200).json(req.user);
-    })
-  );
-
-  router.post(
-    "/login/local",
-    expressAsyncHandler(async (req, res) => {
-      const { username, password } = req.body;
-      ensure(typeof username === "string", BadRequest, "no username");
-      ensure(typeof password === "string", BadRequest, "no password");
-      const user = await authenticateUser(username, password);
-      const sid = await createSessionForUser(username);
-      res.cookie(cookieKey, sid, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: sessionTTLSeconds,
-      });
-      res.status(200).json({
-        ok: true,
-        user,
-        token: sid,
-      });
-    })
-  );
-
-  return router;
+export function setSessionCookie(res: Response, sid: string) {
+  res.cookie(cookieKey, sid, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: sessionTTLSeconds,
+  });
 }

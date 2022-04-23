@@ -67,11 +67,11 @@ node('docker') {
             def shas = images.collect { findSHAOfImage(it) }.unique(false)
             currentSHAs.addAll(shas)
 
-            def currentBuildNum = current.Job.Meta['build_num']
-            if (currentBuildNum != null && currentBuildNum.isInteger()) {
-                if (currentBuildNum.toInteger() > deployBldNum.toInteger()) {
-                    isRollBack = true
-                }
+            def currentBuildNum = images.collect {
+                ((it =~ /.*:(\d+)$/)[0][1]).toInteger()
+            }.min()
+            if (currentBuildNum > deployBldNum.toInteger()) {
+                isRollBack = true
             }
         }
 

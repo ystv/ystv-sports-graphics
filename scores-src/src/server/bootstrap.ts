@@ -88,7 +88,7 @@ export async function bootstrap(
     throw new Forbidden("invalid token");
   }
   logger.info("Bootstrapping.", { username });
-  const user = await createLocalUser(username, password);
+  const user = await createLocalUser(username, password, ["SUDO"]);
   const newData: BootstrapState = {
     bootstrapped: true,
   };
