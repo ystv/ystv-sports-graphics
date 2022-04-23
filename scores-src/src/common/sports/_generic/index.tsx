@@ -1,5 +1,5 @@
-import { Button, Group, Space, Stack, Title } from "@mantine/core";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Button, Group, Space, Stack, Text } from "@mantine/core";
+import { createSlice } from "@reduxjs/toolkit";
 import * as Yup from "yup";
 import {
   clockTimeAt,
@@ -30,16 +30,18 @@ export interface State extends BaseEventType {
   clock: ClockType;
 }
 
-const schema: Yup.SchemaOf<State> = BaseEvent.shape({
-  scoreHome: Yup.number().required().default(0),
-  scoreAway: Yup.number().required().default(0),
-  clock: UpwardClock,
-});
-
 export function createGenericSport(
   typeName: string,
-  pointsButtons: number[] = [1]
+  pointsButtons: number[] = [1],
+  downwardClockStartingTimeMs?: number
 ) {
+  const isDownward = typeof downwardClockStartingTimeMs === "number";
+  const schema: Yup.SchemaOf<State> = BaseEvent.shape({
+    scoreHome: Yup.number().required().default(0),
+    scoreAway: Yup.number().required().default(0),
+    clock: isDownward ? DownwardClock : UpwardClock,
+  });
+
   const slice = createSlice({
     name: typeName,
     initialState: {
@@ -50,7 +52,7 @@ export function createGenericSport(
       scoreHome: 0,
       scoreAway: 0,
       clock: {
-        type: "upward",
+        type: isDownward ? "downward" : "upward",
         state: "stopped",
         timeLastStartedOrStopped: 0,
         wallClockLastStarted: 0,
@@ -59,7 +61,12 @@ export function createGenericSport(
     reducers: {
       startClock: {
         reducer(state, action: Action) {
-          startClockAt(state.clock, action.meta.ts);
+          let startAt: number | undefined;
+          // Only restart the clock from the beginning if it was reset
+          if (isDownward && state.clock.timeLastStartedOrStopped === 0) {
+            startAt = downwardClockStartingTimeMs;
+          }
+          startClockAt(state.clock, action.meta.ts, startAt);
         },
         prepare() {
           return wrapAction({ payload: {} });
@@ -140,20 +147,40 @@ export function createGenericSport(
     pauseClock: ({ state }) => (
       <span>
         Clock paused at{" "}
-        {formatMMSSMS(state.clock.timeLastStartedOrStopped, 0, 2)}
+        {formatMMSSMS(
+          isDownward
+            ? downwardClockStartingTimeMs - state.clock.timeLastStartedOrStopped
+            : state.clock.timeLastStartedOrStopped,
+          0,
+          2
+        )}
       </span>
     ),
     resetClock: () => <span>Clock reset.</span>,
     addPoints: ({ state, action }) => (
       <span>
         {action.payload.side}: +{action.payload.points} points at{" "}
-        {formatMMSSMS(clockTimeAt(state.clock, action.meta.ts), 0, 2)}
+        {formatMMSSMS(
+          isDownward
+            ? downwardClockStartingTimeMs -
+                clockTimeAt(state.clock, action.meta.ts)
+            : clockTimeAt(state.clock, action.meta.ts),
+          0,
+          2
+        )}
       </span>
     ),
     setPoints: ({ state, action }) => (
       <span>
         {action.payload.side}: {action.payload.points} points at{" "}
-        {formatMMSSMS(clockTimeAt(state.clock, action.meta.ts), 0, 2)}
+        {formatMMSSMS(
+          isDownward
+            ? downwardClockStartingTimeMs -
+                clockTimeAt(state.clock, action.meta.ts)
+            : clockTimeAt(state.clock, action.meta.ts),
+          0,
+          2
+        )}
       </span>
     ),
   };
@@ -187,7 +214,10 @@ export function createGenericSport(
           />
           <Group>
             <Stack>
-              <Title order={2}>{state.scoreHome}</Title>
+              <Text size="sm" weight="bold" transform="uppercase">
+                Home
+              </Text>
+              <Text size="xl">{state.scoreHome}</Text>
               {pointsButtons.map((n) => (
                 <Button
                   key={n}
@@ -198,7 +228,10 @@ export function createGenericSport(
               ))}
             </Stack>
             <Stack>
-              <Title order={2}>{state.scoreAway}</Title>
+              <Text size="sm" weight="bold" transform="uppercase">
+                Away
+              </Text>
+              <Text size="xl">{state.scoreAway}</Text>
               {pointsButtons.map((n) => (
                 <Button
                   key={n}
