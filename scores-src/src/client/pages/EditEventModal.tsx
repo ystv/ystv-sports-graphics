@@ -3,7 +3,7 @@ import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import invariant from "tiny-invariant";
-import { Field } from "../../common/formFields";
+import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
@@ -49,6 +49,7 @@ export function EditEventForm() {
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
             <FormikForm onSubmit={handleSubmit} onReset={handleReset}>
               <Stack>
+                <DateField name="startTime" title="Date/Time" format="tsMs" />
                 <Field
                   type="number"
                   name="worthPoints"

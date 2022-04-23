@@ -49,7 +49,7 @@ export function makeEventAPIFor<
     authenticate("read"),
     asyncHandler(async (req, res) => {
       const result = await DB.query(
-        `SELECT RAW e FROM _default e WHERE meta(e).id LIKE 'Event/${typeName}/%'`
+        `SELECT RAW e FROM _default e WHERE meta(e).id LIKE 'Event/${typeName}/%' ORDER BY startTime`
       );
       res.json(result.rows.map((row) => resolveEventState(reducer, row)));
     })

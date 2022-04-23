@@ -77,6 +77,7 @@ export function createGenericSport(
       id: "",
       name: "",
       type: typeName,
+      startTime: 0,
       worthPoints: 0,
       scoreHome: 0,
       scoreAway: 0,

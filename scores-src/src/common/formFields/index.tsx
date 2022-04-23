@@ -7,7 +7,7 @@ import {
   FastField,
   FieldProps as FormikFieldProps,
 } from "formik";
-import { ChangeEvent, useEffect } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -22,7 +22,12 @@ import {
   InputWrapper,
   PasswordInput,
   MultiSelect,
+  Group,
 } from "@mantine/core";
+
+import { DatePicker, TimeInput } from "@mantine/dates";
+import invariant from "tiny-invariant";
+import dayjs from "dayjs";
 
 interface BaseFieldProps {
   name: string;
@@ -80,6 +85,64 @@ export function Field(props: FieldProps) {
         </>
       )}
     </FieldComponent>
+  );
+}
+
+interface DateFieldProps extends BaseFieldProps {
+  format: "tsMs";
+  independent?: boolean;
+}
+
+export function DateField(props: DateFieldProps) {
+  const [field, meta, helpers] = useField(props.name);
+  const value = useMemo(() => {
+    switch (props.format) {
+      case "tsMs":
+        if (!field.value) {
+          return new Date();
+        }
+        return new Date(field.value as number);
+      default:
+        invariant(false, "unsupported format");
+    }
+  }, [field.value, props.format]);
+  const onChange = useCallback(
+    (newVal: Date, part: "date" | "time") => {
+      const val = dayjs(value);
+      if (part === "date") {
+        val.set("D", newVal.getDate());
+        val.set("M", newVal.getMonth());
+        val.set("y", newVal.getFullYear());
+      } else {
+        val.set("h", newVal.getHours());
+        val.set("m", newVal.getMinutes());
+        val.set("s", newVal.getSeconds());
+      }
+      switch (props.format) {
+        case "tsMs":
+          helpers.setValue(val.valueOf());
+          break;
+        default:
+          invariant(false, "unsupported format");
+      }
+    },
+    [props.format, value]
+  );
+  return (
+    <InputWrapper
+      label={props.title}
+      description={props.helper}
+      error={meta.touched && meta.error}
+    >
+      <Group>
+        <DatePicker
+          value={value}
+          onChange={(d) => onChange(d ?? new Date(), "date")}
+          error={meta.touched && meta.error}
+        />
+        <TimeInput value={value} onChange={(d) => onChange(d, "time")} />
+      </Group>
+    </InputWrapper>
   );
 }
 
