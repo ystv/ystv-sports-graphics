@@ -8,19 +8,14 @@ import { LiveKillButtons } from "../components/liveKill";
 
 export function FootballDashboard() {
   const state = useOnlyReplicantValue<State>("eventState");
-  const [control, setControl] = useReplicantValue<ControlFootball>(
-    "control-football",
-    undefined,
-    {
-      defaultValue: {
-        scoreboard: {
-          visible: false,
-        },
-      },
-    }
-  );
+  const [control, setControl] =
+    useReplicantValue<ControlFootball>("control-football");
+  console.log(control);
   if (!state) {
     return <b>No state...?!</b>;
+  }
+  if (!control) {
+    return <b>No control...?!</b>;
   }
 
   return (
@@ -33,6 +28,17 @@ export function FootballDashboard() {
           setControl(
             produce(control, (val) => {
               val.scoreboard.visible = live;
+            })
+          )
+        }
+      />
+      <LiveKillButtons
+        name="Match Status Popup"
+        live={control.matchStatusPopup.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.matchStatusPopup.visible = live;
             })
           )
         }

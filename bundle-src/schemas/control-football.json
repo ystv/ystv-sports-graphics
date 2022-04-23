@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -8,11 +8,23 @@
       "additionalProperties": false,
       "properties": {
         "visible": {
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["visible"]
+    },
+    "matchStatusPopup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": false
         }
       },
       "required": ["visible"]
     }
   },
-  "required": ["scoreboard"]
+  "required": ["scoreboard", "matchStatusPopup"]
 }

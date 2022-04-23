@@ -9,4 +9,7 @@ export interface ControlFootball {
   scoreboard: {
     visible: boolean;
   };
+  matchStatusPopup: {
+    visible: boolean;
+  };
 }

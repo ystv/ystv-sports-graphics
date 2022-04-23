@@ -1,0 +1,51 @@
+.Wrapper {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+}
+
+.Container {
+  width: 60vw;
+  height: 25vh;
+  background-color: var(--ystv-dark);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "left right"
+    "banner banner";
+}
+
+.Box {
+  width: 100%;
+  height: 100%;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+  font-family: OpenSans;
+  font-size: 96rem;
+  font-weight: 800;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: center;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Banner {
+  grid-area: banner;
+  font-family: OpenSans;
+  font-size: 48rem;
+  font-weight: 800;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: center;
+  color: #fff;
+}
