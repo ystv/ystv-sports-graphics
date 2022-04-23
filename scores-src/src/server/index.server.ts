@@ -7,6 +7,7 @@ import Express, { NextFunction, Request, Response, Router } from "express";
 import ExpressWS from "express-ws";
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
+import cookieParser from "cookie-parser";
 import onFinished from "on-finished";
 
 import { createEventTypesRouter } from "./eventTypeRoutes";
@@ -26,7 +27,8 @@ import {
 import asyncHandler from "express-async-handler";
 import { Logger } from "winston";
 import { createBootstrapRouter, maybeSetupBootstrap } from "./bootstrap";
-import { createAuthRouter } from "./auth";
+import { createAuthRouter } from "./authRoutes";
+import { createUserManagementRouter } from "./userManagementRoutes";
 
 const errorHandler: (
   log: Logger
@@ -105,6 +107,8 @@ const errorHandler: (
   const app = Express();
   const ws = ExpressWS(app);
 
+  app.set("etag", false);
+
   const httpLogger = logging.getLogger("http");
 
   // Logger
@@ -149,6 +153,7 @@ const errorHandler: (
   );
 
   app.use(jsonParser());
+  app.use(cookieParser());
 
   const baseRouter = Router();
 
@@ -157,6 +162,7 @@ const errorHandler: (
   baseRouter.use("/events", createEventTypesRouter());
   ``;
   baseRouter.use("/events", createEventsRouter());
+  baseRouter.use("/users", createUserManagementRouter());
 
   app.use(config.pathPrefix, baseRouter);
   app.use(config.pathPrefix, createLiveRouter());
@@ -193,7 +199,7 @@ const errorHandler: (
 
   // 404 handler
   app.use("*", (req, res, next) => {
-    next(new NotFound(`Cannot ${req.method} ${req.path}`));
+    next(new NotFound(`Cannot ${req.method} ${req.baseUrl}`));
   });
 
   // Error handler
