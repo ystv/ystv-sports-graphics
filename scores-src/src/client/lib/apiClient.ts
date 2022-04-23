@@ -80,6 +80,10 @@ const fetcher =
         }
       }
 
+      if (res.status === 204) {
+        return;
+      }
+
       // If there's no expectedStatus set, but there's an error from the API,
       // pass it on to the caller (since they may expect it), but log it just
       // in case.
@@ -402,5 +406,21 @@ export function usePUTUsersUsernamePassword() {
     mutate("/users");
     mutate(`/users/${result.username}`, result, false);
     return result;
+  };
+}
+
+export function useDELETEUsersUsername() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (username: string) => {
+    await fetcher(navigate)(
+      `/users/${username}`,
+      {
+        method: "delete",
+      },
+      204
+    );
+    mutate("/users");
   };
 }

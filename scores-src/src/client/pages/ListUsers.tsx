@@ -15,6 +15,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { Link } from "react-router-dom";
 import { Permission, User } from "../../common/types";
 import {
+  useDELETEUsersUsername,
   useGETUsers,
   usePOSTUsers,
   usePUTUsersUsername,
@@ -22,6 +23,7 @@ import {
 } from "../lib/apiClient";
 import { Field, MultiSelectField } from "../../common/formFields";
 import { useState } from "react";
+import { showNotification } from "@mantine/notifications";
 
 const EditUserSchema = Yup.object({
   permissions: Yup.array()
@@ -203,6 +205,9 @@ export function ListUsersScreen() {
   );
   const resetPassword = usePUTUsersUsernamePassword();
 
+  const [deleting, setDeleting] = useState<User | null>(null);
+  const deleteUser = useDELETEUsersUsername();
+
   if (loading) {
     return (
       <div>
@@ -271,7 +276,12 @@ export function ListUsersScreen() {
               >
                 Reset Password
               </Button>
-              <Button color="red" variant="subtle">
+              <Button
+                onClick={() => setDeleting(user)}
+                color="red"
+                variant="subtle"
+                disabled={data.length < 2}
+              >
                 Delete User
               </Button>
             </Group>
@@ -307,6 +317,35 @@ export function ListUsersScreen() {
             }
             close={() => setResettingPasswordFor(null)}
           />
+        )}
+      </Modal>
+      <Modal opened={deleting !== null} onClose={() => setDeleting(null)}>
+        {deleting !== null && (
+          <Stack>
+            <Text>Are you sure you want to delete {deleting.username}?</Text>
+            <Group>
+              <Button variant="subtle" onClick={() => setDeleting(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="filled"
+                color="red"
+                onClick={() =>
+                  deleteUser(deleting.username)
+                    .then(() => setDeleting(null))
+                    .catch((e) =>
+                      showNotification({
+                        message:
+                          "Failed to delete: " +
+                          (e instanceof Error ? e.message : String(e)),
+                      })
+                    )
+                }
+              >
+                Delete
+              </Button>
+            </Group>
+          </Stack>
         )}
       </Modal>
     </>
