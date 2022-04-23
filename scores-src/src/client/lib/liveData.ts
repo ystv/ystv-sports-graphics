@@ -170,9 +170,12 @@ export function useLiveData(eventId: string) {
   function doConnect() {
     const token = getAuthToken();
     let url =
-      (
-        (import.meta.env.PUBLIC_API_BASE as string) ||
-        window.location.origin + "/api"
+      (typeof import.meta.env.PUBLIC_API_BASE === "string"
+        ? new URL(
+            import.meta.env.PUBLIC_API_BASE,
+            window.location.origin
+          ).toString()
+        : window.location.origin + "/api"
       ).replace(/^http(s?):\/\//, "ws$1://") + "/updates/stream/v2";
 
     const queryInfo: Record<string, string> = {
