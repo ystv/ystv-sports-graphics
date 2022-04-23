@@ -10,6 +10,7 @@ import { MantineProvider } from "@mantine/core";
 import { NotificationsProvider } from "@mantine/notifications";
 import { BootstrapScreen } from "./pages/Bootstrap";
 import { LoginScreen } from "./pages/Login";
+import { ListUsersScreen } from "./pages/ListUsers";
 
 function AppRoutes() {
   return (
@@ -22,6 +23,8 @@ function AppRoutes() {
           <Route path=":type/:id/edit" element={<EditEventModal />} />
           <Route path="new" element={<CreateEventModal />} />
         </Route>
+
+        <Route path="users" element={<ListUsersScreen />} />
 
         <Route path="/" element={<Navigate replace to="/events" />} />
       </Route>

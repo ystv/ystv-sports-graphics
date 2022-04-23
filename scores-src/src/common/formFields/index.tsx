@@ -21,6 +21,7 @@ import {
   SegmentedControl,
   InputWrapper,
   PasswordInput,
+  MultiSelect,
 } from "@mantine/core";
 
 interface BaseFieldProps {
@@ -96,6 +97,24 @@ export function Checkbox(props: CheckboxProps) {
         //  DON'T HAVE AN ERROR STATE CURRENTLY
       )}
     </FieldComponent>
+  );
+}
+
+interface MultiSelectFieldProps extends SelectFieldProps {
+  values: [string, string][];
+}
+
+export function MultiSelectField(props: MultiSelectFieldProps) {
+  const [field, meta, helpers] = useField(props.name);
+  return (
+    <MultiSelect
+      data={props.values.map(([value, label]) => ({ value, label }))}
+      value={field.value}
+      onChange={(vals) => helpers.setValue(vals)}
+      label={props.title}
+      error={meta.touched && meta.error}
+      description={props.helper}
+    />
   );
 }
 
