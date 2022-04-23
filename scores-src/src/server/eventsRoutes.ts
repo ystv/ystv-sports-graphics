@@ -13,11 +13,12 @@ export function createEventsRouter() {
     authenticate("read"),
     asyncHandler(async (req, res) => {
       const result = await DB.query(
-        `SELECT e AS data, meta().id AS id FROM _default e WHERE meta(e).id LIKE 'Event/%'`
+        `SELECT e AS data, meta().id AS id FROM _default e WHERE meta(e).id LIKE 'Event/%' ORDER BY startTime`
       );
       res.status(200).json(
         result.rows.map((row) => {
           const [_, type] = row.id.split("/");
+          console.log(row.id);
           const data = resolveEventState(EVENT_TYPES[type].reducer, row.data);
           return {
             ...data,

@@ -3248,15 +3248,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/dates@npm:^4.1.2":
-  version: 4.1.2
-  resolution: "@mantine/dates@npm:4.1.2"
+"@mantine/dates@npm:^4.1.4":
+  version: 4.1.4
+  resolution: "@mantine/dates@npm:4.1.4"
   peerDependencies:
-    "@mantine/core": 4.1.2
-    "@mantine/hooks": 4.1.2
+    "@mantine/core": 4.1.4
+    "@mantine/hooks": 4.1.4
     dayjs: ^1.10.5
     react: ">=16.8.0"
-  checksum: be4052c698bdaa5dc1737809b434672ddb1fce043ec25b3b69452de6fcaf321ce95d8a0b7ac4f2be07b2afa95f77d9c833d1392156ab32238d3120ff7ce1a1d4
+  checksum: e3344b1493e1c1627c29e80825b49f00631a9d0f75e0e783619ab6de2d39f60b1725fa00bfafb18ad4998632678ab89a8c4826b31164381e20f798112682091f
   languageName: node
   linkType: hard
 
@@ -6283,7 +6283,7 @@ __metadata:
     "@babel/preset-env": ^7.16.11
     "@babel/preset-typescript": ^7.16.7
     "@mantine/core": ^4.1.2
-    "@mantine/dates": ^4.1.2
+    "@mantine/dates": ^4.1.4
     "@mantine/form": ^4.1.2
     "@mantine/hooks": ^4.1.2
     "@mantine/notifications": ^4.1.4
@@ -6319,7 +6319,7 @@ __metadata:
     cookie-parser: ^1.4.6
     cors: ^2.8.5
     couchbase: 3.2.4
-    dayjs: ^1.11.0
+    dayjs: ^1.11.1
     dotenv-flow: ^3.2.0
     esbuild: ^0.14.23
     express: ^4.17.3
@@ -9136,10 +9136,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.11.0":
-  version: 1.11.0
-  resolution: "dayjs@npm:1.11.0"
-  checksum: 2d36f6d71345114cdcd89147adf9e05b4f8fe81684e08c8bf1f86b140aa0b86ecc3cae661a9348d96feb7fbefd03e1bc3697303688e95209670abcb36b4ece15
+"dayjs@npm:^1.11.1":
+  version: 1.11.1
+  resolution: "dayjs@npm:1.11.1"
+  checksum: d5fefd79935f64a3c262e67af7ebeca180bc402b3e99be4e12d20b6d438af3f86d507ba1cbaff95dc0b4e67f1067cea3eaf37b6b74f5494fdd4a6a2909514cd1
   languageName: node
   linkType: hard
 

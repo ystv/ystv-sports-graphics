@@ -2,7 +2,7 @@ import { Alert, Button, Modal, Select, Stack, Title } from "@mantine/core";
 import { Form as FormikForm, Formik, FormikHelpers } from "formik";
 import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Field } from "../../common/formFields";
+import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { BaseEventType } from "../../common/types";
 import { usePOSTEvents } from "../lib/apiClient";
@@ -55,6 +55,7 @@ export function CreateEventModal() {
       >
         {({ handleSubmit, isSubmitting, errors }) => (
           <Stack>
+            <DateField name="startTime" title="Date/Time" format="tsMs" />
             <Field
               type="number"
               name="worthPoints"

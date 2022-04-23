@@ -73,6 +73,7 @@ const slice = createSlice({
     id: "INVALID",
     type: "netball",
     name: "",
+    startTime: 0,
     worthPoints: 0,
     players: {
       home: [],
