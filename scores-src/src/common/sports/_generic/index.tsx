@@ -64,7 +64,7 @@ export function createGenericSport(
       return downwardClockStartingTimeMs;
     }
     if (segmentIdx <= downwardClockStartingTimeMs.length) {
-      return downwardClockStartingTimeMs[segmentIdx];
+      return downwardClockStartingTimeMs[segmentIdx - 1];
     }
     return downwardClockStartingTimeMs[downwardClockStartingTimeMs.length - 1];
   };
