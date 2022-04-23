@@ -22,6 +22,7 @@ RUN yarn bundle:build
 
 FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION}
 COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/package.json /usr/src/app/bundles/ystv-sports-graphics/package.json
+COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/bundle-src/schemas/ /usr/src/app/bundles/ystv-sports-graphics/schemas/
 COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/extension.js /usr/src/app/bundles/ystv-sports-graphics/extension.js
 COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/dashboard/ /usr/src/app/bundles/ystv-sports-graphics/dashboard/
 COPY --from=build /usr/src/app/bundles/ystv-sports-graphics/graphics/ /usr/src/app/bundles/ystv-sports-graphics/graphics/
