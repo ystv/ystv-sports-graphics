@@ -121,6 +121,7 @@ export function authenticate(...permissions: Permission[]) {
       }
 
       const hasPerms =
+        permissions.length === 0 ||
         user.permissions.includes("SUDO") ||
         user.permissions.some((x) => permissions.includes(x));
       ensure(hasPerms, Forbidden, "insufficient permissions");

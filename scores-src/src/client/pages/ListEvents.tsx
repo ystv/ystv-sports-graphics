@@ -10,6 +10,7 @@ import {
   Stack,
   TypographyStylesProvider,
 } from "@mantine/core";
+import { PermGate } from "../components/PermGate";
 
 export function ListEvents() {
   const { data: events, loading, error } = useGETEvents();
@@ -67,14 +68,16 @@ export function ListEvents() {
               {evt.id}
             </Text>
             <Group>
-              <Button
-                component={Link}
-                to={`${evt.type}/${evt.id}/edit`}
-                color={"orange"}
-                variant="outline"
-              >
-                Edit Event
-              </Button>
+              <PermGate require="write" fallback={<></>}>
+                <Button
+                  component={Link}
+                  to={`${evt.type}/${evt.id}/edit`}
+                  color={"orange"}
+                  variant="outline"
+                >
+                  Edit Event
+                </Button>
+              </PermGate>
               <Button
                 component={Link}
                 to={`${evt.type}/${evt.id}`}

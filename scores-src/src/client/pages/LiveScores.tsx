@@ -14,6 +14,7 @@ import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
 import { findUndoneActions, wrapReducer } from "../../common/eventStateHelpers";
 import { Action } from "../../common/types";
 import { showNotification } from "@mantine/notifications";
+import { PermGate } from "../components/PermGate";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENT_TYPES;
@@ -130,15 +131,19 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
           <>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Entry action={action as any} state={state as any} />
-            <Button
-              compact
-              variant={undone ? "default" : "subtle"}
-              loading={loading === action.meta.ts}
-              disabled={loading !== null}
-              onClick={() => perform(undone ? "redo" : "undo", action.meta.ts)}
-            >
-              {undone ? "Redo" : "Undo"}
-            </Button>
+            <PermGate require="write" fallback={<></>}>
+              <Button
+                compact
+                variant={undone ? "default" : "subtle"}
+                loading={loading === action.meta.ts}
+                disabled={loading !== null}
+                onClick={() =>
+                  perform(undone ? "redo" : "undo", action.meta.ts)
+                }
+              >
+                {undone ? "Redo" : "Undo"}
+              </Button>
+            </PermGate>
           </>
         </Wrapper>
       </li>
@@ -195,25 +200,27 @@ export function LiveScores() {
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <RenderScore state={state} act={act as any} />
 
-        <Group>
-          {Object.keys(actionPayloadValidators)
-            .filter((x) => !hiddenActions.has(x))
-            .filter((type) => {
-              const validFn = actionValidChecks[type];
-              if (!validFn) {
-                return true;
-              }
-              return validFn(state);
-            })
-            .map((actionType) => (
-              <Button
-                key={actionType}
-                onClick={() => setActiveAction(actionType)}
-              >
-                {startCase(actionType)}
-              </Button>
-            ))}
-        </Group>
+        <PermGate require="write" fallback={<></>}>
+          <Group>
+            {Object.keys(actionPayloadValidators)
+              .filter((x) => !hiddenActions.has(x))
+              .filter((type) => {
+                const validFn = actionValidChecks[type];
+                if (!validFn) {
+                  return true;
+                }
+                return validFn(state);
+              })
+              .map((actionType) => (
+                <Button
+                  key={actionType}
+                  onClick={() => setActiveAction(actionType)}
+                >
+                  {startCase(actionType)}
+                </Button>
+              ))}
+          </Group>
+        </PermGate>
 
         <Title order={2}>Timeline</Title>
         <Timeline type={type} eventId={id} history={history} />
