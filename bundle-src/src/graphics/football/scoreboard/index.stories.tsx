@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 import { TeamDictionary } from "common/teamDictionary";
-import { Component, Props } from "./index";
+import { Scoreboard, Props } from "./index";
 
 export default {
   title: "Football/Scoreboard",
-  component: Component,
+  component: Scoreboard,
   args: {
     homeName: "Home",
     awayName: "Away",
@@ -17,8 +17,8 @@ export default {
     time: "00:00",
     timeVisible: true,
   },
-} as ComponentMeta<typeof Component>;
+} as ComponentMeta<typeof Scoreboard>;
 
-export const Scoreboard: ComponentStory<typeof Component> = (args: Props) => (
-  <Component {...args} />
-);
+export const ScoreboardStory: ComponentStory<typeof Scoreboard> = (
+  args: Props
+) => <Scoreboard {...args} />;

@@ -12,5 +12,9 @@ export function GraphicContainer({
     width: "100%",
     zIndex: zIndex,
   };
-  return <div style={styles}>{children}</div>;
+  return (
+    <div style={styles} className="titleSafe">
+      {children}
+    </div>
+  );
 }

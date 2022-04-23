@@ -1,11 +1,29 @@
 import { useOnlyReplicantValue } from "common/useReplicant";
-import type { ValueType } from "@ystv/scores/src/common/sports/netball";
-import { ControlNetball } from "common/types/control-netball";
+import type { State } from "@ystv/scores/src/common/sports/football";
+import { ControlFootball } from "../../common/types/control-football";
 import { GraphicContainer } from "../common/container";
+import Scoreboard from "./scoreboard";
+import { clockTimeAt, formatMMSSMS } from "@ystv/scores/src/common/clock";
+import { useEffect, useRef, useState } from "react";
 
-export default function Football() {
-  const state = useOnlyReplicantValue<ValueType>("eventState");
-  const control = useOnlyReplicantValue<ControlNetball>("control-netball");
+function useTime() {
+  const [val, setVal] = useState(() => new Date().valueOf());
+  const intervalRef = useRef<number>();
+  useEffect(() => {
+    function update() {
+      setVal(new Date().valueOf());
+    }
+    intervalRef.current = window.setInterval(update, 200);
+    return () => window.clearInterval(intervalRef.current);
+  }, []);
+  return val;
+}
+
+export function AllFootballGraphics() {
+  const state = useOnlyReplicantValue<State>("eventState");
+  const control = useOnlyReplicantValue<ControlFootball>("control-football");
+
+  const now = useTime();
 
   if (!state || !control) {
     return null;
@@ -14,7 +32,21 @@ export default function Football() {
   return (
     <>
       <GraphicContainer>
-        <></>
+        <>
+          {control.scoreboard.visible && (
+            <Scoreboard
+              homeName="LANC"
+              homePrimaryColor="var(--lancaster-red)"
+              homeScore={state.scoreHome}
+              awayName="YORK"
+              awayPrimaryColor="var(--york-white)"
+              awaySecondaryColor="var(--ystv-dark)"
+              awayScore={state.scoreAway}
+              time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
+              timeVisible
+            />
+          )}
+        </>
       </GraphicContainer>
     </>
   );

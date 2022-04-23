@@ -16,7 +16,7 @@ export interface Props {
   timeVisible: boolean;
 }
 
-export function Component({
+export function Scoreboard({
   awayName,
   awayPrimaryColor,
   awayScore,
@@ -55,4 +55,4 @@ export function Component({
   );
 }
 
-export default Component;
+export default Scoreboard;
