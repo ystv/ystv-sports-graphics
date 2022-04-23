@@ -197,6 +197,7 @@ export function LiveScores() {
 
     return (
       <>
+        <Title order={1}>{state.name}</Title>
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <RenderScore state={state} act={act as any} />
 
