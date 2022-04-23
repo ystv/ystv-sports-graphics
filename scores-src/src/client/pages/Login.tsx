@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { setAuthToken, usePOSTLogin } from "../lib/apiClient";
 import * as Yup from "yup";
 import { Field } from "../../common/formFields";
+import invariant from "tiny-invariant";
 
 const loginSchema = Yup.object({
   username: Yup.string().required(),
@@ -30,8 +31,13 @@ export function LoginScreen() {
     try {
       const result = await doRequest(values.username, values.password);
       console.log("LOGIN RESULT", result);
-      setAuthToken(result.token);
-      navigate("/events");
+      if ("ok" in result) {
+        invariant(result.ok, "unexpected API change: login returned ok=false");
+        setAuthToken(result.token);
+        navigate("/events");
+      } else {
+        setError(result.error);
+      }
     } catch (e) {
       if (e instanceof Error) {
         setError(e.message);

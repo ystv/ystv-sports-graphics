@@ -14,7 +14,7 @@ import {
   ThemeIcon,
 } from "@mantine/core";
 
-import { IconCalendarEvent, IconUser } from "@tabler/icons";
+import { IconCalendarEvent, IconUser, IconShieldLock } from "@tabler/icons";
 import { setAuthToken } from "../lib/apiClient";
 
 export function Wrapper() {
@@ -80,6 +80,12 @@ export function Wrapper() {
                 color: "blue",
                 label: "Events",
                 link: "/events",
+              },
+              {
+                icon: <IconShieldLock size={16} />,
+                color: "orange",
+                label: "Users",
+                link: "/users",
               },
               {
                 icon: <IconUser size={16} />,

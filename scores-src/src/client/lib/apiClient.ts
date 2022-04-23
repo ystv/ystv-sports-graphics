@@ -2,10 +2,7 @@ import type { InferType } from "yup";
 import type { BaseEvent, BaseEventType, User } from "../../common/types";
 import { stringify } from "qs";
 import useSWR, { useSWRConfig } from "swr";
-import logging from "loglevel";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-// import type { User } from "../../server/auth";
-const logger = logging.getLogger("apiClient");
 
 const TOKEN_KEY = "SportsScoresToken";
 
@@ -31,7 +28,12 @@ function setHeader(req: RequestInit, key: string, value: string) {
 
 const fetcher =
   (navigate: NavigateFunction) =>
-  (endpoint: string, req?: RequestInit, expectedStatus?: number) => {
+  (
+    endpoint: string,
+    req?: RequestInit,
+    expectedStatus?: number,
+    returnErrors = false
+  ) => {
     req = req || {};
     setHeader(req, "Accept", "application/json");
     setHeader(req, "X-Requested-With", "fetch");
@@ -45,12 +47,15 @@ const fetcher =
       (import.meta.env.PUBLIC_API_BASE || "/api") + endpoint,
       req
     ).then(async (res) => {
-      logger.info(endpoint, "status", res.status, "expected", expectedStatus);
+      console.info(endpoint, "status", res.status, "expected", expectedStatus);
       if (typeof expectedStatus === "number") {
         if (res.status !== expectedStatus) {
-          logger.warn(
+          console.warn(
             `Received unexpected status ${res.status} from ${endpoint} (expected ${expectedStatus})`
           );
+          if (returnErrors) {
+            return await res.json();
+          }
           if (res.status === 401) {
             navigate("/login");
             return;
@@ -69,7 +74,7 @@ const fetcher =
               up.message = data.error;
             }
           } catch (e) {
-            logger.warn("Failed to get error info for status", res.status, e);
+            console.warn("Failed to get error info for status", res.status, e);
           }
           throw up; // ha ha
         }
@@ -80,7 +85,7 @@ const fetcher =
       // in case.
       const data = await res.json();
       if ("error" in data) {
-        logger.warn(`Received error from API ${endpoint}:`, data.error);
+        console.warn(`Received error from API ${endpoint}:`, data.error);
       }
       return data;
     });
@@ -258,8 +263,9 @@ export function usePOSTLogin() {
         },
         body: JSON.stringify({ username, password }),
       },
-      200
-    )) as { ok: true; user: User; token: string };
+      200,
+      true
+    )) as { ok: true; user: User; token: string } | { error: string };
     return result;
   };
 }
@@ -304,6 +310,91 @@ export function usePOSTEventRedo() {
     )) as BaseEventType;
     mutate("/events");
     mutate(`/events/${type}/${result.id}`, result, false);
+    return result;
+  };
+}
+
+export function useGETUsers() {
+  const retval = useAPIRoute<User[]>("/users", {}, 200);
+  return retval;
+}
+
+export function usePOSTUsers() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (data: {
+    username: string;
+    password: string;
+    permissions: string[];
+  }) => {
+    const result = (await fetcher(navigate)(
+      `/users/`,
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+      201
+    )) as User;
+    mutate("/users");
+    mutate(`/users/${result.username}`, result, false);
+    return result;
+  };
+}
+
+export function usePUTUsersUsername() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (
+    username: string,
+    data: {
+      permissions: string[];
+    }
+  ) => {
+    const result = (await fetcher(navigate)(
+      `/users/${username}`,
+      {
+        method: "put",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+      200
+    )) as User;
+    mutate("/users");
+    mutate(`/users/${result.username}`, result, false);
+    return result;
+  };
+}
+
+export function usePUTUsersUsernamePassword() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (
+    username: string,
+    data: {
+      password: string;
+    }
+  ) => {
+    const result = (await fetcher(navigate)(
+      `/users/${username}/password`,
+      {
+        method: "put",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+      200
+    )) as User;
+    mutate("/users");
+    mutate(`/users/${result.username}`, result, false);
     return result;
   };
 }
