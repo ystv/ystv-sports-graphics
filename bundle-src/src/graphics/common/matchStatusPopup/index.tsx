@@ -9,26 +9,10 @@ export interface MatchStatusPopupProps {
   awayPrimaryColor: string;
   homeSecondaryColor?: string;
   awaySecondaryColor?: string;
-  half: number;
+  banner: string;
 }
 
 export function MatchStatusPopup(props: MatchStatusPopupProps) {
-  let bannerMsg;
-  switch (props.half) {
-    // FIXME
-    case 1:
-      bannerMsg = "HALF TIME";
-      break;
-    case 2:
-      bannerMsg = "FULL TIME";
-      break;
-    case 3:
-      bannerMsg = "FIRST HALF OF EXTRA TIME";
-      break;
-    case 4:
-      bannerMsg = "EXTRA TIME";
-      break;
-  }
   return (
     <div className={styles.Wrapper}>
       <div className={styles.Container}>
@@ -50,7 +34,7 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
         >
           {props.awayScore}
         </div>
-        <div className={styles.Banner}>{bannerMsg}</div>
+        <div className={styles.Banner}>{props.banner}</div>
       </div>
     </div>
   );

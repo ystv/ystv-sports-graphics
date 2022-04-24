@@ -14,7 +14,7 @@ export default {
     awayPrimaryColor: TeamDictionary["yorkRoses"].primaryColor,
     homeSecondaryColor: TeamDictionary["lancasterRoses"].secondaryColor,
     awaySecondaryColor: TeamDictionary["yorkRoses"].secondaryColor,
-    half: 1,
+    banner: "HALF TIME",
   },
 } as ComponentMeta<typeof MatchStatusPopup>;
 

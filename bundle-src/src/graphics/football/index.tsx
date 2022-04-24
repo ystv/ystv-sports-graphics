@@ -4,9 +4,21 @@ import { ControlFootball } from "../../common/types/control-football";
 import { GraphicContainer } from "../common/container";
 import { Scoreboard } from "../common/scoreboard";
 import { clockTimeAt, formatMMSSMS } from "@ystv/scores/src/common/clock";
-import { useEffect, useRef, useState } from "react";
-import { MatchStatusPopup } from "./matchStatusPopup";
 import { useTime } from "../hooks";
+import { MatchStatusPopup } from "../common/matchStatusPopup";
+
+function bannerMsg(half: number) {
+  switch (half) {
+    case 1:
+      return "HALF TIME";
+    case 2:
+      return "FULL TIME";
+    case 3:
+      return "FIRST HALF OF EXTRA TIME";
+    case 4:
+      return "EXTRA TIME";
+  }
+}
 
 export function AllFootballGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
@@ -46,7 +58,7 @@ export function AllFootballGraphics() {
               awayPrimaryColor="var(--york-white)"
               awaySecondaryColor="var(--ystv-dark)"
               awayScore={state.scoreAway}
-              half={state.halves.length}
+              banner={bannerMsg(state.halves.length) ?? ""}
             />
           )}
         </>
