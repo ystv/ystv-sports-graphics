@@ -89,7 +89,7 @@ export function Field(props: FieldProps) {
 }
 
 interface DateFieldProps extends BaseFieldProps {
-  format: "tsMs";
+  format: "tsMs" | "isoStr";
   independent?: boolean;
 }
 
@@ -102,28 +102,37 @@ export function DateField(props: DateFieldProps) {
           return new Date();
         }
         return new Date(field.value as number);
+      case "isoStr":
+        return new Date(field.value as string);
       default:
         invariant(false, "unsupported format");
     }
   }, [field.value, props.format]);
   const onChange = useCallback(
     (newVal: Date, part: "date" | "time") => {
-      const val = dayjs(value);
+      let val = dayjs(value);
       if (part === "date") {
-        val.set("D", newVal.getDate());
-        val.set("M", newVal.getMonth());
-        val.set("y", newVal.getFullYear());
+        val = val
+          .set("D", newVal.getDate())
+          .set("M", newVal.getMonth())
+          .set("y", newVal.getFullYear());
       } else {
-        val.set("h", newVal.getHours());
-        val.set("m", newVal.getMinutes());
-        val.set("s", newVal.getSeconds());
+        val = val
+          .set("h", newVal.getHours())
+          .set("m", newVal.getMinutes())
+          .set("s", 0)
+          .set("ms", 0);
       }
+      console.log("DateTimeField: value now", val.toISOString());
       switch (props.format) {
         case "tsMs":
           helpers.setValue(val.valueOf());
           break;
+        case "isoStr":
+          helpers.setValue(val.toISOString());
+          break;
         default:
-          invariant(false, "unsupported format");
+          invariant(false, "unsupported format " + props.format);
       }
     },
     [props.format, value]
