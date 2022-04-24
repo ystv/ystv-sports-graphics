@@ -49,7 +49,7 @@ export function EditEventForm() {
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
             <FormikForm onSubmit={handleSubmit} onReset={handleReset}>
               <Stack>
-                <DateField name="startTime" title="Date/Time" format="tsMs" />
+                <DateField name="startTime" title="Date/Time" format="isoStr" />
                 <Field
                   type="number"
                   name="worthPoints"
