@@ -6,27 +6,28 @@ import { useMemo, useState } from "react";
 import {
   usePOSTEventAction,
   usePOSTEventRedo,
+  usePOSTEventResync,
   usePOSTEventUndo,
   usePOSTEventDeclareWinner,
 } from "../lib/apiClient";
 import { capitalize, startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import {
+  ActionIcon,
   Alert,
   Button,
-  Grid,
   Group,
   Modal,
   SegmentedControl,
+  Text,
   Stack,
   Title,
-  Text,
 } from "@mantine/core";
 import { findUndoneActions, wrapReducer } from "../../common/eventStateHelpers";
 import { Action } from "../../common/types";
 import { showNotification } from "@mantine/notifications";
 import { PermGate } from "../components/PermGate";
-import { IconTrophy } from "@tabler/icons";
+import { IconTrophy, IconRefresh } from "@tabler/icons";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENT_TYPES;
@@ -226,6 +227,35 @@ export function LiveScores() {
     }
   }
 
+  const doResync = usePOSTEventResync();
+
+  const [resyncing, setResyncing] = useState<boolean>(false);
+  async function resync() {
+    invariant(typeof type === "string", "no type");
+    invariant(typeof id === "string", "no id");
+    setResyncing(true);
+    try {
+      await doResync(type, id);
+      showNotification({
+        message: "Resynced!",
+        color: "blue",
+      });
+    } catch (e) {
+      let msg: string;
+      if (e instanceof Error) {
+        msg = e.name + " " + e.message;
+      } else {
+        msg = String(e);
+      }
+      showNotification({
+        message: msg,
+        color: "red",
+      });
+    } finally {
+      setResyncing(false);
+    }
+  }
+
   if (status === "READY" || status === "POSSIBLY_DISCONNECTED") {
     console.log("State:", state);
     if (!state) {
@@ -276,6 +306,13 @@ export function LiveScores() {
             >
               Declare Winner
             </Button>
+            <ActionIcon
+              onClick={resync}
+              loading={resyncing}
+              disabled={resyncing}
+            >
+              <IconRefresh size={16} />
+            </ActionIcon>
           </Group>
         </PermGate>
 

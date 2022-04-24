@@ -4,7 +4,12 @@ import { REDIS } from "./redis";
 import * as logging from "./loggingSetup";
 import { BadRequest } from "http-errors";
 import { randomUUID } from "crypto";
-import { getActions, UpdatesMessage } from "./updatesRepo";
+import {
+  EventUpdateMessage,
+  getActions,
+  SpecialMessage,
+  UpdatesMessage,
+} from "./updatesRepo";
 import { ensure } from "./errs";
 import { DB } from "./db";
 import { DocumentNotFoundError, User } from "couchbase";
@@ -127,7 +132,34 @@ export function createLiveRouter() {
       });
     }
 
-    async function handleAction(mid: string, data: UpdatesMessage) {
+    async function handleSpecial(mid: string, data: SpecialMessage) {
+      switch (data._special) {
+        case "resync": {
+          // Throw away the cache, get the state from the DB, and send it off
+          if (!subs.has(data.id)) {
+            return;
+          }
+          const history = (await DB.collection("_default").get(data.id))
+            .content;
+          historyCache.set(data.id, history);
+          if (mode === "state") {
+            calculateAndSendCurrentState(data.id);
+          } else {
+            send({
+              kind: "BULK_ACTIONS",
+              event: data.id,
+              actions: history,
+            });
+          }
+          logger.info("Resync processed");
+          break;
+        }
+        default:
+          invariant(false, `unknown special message ${data._special}`);
+      }
+    }
+
+    async function handleAction(mid: string, data: EventUpdateMessage) {
       let history = historyCache.get(data.id);
       if (history) {
         history.push({
@@ -180,6 +212,9 @@ export function createLiveRouter() {
         }
         logger.debug("Catch-up: got data", { len: data.length });
         for (const msg of data) {
+          if ("_special" in msg.data) {
+            continue;
+          }
           if (subs.has(msg.data.id)) {
             handleAction(msg.mid, msg.data);
           }
@@ -199,10 +234,12 @@ export function createLiveRouter() {
         ensure(typeof msg === "string", UserError, "non-string message");
         const payload: LiveClientMessage = JSON.parse(msg);
         logger.debug("WS recv", { kind: payload.kind });
+
         switch (payload.kind) {
           case "PING":
             send({ kind: "PONG" });
             break;
+
           case "SUBSCRIBE": {
             ensure(
               typeof payload.to === "string",
@@ -243,6 +280,7 @@ export function createLiveRouter() {
             });
             break;
           }
+
           case "UNSUBSCRIBE":
             ensure(
               typeof payload.to === "string",
@@ -256,6 +294,7 @@ export function createLiveRouter() {
               to: payload.to,
             });
             break;
+
           case "RESYNC": {
             // Throw away the cache, get the state from the DB, and send it off
             ensure(
@@ -277,6 +316,7 @@ export function createLiveRouter() {
             }
             break;
           }
+
           case "PONG":
             // Take this as an opportunity to renew their subscriptions key,
             // so it'll expire an hour after they're last seen
@@ -286,6 +326,7 @@ export function createLiveRouter() {
             );
             // PONG doesn't need a response
             break;
+
           default: {
             // @ts-expect-error payload.kind is `never` because this is an exhaustive switch
             const kind = payload.kind as string;
@@ -327,7 +368,9 @@ export function createLiveRouter() {
         continue;
       }
       for (const msg of data) {
-        if (subs.has(msg.data.id)) {
+        if ("_special" in msg.data) {
+          handleSpecial(msg.mid, msg.data);
+        } else if (subs.has(msg.data.id)) {
           handleAction(msg.mid, msg.data);
         }
         lastMid = msg.mid;

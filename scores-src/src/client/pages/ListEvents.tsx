@@ -1,5 +1,5 @@
 import { Link, Outlet } from "react-router-dom";
-import { useGETEvents } from "../lib/apiClient";
+import { useGETEvents, usePOSTEventResync } from "../lib/apiClient";
 import {
   Table,
   Card,
@@ -9,12 +9,42 @@ import {
   Group,
   Stack,
   TypographyStylesProvider,
+  ActionIcon,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import { PermGate } from "../components/PermGate";
+import { IconRefresh } from "@tabler/icons";
+import { useState } from "react";
+import { showNotification } from "@mantine/notifications";
 
 export function ListEvents() {
   const { data: events, loading, error } = useGETEvents();
+
+  const doResync = usePOSTEventResync();
+  const [resyncing, setResyncing] = useState<string | null>(null);
+  async function resync(type: string, id: string) {
+    setResyncing(`Event/${type}/${id}`);
+    try {
+      await doResync(type, id);
+      showNotification({
+        message: "Resynced!",
+        color: "blue",
+      });
+    } catch (e) {
+      let msg: string;
+      if (e instanceof Error) {
+        msg = e.name + " " + e.message;
+      } else {
+        msg = String(e);
+      }
+      showNotification({
+        message: msg,
+        color: "red",
+      });
+    } finally {
+      setResyncing(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -97,6 +127,15 @@ export function ListEvents() {
                 Input Scores
               </Button>
               <Button disabled>View Timeline</Button>
+              <PermGate require="admin" fallback={<></>}>
+                <ActionIcon
+                  onClick={() => resync(evt.type, evt.id)}
+                  loading={resyncing === `Event/${evt.type}/${evt.id}`}
+                  disabled={resyncing !== null}
+                >
+                  <IconRefresh size={16} />
+                </ActionIcon>
+              </PermGate>
             </Group>
           </Card>
         ))}
