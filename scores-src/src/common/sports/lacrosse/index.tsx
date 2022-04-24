@@ -73,6 +73,7 @@ const slice = createSlice({
     id: "INVALID",
     type: "lacrosse",
     name: "",
+    startTime: "2022-04-29T09:00:00+01:00",
     worthPoints: 0,
     players: {
       home: [],
