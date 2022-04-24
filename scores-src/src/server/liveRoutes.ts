@@ -39,7 +39,7 @@ export function createLiveRouter() {
       remote: req.ip + ":" + req.socket.remotePort,
       sid: req.query.sid,
       last_mid: req.query.last_mid,
-      mode: req.query.mode,
+      mode: req.query.mode ?? "state",
     });
     activeStreamConnections.inc();
 
@@ -77,6 +77,7 @@ export function createLiveRouter() {
     }
 
     // Only declare send() now, to ensure it doesn't capture a logger with stale metadata
+    // TODO (GRAPHICS-193): we still get many logs with sid=INVALID
     function send(msg: LiveServerMessage) {
       ws.send(JSON.stringify(msg), (err) => {
         if (err) {
