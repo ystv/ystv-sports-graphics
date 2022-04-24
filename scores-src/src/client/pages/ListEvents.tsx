@@ -10,6 +10,7 @@ import {
   Stack,
   TypographyStylesProvider,
 } from "@mantine/core";
+import dayjs from "dayjs";
 import { PermGate } from "../components/PermGate";
 
 export function ListEvents() {
@@ -70,8 +71,7 @@ export function ListEvents() {
               {evt.type}
             </Text>
             <Text size="xs" color="dimmed" mb="xl">
-              {/*TODO replace with date time*/}
-              {evt.id}
+              {dayjs(evt.startTime).format("dddd DD MMM, HH:mm")}
             </Text>
             <Group>
               <PermGate require="write" fallback={<></>}>
