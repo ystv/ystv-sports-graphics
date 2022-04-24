@@ -55,12 +55,18 @@ export function CreateEventModal() {
       >
         {({ handleSubmit, isSubmitting, errors }) => (
           <Stack>
-            <DateField name="startTime" title="Date/Time" format="isoStr" />
+            <DateField
+              name="startTime"
+              title="Date/Time"
+              format="isoStr"
+              independent
+            />
             <Field
               type="number"
               name="worthPoints"
               title="Points"
               helper="How many Roses points will the winner get?"
+              independent
             />
             <EditForm />
             <Button onClick={() => handleSubmit()} disabled={isSubmitting}>
