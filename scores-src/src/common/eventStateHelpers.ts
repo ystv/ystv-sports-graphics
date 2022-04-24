@@ -1,8 +1,8 @@
 import { createAction } from "@reduxjs/toolkit";
 import { Action, BaseEventType, Reducer } from "./types";
 
-export const Init = createAction<BaseEventType>("@@init");
-export const Edit = createAction<Partial<BaseEventType>>("@@edit");
+export const Init = createAction<Record<string, unknown>>("@@init");
+export const Edit = createAction<Record<string, unknown>>("@@edit");
 export const Undo = createAction<{ ts: number }>("@@undo");
 export const Redo = createAction<{ ts: number }>("@@redo");
 export const DeclareWinner = createAction<{ winner: "home" | "away" }>(
@@ -10,7 +10,7 @@ export const DeclareWinner = createAction<{ winner: "home" | "away" }>(
 );
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function wrapReducer<TState extends BaseEventType>(
+export function wrapReducer<TState extends Record<string, unknown>>(
   reducer: Reducer<TState>
 ): Reducer<TState> {
   return (state, action) => {
