@@ -183,7 +183,9 @@ export const actionValidChecks: ActionValidChecks<
   goal: (state) => state.quarters.length > 0,
   pauseClock: (state) => state.clock.state === "running",
   startNextQuarter: (state) =>
-    state.quarters.length === 0 || state.clock.state === "stopped",
+    state.quarters.length === 0 ||
+    state.clock.state === "stopped" ||
+    clockTimeAt(state.clock, new Date().valueOf()) == 0,
   resumeCurrentQuarter: (state) =>
     state.quarters.length > 0 && state.clock.state === "stopped",
 };

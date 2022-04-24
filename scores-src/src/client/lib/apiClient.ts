@@ -318,6 +318,28 @@ export function usePOSTEventRedo() {
   };
 }
 
+export function usePOSTEventDeclareWinner() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (type: string, id: string, winner: "home" | "away") => {
+    const result = (await fetcher(navigate)(
+      `/events/${type}/${id}/_declareWinner`,
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ winner }),
+      },
+      200
+    )) as BaseEventType;
+    mutate("/events");
+    mutate(`/events/${type}/${result.id}`, result, false);
+    return result;
+  };
+}
+
 export function useGETAuthMe() {
   const retval = useAPIRoute<User>("/auth/me", {}, 200);
   return retval;
