@@ -49,13 +49,13 @@ export function CreateEventModal() {
       <Formik
         enableReinitialize
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        initialValues={{} as any}
+        initialValues={EVENT_TYPES[type].schema.omit(["id", "type"]).cast({})}
         onSubmit={submit}
         validationSchema={EVENT_TYPES[type].schema.omit(["id", "type"])}
       >
         {({ handleSubmit, isSubmitting, errors }) => (
           <Stack>
-            <DateField name="startTime" title="Date/Time" format="tsMs" />
+            <DateField name="startTime" title="Date/Time" format="isoStr" />
             <Field
               type="number"
               name="worthPoints"

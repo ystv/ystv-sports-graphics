@@ -5,7 +5,9 @@ import { TypedSchema } from "yup/lib/util/types";
 export const BaseEvent: Yup.SchemaOf<BaseEventType> = Yup.object().shape({
   id: Yup.string().uuid().required(),
   type: Yup.string().required(),
-  startTime: Yup.number().required().default(0),
+  startTime: Yup.string()
+    .required()
+    .default(() => new Date().toISOString()),
   name: Yup.string().required(),
   notCovered: Yup.boolean().default(false),
   winner: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).notRequired(),
@@ -16,7 +18,7 @@ export interface BaseEventType {
   id: string;
   type: string;
   name: string;
-  startTime: number;
+  startTime: string;
   notCovered?: boolean;
   winner?: "home" | "away";
   worthPoints: number;
