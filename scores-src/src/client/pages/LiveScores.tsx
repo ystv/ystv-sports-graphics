@@ -311,7 +311,7 @@ export function LiveScores() {
               loading={resyncing}
               disabled={resyncing}
             >
-              <IconRefresh size={16} />
+              <IconRefresh size={32} />
             </ActionIcon>
           </Group>
         </PermGate>
