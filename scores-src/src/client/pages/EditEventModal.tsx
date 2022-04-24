@@ -49,12 +49,18 @@ export function EditEventForm() {
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
             <FormikForm onSubmit={handleSubmit} onReset={handleReset}>
               <Stack>
-                <DateField name="startTime" title="Date/Time" format="isoStr" />
+                <DateField
+                  name="startTime"
+                  title="Date/Time"
+                  format="isoStr"
+                  independent
+                />
                 <Field
                   type="number"
                   name="worthPoints"
                   title="Points"
                   helper="How many Roses points will the winner get?"
+                  independent
                 />
                 <EditForm />
                 <Button type="submit" disabled={isSubmitting}>
