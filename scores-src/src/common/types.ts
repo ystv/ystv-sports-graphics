@@ -16,6 +16,7 @@ export const BaseEvent: Yup.SchemaOf<BaseEventType> = Yup.object().shape({
 
 export interface BaseEventType {
   id: string;
+  type: string;
   name: string;
   startTime: string;
   notCovered?: boolean;

@@ -32,7 +32,7 @@ export function BasketballDashboard() {
           )
         }
       />
-      <LiveKillButtons
+      {/* <LiveKillButtons
         name="Match Status Popup"
         live={control.matchStatusPopup.visible}
         callback={(live) =>
@@ -42,7 +42,7 @@ export function BasketballDashboard() {
             })
           )
         }
-      />
+      /> */}
     </Container>
   );
 }

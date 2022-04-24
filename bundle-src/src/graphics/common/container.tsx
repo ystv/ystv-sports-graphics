@@ -6,10 +6,6 @@ export function GraphicContainer({
   children: JSX.Element | JSX.Element[];
 }) {
   const styles: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    height: "100%",
-    width: "100%",
     zIndex: zIndex,
   };
   return (
