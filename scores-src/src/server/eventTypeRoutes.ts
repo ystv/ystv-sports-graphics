@@ -5,7 +5,7 @@ import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { PreconditionFailed } from "http-errors";
 import { DocumentExistsError, MutateInSpec } from "couchbase";
-import { dispatchChangeToEvent } from "./updatesRepo";
+import { dispatchChangeToEvent, resync } from "./updatesRepo";
 import {
   DeclareWinner,
   Edit,
@@ -267,6 +267,17 @@ export function makeEventAPIFor<
       res
         .status(200)
         .json(resolveEventState(reducer, currentActions.concat(actionData)));
+    })
+  );
+
+  router.post(
+    "/:id/_resync",
+    authenticate("write"),
+    asyncHandler(async (req, res) => {
+      const id = req.params.id;
+      invariant(typeof id === "string", "route didn't give us a string id");
+      await resync(key(id));
+      res.status(200).json({ ok: true });
     })
   );
 

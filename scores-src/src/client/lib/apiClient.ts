@@ -340,6 +340,20 @@ export function usePOSTEventDeclareWinner() {
   };
 }
 
+export function usePOSTEventResync() {
+  const navigate = useNavigate();
+
+  return async (type: string, id: string) => {
+    const result = await fetcher(navigate)(
+      `/events/${type}/${id}/_resync`,
+      {
+        method: "post",
+      },
+      200
+    );
+  };
+}
+
 export function useGETAuthMe() {
   const retval = useAPIRoute<User>("/auth/me", {}, 200);
   return retval;
