@@ -39,6 +39,7 @@ export function createLiveRouter() {
       remote: req.ip + ":" + req.socket.remotePort,
       sid: req.query.sid,
       last_mid: req.query.last_mid,
+      mode: req.query.mode,
     });
     activeStreamConnections.inc();
 
@@ -68,6 +69,14 @@ export function createLiveRouter() {
       return;
     }
 
+    const subs = new Set<string>(await REDIS.sMembers(`subscriptions:${sid}`));
+    if (subs.size === 0) {
+      // Reset the SID to signal to the client that they've lost their subscriptions
+      sid.current = generateSid();
+      logger = logging.getLogger(`live`).child({ sid: sid.current, mode });
+    }
+
+    // Only declare send() now, to ensure it doesn't capture a logger with stale metadata
     function send(msg: LiveServerMessage) {
       ws.send(JSON.stringify(msg), (err) => {
         if (err) {
@@ -86,13 +95,6 @@ export function createLiveRouter() {
           logger.debug("WS sent", { kind: msg.kind });
         }
       });
-    }
-
-    const subs = new Set<string>(await REDIS.sMembers(`subscriptions:${sid}`));
-    if (subs.size === 0) {
-      // Reset the SID to signal to the client that they've lost their subscriptions
-      sid.current = generateSid();
-      logger = logging.getLogger(`live`).child({ sid: sid.current, mode });
     }
 
     ws.on("close", (code: number, reason: Buffer) => {
@@ -212,14 +214,16 @@ export function createLiveRouter() {
         }
         logger.debug("Catch-up: got data", { len: data.length });
         for (const msg of data) {
+          // Skip special messages for the purposes of catch-up - but ensure we
+          // always update lastMid, lest we go into a loop!
+          lastMid = msg.mid;
+          logger.debug("Catch-up: last MID now " + lastMid);
           if ("_special" in msg.data) {
             continue;
           }
           if (subs.has(msg.data.id)) {
             handleAction(msg.mid, msg.data);
           }
-          lastMid = msg.mid;
-          logger.debug("Catch-up: last MID now " + lastMid);
         }
       }
     } else {
