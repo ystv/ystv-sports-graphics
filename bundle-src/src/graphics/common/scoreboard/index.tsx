@@ -1,7 +1,7 @@
-import TimeBox from "../../common/timeBox";
-import ScoreBox from "../../common/scoreBox";
+import ScoreBox from "../scoreBox";
+import NameBox from "../teamNameBox";
+import TimeBox from "../timeBox";
 import styles from "./index.module.css";
-import NameBox from "../../common/teamNameBox";
 
 export interface Props {
   homeName: string;
@@ -54,5 +54,3 @@ export function Scoreboard({
     </div>
   );
 }
-
-export default Scoreboard;

@@ -8,10 +8,12 @@ import { EventID } from "common/types/eventID";
 import { BaseEventType } from "@ystv/scores/src/common/types";
 import { NetballDashboard } from "./events/netball";
 import { FootballDashboard } from "./events/football";
+import { BasketballDashboard } from "./events/basketball";
 
 const SportControllers: Record<string, React.ComponentType> = {
   netball: NetballDashboard,
   football: FootballDashboard,
+  basketball: BasketballDashboard,
 };
 
 function Dashboard() {

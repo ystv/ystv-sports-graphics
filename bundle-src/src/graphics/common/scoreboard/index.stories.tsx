@@ -3,7 +3,7 @@ import { TeamDictionary } from "common/teamDictionary";
 import { Scoreboard, Props } from "./index";
 
 export default {
-  title: "Football/Scoreboard",
+  title: "Scoreboard",
   component: Scoreboard,
   args: {
     homeName: "Home",

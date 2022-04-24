@@ -1,17 +1,16 @@
 import { useOnlyReplicantValue } from "common/useReplicant";
-import type { State } from "@ystv/scores/src/common/sports/football";
-import { ControlFootball } from "../../common/types/control-football";
+import type { State } from "@ystv/scores/src/common/sports/basketball";
 import { GraphicContainer } from "../common/container";
 import { Scoreboard } from "../common/scoreboard";
-import { clockTimeAt, formatMMSSMS } from "@ystv/scores/src/common/clock";
-import { useEffect, useRef, useState } from "react";
-import { MatchStatusPopup } from "./matchStatusPopup";
+import { ControlBasketball } from "common/types/control-basketball";
+import { formatMMSSMS, clockTimeAt } from "@ystv/scores/src/common/clock";
+import { useState, useRef, useEffect } from "react";
 import { useTime } from "../hooks";
 
-export function AllFootballGraphics() {
+export function AllBasketballGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
-  const control = useOnlyReplicantValue<ControlFootball>("control-football");
-
+  const control =
+    useOnlyReplicantValue<ControlBasketball>("control-basketball");
   const now = useTime();
 
   if (!state || !control) {
@@ -33,20 +32,6 @@ export function AllFootballGraphics() {
               awayScore={state.scoreAway}
               time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
               timeVisible
-            />
-          )}
-        </>
-        <>
-          {control.matchStatusPopup.visible && (
-            <MatchStatusPopup
-              homeName="LANC"
-              homePrimaryColor="var(--lancaster-red)"
-              homeScore={state.scoreHome}
-              awayName="YORK"
-              awayPrimaryColor="var(--york-white)"
-              awaySecondaryColor="var(--ystv-dark)"
-              awayScore={state.scoreAway}
-              half={state.halves.length}
             />
           )}
         </>

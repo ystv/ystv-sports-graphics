@@ -7,10 +7,12 @@ import { useOnlyReplicantValue } from "common/useReplicant";
 import { EventID } from "common/types/eventID";
 
 import "./global.css";
+import { AllBasketballGraphics } from "./basketball";
 
 const SportGraphics: Record<string, React.ComponentType> = {
   netball: AllNetballGraphics,
   football: AllFootballGraphics,
+  basketball: AllBasketballGraphics,
 };
 
 function AllGraphics() {

@@ -6,7 +6,7 @@ export interface Props {
   secondaryColor?: string;
 }
 
-export function Component({ name, primaryColor, secondaryColor }: Props) {
+export function NameBox({ name, primaryColor, secondaryColor }: Props) {
   return (
     <div
       className={styles.Background}
@@ -19,4 +19,4 @@ export function Component({ name, primaryColor, secondaryColor }: Props) {
   );
 }
 
-export default Component;
+export default NameBox;
