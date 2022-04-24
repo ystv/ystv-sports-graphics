@@ -133,7 +133,7 @@ export function ListEvents() {
                   loading={resyncing === `Event/${evt.type}/${evt.id}`}
                   disabled={resyncing !== null}
                 >
-                  <IconRefresh size={16} />
+                  <IconRefresh size={24} />
                 </ActionIcon>
               </PermGate>
             </Group>
