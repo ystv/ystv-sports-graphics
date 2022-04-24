@@ -20,7 +20,7 @@ export function FootballDashboard() {
 
   return (
     <Container fluid>
-      <Title order={3}>Half {state.halves.length}</Title>
+      <Title order={3}>Half {state.halves?.length}</Title>
       <LiveKillButtons
         name="Scoreboard"
         live={control.scoreboard.visible}
@@ -28,6 +28,19 @@ export function FootballDashboard() {
           setControl(
             produce(control, (val) => {
               val.scoreboard.visible = live;
+            })
+          )
+        }
+      />
+      <LiveKillButtons
+        divider
+        name="Clock"
+        live={control.scoreboard.showTime}
+        disabled={!control.scoreboard.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.scoreboard.showTime = live;
             })
           )
         }

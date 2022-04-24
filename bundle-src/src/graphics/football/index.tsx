@@ -32,7 +32,7 @@ export function AllFootballGraphics() {
               awaySecondaryColor="var(--ystv-dark)"
               awayScore={state.scoreAway}
               time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
-              timeVisible
+              timeVisible={control.scoreboard.showTime}
             />
           )}
         </>

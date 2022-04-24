@@ -10,9 +10,13 @@
         "visible": {
           "type": "boolean",
           "default": false
+        },
+        "showTime": {
+          "type": "boolean",
+          "default": false
         }
       },
-      "required": ["visible"]
+      "required": ["visible", "showTime"]
     },
     "matchStatusPopup": {
       "type": "object",
