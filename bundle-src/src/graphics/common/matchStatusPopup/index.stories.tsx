@@ -3,7 +3,7 @@ import { TeamDictionary } from "common/teamDictionary";
 import { MatchStatusPopup, MatchStatusPopupProps } from "./index";
 
 export default {
-  title: "Football/Match Status Popup",
+  title: "Generic/Match Status Popup",
   component: MatchStatusPopup,
   args: {
     homeName: "Home",
