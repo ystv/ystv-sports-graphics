@@ -13,7 +13,10 @@ export function createEventsRouter() {
     authenticate("read"),
     asyncHandler(async (req, res) => {
       const result = await DB.query(
-        `SELECT e AS data, meta().id AS id FROM _default e WHERE meta(e).id LIKE 'Event/%' ORDER BY startTime`
+        `SELECT e AS data, meta().id AS id
+        FROM _default e
+        WHERE meta(e).id LIKE 'Event/%'
+        ORDER BY MILLIS(ARRAY_REVERSE(ARRAY x.payload.startTime FOR x IN e WHEN x.type = '@@init' OR x.type = '@@edit' END)[0])`
       );
       res.status(200).json(
         result.rows.map((row) => {
