@@ -17,23 +17,21 @@ export function AllNetballGraphics() {
 
   return (
     <>
-      <GraphicContainer>
-        <>
-          {control.scoreboard.visible && (
-            <Scoreboard
-              homeName="LANC"
-              homePrimaryColor="var(--lancaster-red)"
-              homeScore={state.scoreHome}
-              awayName="YORK"
-              awayPrimaryColor="var(--york-white)"
-              awaySecondaryColor="var(--ystv-dark)"
-              awayScore={state.scoreAway}
-              time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
-              timeVisible
-            />
-          )}
-        </>
-      </GraphicContainer>
+      {control.scoreboard.visible && (
+        <GraphicContainer>
+          <Scoreboard
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
+            timeVisible
+          />
+        </GraphicContainer>
+      )}
     </>
   );
 }

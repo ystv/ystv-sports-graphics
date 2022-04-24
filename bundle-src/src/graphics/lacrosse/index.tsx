@@ -34,37 +34,35 @@ export function AllLacrosseGraphics() {
 
   return (
     <>
-      <GraphicContainer>
-        <>
-          {control.scoreboard.visible && (
-            <Scoreboard
-              homeName="LANC"
-              homePrimaryColor="var(--lancaster-red)"
-              homeScore={state.scoreHome}
-              awayName="YORK"
-              awayPrimaryColor="var(--york-white)"
-              awaySecondaryColor="var(--ystv-dark)"
-              awayScore={state.scoreAway}
-              time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
-              timeVisible={control.scoreboard.showTime}
-            />
-          )}
-        </>
-        <>
-          {control.matchStatusPopup.visible && (
-            <MatchStatusPopup
-              homeName="LANC"
-              homePrimaryColor="var(--lancaster-red)"
-              homeScore={state.scoreHome}
-              awayName="YORK"
-              awayPrimaryColor="var(--york-white)"
-              awaySecondaryColor="var(--ystv-dark)"
-              awayScore={state.scoreAway}
-              banner={bannerMsg(state.quarters.length)}
-            />
-          )}
-        </>
-      </GraphicContainer>
+      {control.scoreboard.visible && (
+        <GraphicContainer>
+          <Scoreboard
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
+            timeVisible={control.scoreboard.showTime}
+          />
+        </GraphicContainer>
+      )}
+      {control.matchStatusPopup.visible && (
+        <GraphicContainer>
+          <MatchStatusPopup
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            banner={bannerMsg(state.quarters.length)}
+          />
+        </GraphicContainer>
+      )}
     </>
   );
 }

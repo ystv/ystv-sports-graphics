@@ -6,6 +6,7 @@ export function GraphicContainer({
   children: JSX.Element | JSX.Element[];
 }) {
   const styles: React.CSSProperties = {
+    position: "absolute",
     zIndex: zIndex,
   };
   return (
