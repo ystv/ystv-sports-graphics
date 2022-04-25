@@ -7,14 +7,26 @@ import {
   usePOSTEventAction,
   usePOSTEventRedo,
   usePOSTEventUndo,
+  usePOSTEventDeclareWinner,
 } from "../lib/apiClient";
-import { startCase } from "lodash-es";
+import { capitalize, startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
-import { Alert, Button, Grid, Group, Modal, Stack, Title } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Grid,
+  Group,
+  Modal,
+  SegmentedControl,
+  Stack,
+  Title,
+  Text,
+} from "@mantine/core";
 import { findUndoneActions, wrapReducer } from "../../common/eventStateHelpers";
 import { Action } from "../../common/types";
 import { showNotification } from "@mantine/notifications";
 import { PermGate } from "../components/PermGate";
+import { IconTrophy } from "@tabler/icons";
 
 function EventActionModal(props: {
   eventType: keyof typeof EVENT_TYPES;
@@ -171,6 +183,35 @@ export function LiveScores() {
   const doAction = usePOSTEventAction();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [declareWinnerOpen, setDeclareWinnerOpen] = useState(false);
+  const [selectedWinner, setSelectedWinner] = useState<"home" | "away">("home");
+  const [winnerSubmitting, setWinnerSubmitting] = useState(false);
+  const doDeclareWinner = usePOSTEventDeclareWinner();
+
+  async function declareWinner() {
+    invariant(typeof type === "string", "no type");
+    invariant(typeof id === "string", "no id");
+    setWinnerSubmitting(true);
+    try {
+      await doDeclareWinner(type, id, selectedWinner);
+      setWinnerSubmitting(false);
+      setDeclareWinnerOpen(false);
+    } catch (e) {
+      console.warn("Failed to submit winner", e);
+      let msg: string;
+      if (e instanceof Error) {
+        msg = e.name + " " + e.message;
+      } else {
+        msg = String(e);
+      }
+      showNotification({
+        message: "Failed to declare winner: " + msg,
+        color: "red",
+      });
+    } finally {
+      setWinnerSubmitting(false);
+    }
+  }
 
   async function act(actionType: string, payload: Record<string, unknown>) {
     invariant(typeof type === "string", "no type");
@@ -198,6 +239,11 @@ export function LiveScores() {
     return (
       <>
         <Title order={1}>{state.name}</Title>
+        {state.winner && (
+          <Text color="yellow">
+            Winner: {state.winner === "home" ? "Lancaster" : "York"}
+          </Text>
+        )}
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <RenderScore state={state} act={act as any} />
 
@@ -220,6 +266,16 @@ export function LiveScores() {
                   {startCase(actionType)}
                 </Button>
               ))}
+            <Button
+              color="yellow"
+              variant="white"
+              leftIcon={<IconTrophy size={16} />}
+              onClick={() => setDeclareWinnerOpen(true)}
+              loading={winnerSubmitting}
+              disabled={winnerSubmitting}
+            >
+              Declare Winner
+            </Button>
           </Group>
         </PermGate>
 
@@ -242,6 +298,28 @@ export function LiveScores() {
             onClose={() => setActiveAction(null)}
           />
         )}
+        <Modal
+          opened={declareWinnerOpen}
+          onClose={() => setDeclareWinnerOpen(false)}
+        >
+          <Stack>
+            <Title order={3}>Declare Winner of {state.name}</Title>
+            <SegmentedControl
+              data={[
+                {
+                  label: "Lancaster",
+                  value: "home",
+                },
+                { label: "York", value: "away" },
+              ]}
+              value={selectedWinner}
+              onChange={(v) => setSelectedWinner(v as "home" | "away")}
+            />
+            <Button color="yellow" variant="filled" onClick={declareWinner}>
+              Declare Winner
+            </Button>
+          </Stack>
+        </Modal>
       </>
     );
   }

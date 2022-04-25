@@ -1,6 +1,7 @@
 import * as Yup from "yup";
 import { TypedSchema } from "yup/lib/util/types";
 
+// @ts-expect-error can't type index signature
 export const BaseEvent: Yup.SchemaOf<BaseEventType> = Yup.object().shape({
   id: Yup.string().uuid().required(),
   type: Yup.string().required(),
@@ -17,6 +18,7 @@ export interface BaseEventType {
   notCovered?: boolean;
   winner?: "home" | "away";
   worthPoints: number;
+  [K: string]: unknown;
 }
 
 export interface ActionMeta {

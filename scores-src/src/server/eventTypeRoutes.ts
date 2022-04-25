@@ -7,6 +7,7 @@ import { PreconditionFailed } from "http-errors";
 import { DocumentExistsError, MutateInSpec } from "couchbase";
 import { dispatchChangeToEvent } from "./updatesRepo";
 import {
+  DeclareWinner,
   Edit,
   Init,
   Redo,
@@ -19,12 +20,13 @@ import { EVENT_TYPES } from "../common/sports";
 import { ensure, invariant } from "./errs";
 import { BadRequest } from "http-errors";
 import { getLogger } from "./loggingSetup";
-import { Action, EventTypeInfo } from "../common/types";
+import { Action, BaseEventType, EventTypeInfo } from "../common/types";
 
 export function makeEventAPIFor<
-  TState extends Record<string, unknown>,
+  TState extends BaseEventType,
   TActions extends Record<
     string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (payload?: any) => Action<Record<string, unknown>>
   >
 >(typeName: string, info: EventTypeInfo<TState, TActions>) {
@@ -84,7 +86,8 @@ export function makeEventAPIFor<
         .omit(["id", "type"])
         .validate(req.body, { abortEarly: false });
 
-      const initAction = wrapAction(Init(val));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const initAction = wrapAction(Init(val) as any);
       let id: string;
 
       for (;;) {
@@ -229,6 +232,38 @@ export function makeEventAPIFor<
       });
       await dispatchChangeToEvent(key(id), redoAction);
       res.status(200).json(resolveEventState(reducer, currentActions));
+    })
+  );
+
+  router.post(
+    "/:id/_declareWinner",
+    authenticate("write"),
+    asyncHandler(async (req, res) => {
+      const id = req.params.id;
+      invariant(typeof id === "string", "route didn't give us a string id");
+      const winner: "home" | "away" = req.body.winner;
+      ensure(
+        typeof winner === "string" && (winner === "home" || winner === "away"),
+        BadRequest,
+        "invalid or no winner"
+      );
+
+      const currentActionsResult = await DB.collection("_default").get(key(id));
+      const currentActions = currentActionsResult.content as Action[];
+
+      const actionData = wrapAction(DeclareWinner({ winner }));
+
+      await DB.collection("_default").mutateIn(
+        key(id),
+        [MutateInSpec.arrayAppend("", actionData)],
+        {
+          cas: currentActionsResult.cas,
+        }
+      );
+      await dispatchChangeToEvent(key(id), actionData);
+      res
+        .status(200)
+        .json(resolveEventState(reducer, currentActions.concat(actionData)));
     })
   );
 

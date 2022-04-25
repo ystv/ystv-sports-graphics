@@ -69,6 +69,11 @@ export function ListEvents() {
             <Text size="xs" color="dimmed" mt={3} transform="capitalize">
               {evt.type}
             </Text>
+            {evt.winner && (
+              <Text size="xs" weight="bold">
+                Winner: {evt.winner === "home" ? "Lancaster" : "York"}
+              </Text>
+            )}
             <Text size="xs" color="dimmed" mb="xl">
               {/*TODO replace with date time*/}
               {evt.id}
