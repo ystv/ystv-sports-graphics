@@ -10,7 +10,7 @@ export interface HoldingCardProps {
 export function HoldingCard({
   isVisible = false,
   isUnbranded = false,
-  text = "",
+  text,
 }: HoldingCardProps) {
   const variants = {
     hidden: {
@@ -43,7 +43,9 @@ export function HoldingCard({
         >
           <div className={`titleSafePadding ${styles.flexBottom}`}>
             <motion.div className={styles.third} variants={variants}>
-              <motion.h4 variants={variants}>Stream starts soon</motion.h4>
+              <motion.h4 variants={variants}>
+                {text ?? "Stream starts soon"}
+              </motion.h4>
             </motion.div>
           </div>
         </motion.div>

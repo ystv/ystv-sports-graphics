@@ -11,7 +11,7 @@
     "bundle:build": "yarn build",
     "start": "cross-env NODE_ENV=development node startDevServer.js",
     "build": "cross-env NODE_ENV=production webpack",
-    "bundle:storybook": "start-storybook -p 6006",
+    "bundle:storybook": "start-storybook -p 6006 --no-open",
     "build-storybook": "build-storybook",
     "bundle:schema": "mkdir -p schemas && json2ts -i schemas/ -o src/common/types/ && json2ts -i configschema.json -o src/common/types/config.d.ts"
   },
@@ -23,10 +23,12 @@
     "@babel/preset-react": "^7.13.13",
     "@babel/preset-typescript": "^7.13.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
-    "@storybook/addon-actions": "^6.2.2",
-    "@storybook/addon-essentials": "^6.2.2",
-    "@storybook/addon-links": "^6.2.2",
-    "@storybook/react": "^6.2.2",
+    "@storybook/addon-actions": "^6.4.22",
+    "@storybook/addon-essentials": "^6.4.22",
+    "@storybook/addon-links": "^6.4.22",
+    "@storybook/builder-webpack5": "^6.4.22",
+    "@storybook/manager-webpack5": "^6.4.22",
+    "@storybook/react": "^6.4.22",
     "@ystv/scores": "link:../scores-src",
     "babel-loader": "^8.2.2",
     "cross-env": "^7.0.3",
@@ -49,7 +51,6 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
-    "@chakra-ui/react": "^1.6.10",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@mantine/core": "^4.1.3",
@@ -71,7 +72,7 @@
   },
   "browserslist": [
     "defaults",
-    "Chrome >= 75"
+    "Chrome >= 83"
   ],
   "packageManager": "yarn@3.2.0"
 }

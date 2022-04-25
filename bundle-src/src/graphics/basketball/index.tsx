@@ -1,14 +1,16 @@
 import { useOnlyReplicantValue } from "common/useReplicant";
-import type { State } from "@ystv/scores/src/common/sports/netball";
-import { ControlNetball } from "common/types/control-netball";
+import type { State } from "@ystv/scores/src/common/sports/basketball";
 import { GraphicContainer } from "../common/container";
 import { Scoreboard } from "../common/scoreboard";
+import { ControlBasketball } from "common/types/control-basketball";
 import { formatMMSSMS, clockTimeAt } from "@ystv/scores/src/common/clock";
+import { useState, useRef, useEffect } from "react";
 import { useTime } from "../hooks";
 
-export function AllNetballGraphics() {
+export function AllBasketballGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
-  const control = useOnlyReplicantValue<ControlNetball>("control-netball");
+  const control =
+    useOnlyReplicantValue<ControlBasketball>("control-basketball");
   const now = useTime();
 
   if (!state || !control) {

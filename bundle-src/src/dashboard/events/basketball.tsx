@@ -1,15 +1,16 @@
 import { useOnlyReplicantValue, useReplicantValue } from "common/useReplicant";
 import produce from "immer";
 
-import type { State } from "@ystv/scores/src/common/sports/netball";
-import { ControlNetball } from "common/types/control-netball";
+import type { State } from "@ystv/scores/src/common/sports/basketball";
+import { ControlBasketball } from "common/types/control-basketball";
 import { Container, Title } from "@mantine/core";
 import { LiveKillButtons } from "../components/liveKill";
 
-export function NetballDashboard() {
+export function BasketballDashboard() {
   const state = useOnlyReplicantValue<State>("eventState");
   const [control, setControl] =
-    useReplicantValue<ControlNetball>("control-netball");
+    useReplicantValue<ControlBasketball>("control-basketball");
+  console.log(control);
   if (!state) {
     return <b>No state...?!</b>;
   }
@@ -19,9 +20,9 @@ export function NetballDashboard() {
 
   return (
     <Container fluid>
-      <Title order={3}>Quarter {state.quarters.length}</Title>
+      <Title order={3}>Quarter {state.segment}</Title>
       <LiveKillButtons
-        name="Small Score"
+        name="Scoreboard"
         live={control.scoreboard.visible}
         callback={(live) =>
           setControl(
@@ -31,6 +32,17 @@ export function NetballDashboard() {
           )
         }
       />
+      {/* <LiveKillButtons
+        name="Match Status Popup"
+        live={control.matchStatusPopup.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.matchStatusPopup.visible = live;
+            })
+          )
+        }
+      /> */}
     </Container>
   );
 }

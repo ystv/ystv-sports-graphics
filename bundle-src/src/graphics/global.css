@@ -1,4 +1,37 @@
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+:root {
+	--york-white: #ebebeb;
+	/* --lancaster-red-logo: #e80708;
+	--lancaster-red-darker: #b20000;
+	--lancaster-dark-red-logo: #b20000; */
+	--ystv-light: #fbfbfb;
+	--lancaster-red: #e80708;
+	/* --york-white-logo: #ebebeb; */
+	--ystv-dark: #333;
+}
+
+html{
+	/* This is essential for scaling to larger resolutions, this means we can can swap 1920 graphic px values for rem*/
+	font-size: calc(100vw / 1920);
+}
+
+@font-face {
+	font-family: OpenSans;
+	src: local(OpenSans-ExtraBold),
+	url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+	font-weight: 800;
+	font-style: normal;
+	font-stretch: normal;
+}
+
+.Scoreboard-Small {
+	font-family: OpenSans, sans-serif;
+	font-size: 24rem;
+	font-weight: 800;
+	font-stretch: normal;
+	font-style: normal;
+	line-height: normal;
+	letter-spacing: normal;
+}
 
 body {
 	margin: 0 !important;

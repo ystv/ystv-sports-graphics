@@ -3,15 +3,15 @@ import { MatchStatus, MatchStatusProps } from "./MatchStatus";
 import { TeamDictionary } from "../../../common/teamDictionary";
 
 export default {
-  title: "MatchStatus",
+  title: "Match Status Popup",
   component: MatchStatus,
 } as Meta;
 
 const Template: Story<MatchStatusProps> = (args) => <MatchStatus {...args} />;
 
-export const Hello = Template.bind({});
+export const Match_Status_Popup = Template.bind({});
 
-Hello.args = {
+Match_Status_Popup.args = {
   isVisible: true,
   team1Name: "york",
   team2Name: "glasgow",
@@ -21,7 +21,7 @@ Hello.args = {
   isOver: 1,
 };
 
-Hello.argTypes = {
+Match_Status_Popup.argTypes = {
   team1Name: {
     options: Object.keys(TeamDictionary),
     control: { type: "select" },

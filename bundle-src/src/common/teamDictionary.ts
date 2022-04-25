@@ -7,6 +7,17 @@ export interface TeamDictionaryTeam {
 }
 
 export const TeamDictionary: Record<string, TeamDictionaryTeam> = {
+  yorkRoses: {
+    teamName: "York",
+    teamShort: "York",
+    primaryColor: "#ebebeb",
+    secondaryColor: "var(--ystv-dark)",
+  },
+  lancasterRoses: {
+    teamName: "Lancaster",
+    teamShort: "Lanc",
+    primaryColor: "#e80708",
+  },
   york: { teamName: "York", primaryColor: "#faaf18", teamShort: "yrk" },
   glasgow: {
     teamName: "Glasgow",

@@ -5,8 +5,12 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export interface ControlNetball {
+export interface ControlLacrosse {
   scoreboard: {
+    visible: boolean;
+    showTime: boolean;
+  };
+  matchStatusPopup: {
     visible: boolean;
   };
 }

@@ -3,14 +3,10 @@ import { LowerThird, BugProps } from "./LowerThird";
 import { TeamDictionary } from "common/teamDictionary";
 
 export default {
-  title: "LowerThird",
+  title: "Generic/Lower Third",
   component: LowerThird,
 } as Meta;
 
 const Template: Story<BugProps> = (args) => <LowerThird {...args} />;
 
-export const Hello = Template.bind({});
-
-Hello.parameters = {
-  backgrounds: { default: "mid" },
-};
+export const Lower_Third = Template.bind({});
