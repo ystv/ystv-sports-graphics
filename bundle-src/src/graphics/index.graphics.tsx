@@ -9,12 +9,14 @@ import { EventID } from "common/types/eventID";
 import "./global.css";
 import { AllBasketballGraphics } from "./basketball";
 import { AllLacrosseGraphics } from "./lacrosse";
+import { AllUltimateGraphics } from "./ultimate";
 
 const SportGraphics: Record<string, React.ComponentType> = {
   netball: AllNetballGraphics,
   football: AllFootballGraphics,
   basketball: AllBasketballGraphics,
   lacrosse: AllLacrosseGraphics,
+  ultimate: AllUltimateGraphics,
 };
 
 function AllGraphics() {
