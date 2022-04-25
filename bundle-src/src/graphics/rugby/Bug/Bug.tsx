@@ -1,4 +1,4 @@
-import styles from "./index.module.css";
+import styles from "./Bug.module.css";
 import { AnimatePresence, motion } from "framer-motion";
 
 export interface BugProps {
@@ -13,7 +13,7 @@ export enum BugState {
   Open,
 }
 
-export function Index({ state, liveFrom }: BugProps) {
+export function Bug({ state, liveFrom }: BugProps) {
   const variants = {
     hidden: {
       x: "calc(var(--width) * 1.5)",

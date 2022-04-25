@@ -1,4 +1,4 @@
-import "!style-loader!css-loader!../src/graphics/global.css";
+import "../src/graphics/global.css";
 
 const customViewports = {
   tv1080: {
@@ -20,12 +20,6 @@ const customViewports = {
 };
 
 export const parameters = {
-  options: {
-    storySort: {
-      order: ["Generic", "*"],
-      method: "alphabetical",
-    },
-  },
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
     matchers: {
@@ -38,11 +32,11 @@ export const parameters = {
     defaultViewport: "tv360",
   },
   backgrounds: {
-    default: "mid",
+    default: "dark",
     values: [
       {
         name: "mid",
-        value: "#aaaaaa",
+        value: "#cccccc",
       },
     ],
   },

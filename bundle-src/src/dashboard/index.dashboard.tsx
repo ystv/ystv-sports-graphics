@@ -7,15 +7,9 @@ import { ScoresServiceConnectionState } from "common/types/scoresServiceConnecti
 import { EventID } from "common/types/eventID";
 import { BaseEventType } from "@ystv/scores/src/common/types";
 import { NetballDashboard } from "./events/netball";
-import { FootballDashboard } from "./events/football";
-import { BasketballDashboard } from "./events/basketball";
-import { LacrosseDashboard } from "./events/lacrosse";
 
 const SportControllers: Record<string, React.ComponentType> = {
   netball: NetballDashboard,
-  football: FootballDashboard,
-  basketball: BasketballDashboard,
-  lacrosse: LacrosseDashboard,
 };
 
 function Dashboard() {
@@ -42,14 +36,10 @@ function Dashboard() {
       defaultValue: null,
     }
   );
-  let type = "";
-  if (eventID) {
-    const [_, typeVal] = eventID.split("/");
-    type = typeVal;
-  }
 
   const EventController = eventState
-    ? SportControllers[type] ?? (() => <b>no controller for {type}?!</b>)
+    ? SportControllers[eventState.type] ??
+      (() => <b>no controller for {eventState.type} ?!</b>)
     : () => null;
 
   return (

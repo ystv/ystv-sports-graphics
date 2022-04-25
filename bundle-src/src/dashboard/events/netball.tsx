@@ -8,13 +8,19 @@ import { LiveKillButtons } from "../components/liveKill";
 
 export function NetballDashboard() {
   const state = useOnlyReplicantValue<State>("eventState");
-  const [control, setControl] =
-    useReplicantValue<ControlNetball>("control-netball");
+  const [control, setControl] = useReplicantValue<ControlNetball>(
+    "control-netball",
+    undefined,
+    {
+      defaultValue: {
+        smallScore: {
+          visible: false,
+        },
+      },
+    }
+  );
   if (!state) {
     return <b>No state...?!</b>;
-  }
-  if (!control) {
-    return <b>No control...?!</b>;
   }
 
   return (
@@ -22,11 +28,11 @@ export function NetballDashboard() {
       <Title order={3}>Quarter {state.quarters.length}</Title>
       <LiveKillButtons
         name="Small Score"
-        live={control.scoreboard.visible}
+        live={control.smallScore.visible}
         callback={(live) =>
           setControl(
             produce(control, (val) => {
-              val.scoreboard.visible = live;
+              val.smallScore.visible = live;
             })
           )
         }

@@ -6,7 +6,7 @@
  */
 
 export interface ControlNetball {
-  scoreboard: {
+  smallScore: {
     visible: boolean;
   };
 }
