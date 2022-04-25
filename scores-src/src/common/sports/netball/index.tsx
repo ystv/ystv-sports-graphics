@@ -301,7 +301,15 @@ export function EditForm() {
               <SelectField
                 name={namespace + "position"}
                 title="Position"
-                values={[]}
+                values={[
+                  ["GK", "GK"],
+                  ["GD", "GD"],
+                  ["WD", "WD"],
+                  ["C", "C"],
+                  ["GA", "GA"],
+                  ["WA", "WA"],
+                  ["GS", "GS"],
+                ]}
               />
             </div>
           )}
@@ -320,7 +328,15 @@ export function EditForm() {
               <SelectField
                 name={namespace + "position"}
                 title="Position"
-                values={[]}
+                values={[
+                  ["GK", "GK"],
+                  ["GD", "GD"],
+                  ["WD", "WD"],
+                  ["C", "C"],
+                  ["GA", "GA"],
+                  ["WA", "WA"],
+                  ["GS", "GS"],
+                ]}
               />
             </div>
           )}
