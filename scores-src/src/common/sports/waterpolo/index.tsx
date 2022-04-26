@@ -7,4 +7,6 @@ const { components, typeInfo } = createGenericSport(
   (_) => "quarter"
 );
 
+export type State = ReturnType<typeof typeInfo["reducer"]>;
+
 export { components, typeInfo };
