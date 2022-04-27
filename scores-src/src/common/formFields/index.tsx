@@ -263,6 +263,7 @@ interface ArrayFieldProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialChildValue: any;
   renderChild: (props: { namespace: string }) => React.ReactNode;
+  removeLabel?: string;
 }
 
 export function ArrayField(props: ArrayFieldProps) {
@@ -280,24 +281,29 @@ export function ArrayField(props: ArrayFieldProps) {
             return (
               <div key={idx}>
                 {props.renderChild({ namespace: namespace + "." })}
-                <div>
+                <Group>
                   {idx !== field.value.length - 1 && (
                     <Button
                       onClick={() =>
                         arrayHelpers.insert(idx, props.initialChildValue)
                       }
                       size="sm"
+                      variant="subtle"
                     >
                       +
                     </Button>
                   )}
-                  <Button onClick={() => arrayHelpers.remove(idx)} size="sm">
-                    -
+                  <Button
+                    onClick={() => arrayHelpers.remove(idx)}
+                    size="sm"
+                    variant="subtle"
+                  >
+                    {props.removeLabel ?? "-"}
                   </Button>
                   {typeof errorMaybe === "string" && (
                     <div className="text-danger">{errorMaybe}</div>
                   )}
-                </div>
+                </Group>
               </div>
             );
           })}
