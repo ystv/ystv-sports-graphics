@@ -116,11 +116,7 @@ export function createGenericSport(
       },
       resumeClock: {
         reducer(state, action: Action) {
-          startClockAt(
-            state.clock,
-            action.meta.ts,
-            clockStartsFrom(state.segment)
-          );
+          startClockAt(state.clock, action.meta.ts);
         },
         prepare() {
           return wrapAction({ payload: {} });
@@ -304,25 +300,27 @@ export function createGenericSport(
               ))}
             </Stack>
           </Group>
-          <Space h="md" />
           <Group>
-            {state.segment > 0 &&
-              quickClock &&
-              (state.clock.state === "running" ? (
-                <Button
-                  leftIcon={<IconPlayerPause />}
-                  onClick={() => act("pauseClock", undefined)}
-                >
-                  Pause Clock
-                </Button>
-              ) : (
-                <Button
-                  leftIcon={<IconPlayerPlay />}
-                  onClick={() => act("resumeClock", undefined)}
-                >
-                  Unpause Clock
-                </Button>
-              ))}
+            {state.segment > 0 && quickClock && (
+              <>
+                <Space h="md" />
+                {state.clock.state === "running" ? (
+                  <Button
+                    leftIcon={<IconPlayerPause />}
+                    onClick={() => act("pauseClock", undefined)}
+                  >
+                    Pause Clock
+                  </Button>
+                ) : (
+                  <Button
+                    leftIcon={<IconPlayerPlay />}
+                    onClick={() => act("resumeClock", undefined)}
+                  >
+                    Unpause Clock
+                  </Button>
+                )}
+              </>
+            )}
           </Group>
           <Space h="lg" />
         </Stack>
