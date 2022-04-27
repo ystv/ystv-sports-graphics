@@ -24,6 +24,7 @@ import {
   EventTypeInfo,
 } from "../../types";
 import { IconPlayerPause, IconPlayerPlay } from "@tabler/icons";
+import { capitalize } from "lodash-es";
 
 export interface State extends BaseEventType {
   scoreHome: number;
@@ -264,6 +265,11 @@ export function createGenericSport(
     RenderScore: ({ state, act }) => {
       return (
         <Stack>
+          {typeof segmentName === "function" && (
+            <Text color="dimmed">
+              {capitalize(segmentName(state.segment))} {state.segment}
+            </Text>
+          )}
           <RenderClock
             key={state.clock.state + state.clock.timeLastStartedOrStopped}
             clock={state.clock}
