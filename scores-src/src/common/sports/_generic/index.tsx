@@ -280,6 +280,7 @@ export function createGenericSport(
                 <Button
                   key={n}
                   onClick={() => act("addPoints", { side: "home", points: n })}
+                  size="lg"
                 >
                   +{n}
                 </Button>
@@ -294,6 +295,7 @@ export function createGenericSport(
                 <Button
                   key={n}
                   onClick={() => act("addPoints", { side: "away", points: n })}
+                  size="lg"
                 >
                   +{n}
                 </Button>
@@ -308,6 +310,7 @@ export function createGenericSport(
                   <Button
                     leftIcon={<IconPlayerPause />}
                     onClick={() => act("pauseClock", undefined)}
+                    size="md"
                   >
                     Pause Clock
                   </Button>
@@ -315,6 +318,7 @@ export function createGenericSport(
                   <Button
                     leftIcon={<IconPlayerPlay />}
                     onClick={() => act("resumeClock", undefined)}
+                    size="md"
                   >
                     Unpause Clock
                   </Button>
