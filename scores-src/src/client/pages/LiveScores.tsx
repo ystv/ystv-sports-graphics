@@ -36,6 +36,8 @@ function EventActionModal(props: {
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentState: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialActionState: any;
 }) {
   console.log("goalform currentState", props.currentState);
   const actionSchema =
@@ -69,7 +71,7 @@ function EventActionModal(props: {
     <Modal opened onClose={() => props.onClose()}>
       <Title>{startCase(props.actionType)}</Title>
       <Formik
-        initialValues={{}}
+        initialValues={props.initialActionState ?? {}}
         onSubmit={submit}
         validationSchema={actionSchema}
       >
@@ -184,6 +186,23 @@ export function LiveScores() {
   const doAction = usePOSTEventAction();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [actionInitialState, setActionInitialState] = useState<
+    Record<string, unknown>
+  >({});
+
+  async function act(actionType: string, payload: Record<string, unknown>) {
+    invariant(typeof type === "string", "no type");
+    invariant(typeof id === "string", "no id");
+    try {
+      await doAction(type, id, actionType, payload);
+    } catch (e) {
+      showNotification({
+        message: "Failed to " + actionType + ": " + String(e),
+        color: "orange",
+      });
+    }
+  }
+
   const [declareWinnerOpen, setDeclareWinnerOpen] = useState(false);
   const [selectedWinner, setSelectedWinner] = useState<"home" | "away">("home");
   const [winnerSubmitting, setWinnerSubmitting] = useState(false);
@@ -211,19 +230,6 @@ export function LiveScores() {
       });
     } finally {
       setWinnerSubmitting(false);
-    }
-  }
-
-  async function act(actionType: string, payload: Record<string, unknown>) {
-    invariant(typeof type === "string", "no type");
-    invariant(typeof id === "string", "no id");
-    try {
-      await doAction(type, id, actionType, payload);
-    } catch (e) {
-      showNotification({
-        message: "Failed to " + actionType + ": " + String(e),
-        color: "orange",
-      });
     }
   }
 
@@ -274,8 +280,16 @@ export function LiveScores() {
             Winner: {state.winner === "home" ? "Lancaster" : "York"}
           </Text>
         )}
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <RenderScore state={state} act={act as any} />
+        <RenderScore
+          state={state}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          act={act as any}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          showActModal={(name, initialState: any) => {
+            setActiveAction(name as string);
+            setActionInitialState(initialState);
+          }}
+        />
 
         <PermGate require="write" fallback={<></>}>
           <Group>
@@ -332,6 +346,7 @@ export function LiveScores() {
             eventId={id}
             actionType={activeAction}
             currentState={state}
+            initialActionState={actionInitialState}
             onClose={() => setActiveAction(null)}
           />
         )}

@@ -1,4 +1,4 @@
-import { Button, Group, Space, Stack, Text } from "@mantine/core";
+import { Button, Group, Space, Stack, Text, Title } from "@mantine/core";
 import { createSlice } from "@reduxjs/toolkit";
 import * as Yup from "yup";
 import {
@@ -12,7 +12,12 @@ import {
 } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { wrapAction } from "../../eventStateHelpers";
-import { Field } from "../../formFields";
+import {
+  ArrayField,
+  Field,
+  RandomUUIDField,
+  SelectField,
+} from "../../formFields";
 import {
   Action,
   ActionPayloadValidators,
@@ -25,14 +30,42 @@ import {
 } from "../../types";
 import { IconPlayerPause, IconPlayerPlay } from "@tabler/icons";
 import { capitalize } from "lodash-es";
+import { useFormikContext } from "formik";
 
 export interface State extends BaseEventType {
   scoreHome: number;
   scoreAway: number;
   /** The index of the current half/quarter/sub-division of this event, one-based! */
   segment: number;
+  segmentPoints: Point[][];
   clock: ClockType;
+  players?: {
+    home: PlayerType[];
+    away: PlayerType[];
+  };
 }
+
+export interface PlayerType {
+  id: string;
+  name: string;
+  designation: string;
+}
+
+const PlayerSchema: Yup.SchemaOf<PlayerType> = Yup.object({
+  id: Yup.string().uuid().required(),
+  name: Yup.string().required(),
+  designation: Yup.string().required(),
+});
+
+interface Point {
+  side: "home" | "away";
+  player: string | null;
+}
+
+const PointSchema: Yup.SchemaOf<Point> = Yup.object({
+  side: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).required(),
+  player: Yup.string().uuid().required().nullable(),
+});
 
 /**
  * createGenericSport defines everything needed to implement the backend of a "simple" sport, where
@@ -50,14 +83,24 @@ export function createGenericSport(
   pointsButtons: number[] = [1],
   downwardClockStartingTimeMs?: number | number[],
   segmentName?: (idx: number) => string,
-  quickClock = false
+  quickClock = false,
+  enableLineup = false
 ) {
   const isDownward = typeof downwardClockStartingTimeMs !== "undefined";
+  const playersSchema = Yup.object({
+    home: Yup.array().of(PlayerSchema.required()).required().default([]),
+    away: Yup.array().of(PlayerSchema.required()).required().default([]),
+  });
   const schema: Yup.SchemaOf<State> = BaseEvent.shape({
     scoreHome: Yup.number().required().default(0),
     scoreAway: Yup.number().required().default(0),
     segment: Yup.number().required().default(0),
     clock: isDownward ? DownwardClock : UpwardClock,
+    players: enableLineup ? playersSchema.required() : playersSchema.optional(),
+    segmentPoints: Yup.array()
+      .of(Yup.array().of(PointSchema))
+      .required()
+      .default([]),
   });
 
   const clockStartsFrom = (segmentIdx: number) => {
@@ -92,11 +135,17 @@ export function createGenericSport(
         wallClockLastStarted: 0,
       },
       segment: 0,
+      players: {
+        home: [],
+        away: [],
+      },
+      segmentPoints: [],
     } as State,
     reducers: {
       startClock: {
         reducer(state, action: Action) {
           state.segment++;
+          state.segmentPoints.push([]);
           startClockAt(
             state.clock,
             action.meta.ts,
@@ -130,30 +179,29 @@ export function createGenericSport(
       addPoints: {
         reducer(
           state,
-          action: Action<{ side: "home" | "away"; points: number }>
+          action: Action<{
+            side: "home" | "away";
+            points: number;
+            player?: string | null;
+          }>
         ) {
           if (action.payload.side === "home") {
             state.scoreHome += action.payload.points;
           } else {
             state.scoreAway += action.payload.points;
           }
-        },
-        prepare(payload: { side: "home" | "away"; points: number }) {
-          return wrapAction({ payload });
-        },
-      },
-      setPoints: {
-        reducer(
-          state,
-          action: Action<{ side: "home" | "away"; points: number }>
-        ) {
-          if (action.payload.side === "home") {
-            state.scoreHome = action.payload.points;
-          } else {
-            state.scoreAway = action.payload.points;
+          if (typeof action.payload.player !== "undefined") {
+            state.segmentPoints[state.segmentPoints.length - 1].push({
+              side: action.payload.side,
+              player: action.payload.player,
+            });
           }
         },
-        prepare(payload: { side: "home" | "away"; points: number }) {
+        prepare(payload: {
+          side: "home" | "away";
+          points: number;
+          player?: string | null;
+        }) {
           return wrapAction({ payload });
         },
       },
@@ -170,10 +218,7 @@ export function createGenericSport(
     addPoints: Yup.object({
       side: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).required(),
       points: Yup.number().required().min(0),
-    }),
-    setPoints: Yup.object({
-      side: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).required(),
-      points: Yup.number().required().min(0),
+      player: Yup.string().uuid().optional().nullable(),
     }),
   };
 
@@ -207,37 +252,38 @@ export function createGenericSport(
     ),
     resumeClock: () => <span>Clock resumed.</span>,
     resetClock: () => <span>Clock reset.</span>,
-    addPoints: ({ state, action }) => (
-      <span>
-        {action.payload.side}: +{action.payload.points} points at{" "}
-        {formatMMSSMS(
-          isDownward
-            ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              clockStartsFrom(state.segment)! -
-                clockTimeAt(state.clock, action.meta.ts)
-            : clockTimeAt(state.clock, action.meta.ts),
-          0,
-          2
-        )}
-      </span>
-    ),
-    setPoints: ({ state, action }) => (
-      <span>
-        {action.payload.side}: {action.payload.points} points at{" "}
-        {formatMMSSMS(
-          isDownward
-            ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              clockStartsFrom(state.segment)! -
-                clockTimeAt(state.clock, action.meta.ts)
-            : clockTimeAt(state.clock, action.meta.ts),
-          0,
-          2
-        )}
-      </span>
-    ),
+    addPoints: ({ state, action }) => {
+      let tag: string;
+      if (action.payload.player && state.players) {
+        const playerData = state.players[action.payload.side].find(
+          (x) => x.id === action.payload.player
+        );
+        if (playerData) {
+          tag = `${playerData.name} (${playerData.designation}, ${action.payload.side})`;
+        } else {
+          tag = action.payload.side;
+        }
+      } else {
+        tag = action.payload.side;
+      }
+      return (
+        <span>
+          {tag}: +{action.payload.points} points at{" "}
+          {formatMMSSMS(
+            isDownward
+              ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                clockStartsFrom(state.segment)! -
+                  clockTimeAt(state.clock, action.meta.ts)
+              : clockTimeAt(state.clock, action.meta.ts),
+            0,
+            2
+          )}
+        </span>
+      );
+    },
   };
 
-  const hiddenActions = new Set(["addPoints", "setPoints"] as Array<
+  const hiddenActions = new Set(["addPoints"] as Array<
     keyof typeof slice["actions"]
   >);
 
@@ -260,9 +306,51 @@ export function createGenericSport(
     EditForm: () => (
       <>
         <Field name="name" title="Name" independent />
+        {enableLineup && (
+          <>
+            <fieldset>
+              <Title order={3}>Home Side</Title>
+              <ArrayField
+                name="players.home"
+                title="Players"
+                initialChildValue={{ name: "", number: "" }}
+                renderChild={({ namespace }) => (
+                  <div>
+                    <RandomUUIDField name={namespace + "id"} />
+                    <Field name={namespace + "name"} title="Name" independent />
+                    <Field
+                      name={namespace + "designation"}
+                      title="Designation (number)"
+                      independent
+                    />
+                  </div>
+                )}
+              />
+            </fieldset>
+            <fieldset>
+              <Title order={3}>Away Side</Title>
+              <ArrayField
+                name="players.away"
+                title="Players"
+                initialChildValue={{ name: "", number: "" }}
+                renderChild={({ namespace }) => (
+                  <div>
+                    <RandomUUIDField name={namespace + "id"} />
+                    <Field name={namespace + "name"} title="Name" independent />
+                    <Field
+                      name={namespace + "designation"}
+                      title="Designation (number)"
+                      independent
+                    />
+                  </div>
+                )}
+              />
+            </fieldset>
+          </>
+        )}
       </>
     ),
-    RenderScore: ({ state, act }) => {
+    RenderScore: ({ state, act, showActModal }) => {
       return (
         <Stack>
           {typeof segmentName === "function" && (
@@ -285,7 +373,15 @@ export function createGenericSport(
               {pointsButtons.map((n) => (
                 <Button
                   key={n}
-                  onClick={() => act("addPoints", { side: "home", points: n })}
+                  onClick={() =>
+                    enableLineup
+                      ? showActModal("addPoints", {
+                          side: "home",
+                          points: n,
+                          player: null,
+                        })
+                      : act("addPoints", { side: "away", points: n })
+                  }
                   size="lg"
                 >
                   +{n}
@@ -300,7 +396,15 @@ export function createGenericSport(
               {pointsButtons.map((n) => (
                 <Button
                   key={n}
-                  onClick={() => act("addPoints", { side: "away", points: n })}
+                  onClick={() =>
+                    enableLineup
+                      ? showActModal("addPoints", {
+                          side: "away",
+                          points: n,
+                          player: null,
+                        })
+                      : act("addPoints", { side: "away", points: n })
+                  }
                   size="lg"
                 >
                   +{n}
@@ -358,6 +462,31 @@ export function createGenericSport(
           );
         }
         return <></>;
+      },
+      addPoints: ({ currentState }) => {
+        const form =
+          useFormikContext<
+            Yup.InferType<typeof actionPayloadValidators["addPoints"]>
+          >();
+        const players: { home: PlayerType[]; away: PlayerType[] } =
+          currentState.players ?? {
+            home: [] as PlayerType[],
+            away: [] as PlayerType[],
+          };
+        return (
+          <SelectField
+            name="player"
+            title="Player"
+            // @ts-expect-error typing here is funky
+            values={[[null, "Unknown"]].concat(
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              players[form.values.side]?.map((player) => [
+                player.id,
+                `${player.name} (${player.designation})`,
+              ])
+            )}
+          />
+        );
       },
     },
   };
