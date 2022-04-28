@@ -24,7 +24,7 @@ if (fs.existsSync(lockfilePath)) {
   } else {
     invariant(
       false,
-      `Lock file exists, likely another process is already working. ` +
+      `Lock file exists, likely another process is already working or crashed. ` +
         `If you're sure that there are no other instances of this script, you can delete ${lockfilePath}.`
     );
   }
@@ -127,6 +127,37 @@ interface TimetableEntry {
   };
 }
 
+interface FeedEntry {
+  id: number;
+  timetable_entry_id: number;
+  live_moment_type_id: number;
+  author?: string;
+  score_game_york: any;
+  score_roses_york?: string;
+  score_game_lancs: any;
+  score_roses_lancs?: string;
+  text: string;
+  picture_file: any;
+  created_at: string;
+  updated_at: string;
+  team: Team;
+  live_moment_type: LiveMomentType;
+}
+
+interface Team {
+  title: string;
+  sport: Sport;
+}
+
+interface Sport {
+  id: number;
+  title: string;
+}
+
+interface LiveMomentType {
+  name: string;
+}
+
 const mapSportIDsToTypeNames: Record<number, keyof typeof EVENT_TYPES> = {
   14: "rowing",
   86: "handball",
@@ -169,11 +200,104 @@ const mapSportIDsToTypeNames: Record<number, keyof typeof EVENT_TYPES> = {
   47: "snowSports",
 };
 
-export async function syncScores() {
+const isNodeError = (error: Error): error is NodeJS.ErrnoException =>
+  error instanceof Error;
+
+const SCORE_UPDATE_LIVE_MOMENT_TYPE_ID = 15;
+
+async function syncScores() {
+  const statePath = path.join(process.cwd(), ".rosesLiveSync.state.json");
+  let state: State;
+  try {
+    state = JSON.parse(fs.readFileSync(statePath, { encoding: "utf8" }));
+  } catch (e) {
+    if (isNodeError(e) && e.code === "ENOENT") {
+      state = {
+        lastProcessedUpdate: 0,
+      };
+    } else {
+      throw e;
+    }
+  }
+
+  logger.info("Starting sync", {
+    lastId: state.lastProcessedUpdate,
+  });
+
+  const feed: FeedEntry[] = await rosesLiveAPIClient
+    .get(`feed/since/${state.lastProcessedUpdate}.json`)
+    .json();
+  logger.info("Feed items to process", {
+    len: feed.length,
+  });
+
+  const allKnownEvents: BaseEventType[] = await sportsAPIClient
+    .get("events")
+    .json();
+  logger.info("Got our events", { len: allKnownEvents.length });
+
+  for (const entry of feed) {
+    if (entry.live_moment_type_id === SCORE_UPDATE_LIVE_MOMENT_TYPE_ID) {
+      const event = allKnownEvents.find(
+        (x) => x.rosesLiveID === entry.timetable_entry_id
+      );
+      if (!event) {
+        logger.info("Did not find event for update, skipping", {
+          event: entry.team?.sport?.title + " " + entry.team?.title,
+        });
+        state.lastProcessedUpdate = entry.id;
+        continue;
+      }
+      if (!event.notCovered) {
+        logger.info("Skipping update for covered event", {
+          event: entry.team?.sport?.title + " " + entry.team?.title,
+        });
+        state.lastProcessedUpdate = entry.id;
+        continue;
+      }
+
+      let winner: "home" | "away";
+      if (entry.text.includes("<Strong>Lancs</Strong> Win")) {
+        winner = "home";
+      } else if (entry.text.includes("<Strong>York</Strong> Win")) {
+        winner = "away";
+      } else {
+        logger.error("ABOUT TO CRASH!", { entry });
+        invariant(
+          false,
+          `The text for an update was not recognised: ${entry.text}`
+        );
+      }
+
+      logger.info("Declaring winner.", {
+        event: entry.team?.sport?.title + " " + entry.team?.title,
+        winner,
+        id: event.id,
+      });
+
+      await sportsAPIClient.post(
+        `events/_extra/${event.type}/${event.id}/_declareWinner`,
+        {
+          json: {
+            winner,
+          },
+        }
+      );
+    }
+    state.lastProcessedUpdate = entry.id;
+  }
+
+  logger.info("Done, writing state file.", {
+    newLPU: state.lastProcessedUpdate,
+  });
+
+  fs.writeFileSync(statePath, JSON.stringify(state), { encoding: "utf-8" });
+
+  fs.unlinkSync(lockfilePath);
   process.exit(0);
 }
 
-export async function importTimetable() {
+async function importTimetable() {
   const res: TimetableEntry[] = await rosesLiveAPIClient(
     "feed/timetable.json"
   ).json();
@@ -183,7 +307,7 @@ export async function importTimetable() {
   const allKnownEvents: BaseEventType[] = await sportsAPIClient
     .get("events")
     .json();
-  logger.info("Got our events", { len: res.length });
+  logger.info("Got our events", { len: allKnownEvents.length });
 
   for (const entry of res) {
     const sportTypeId = entry.team.sport.id;
@@ -240,6 +364,12 @@ yargs(hideBin(process.argv))
     async () => {
       await importTimetable();
     }
+  )
+  .command(
+    "sync",
+    "Syncs finished events.",
+    (yargs) => yargs,
+    async () => await syncScores()
   )
   .demandCommand()
   .parse();

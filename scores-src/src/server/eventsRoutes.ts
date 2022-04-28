@@ -3,6 +3,7 @@ import { DB } from "./db";
 import asyncHandler from "express-async-handler";
 import { authenticate } from "./auth";
 import {
+  DeclareWinner,
   Edit,
   Init,
   resolveEventState,
@@ -15,6 +16,8 @@ import invariant from "tiny-invariant";
 import { Action, BaseEvent, BaseEventType } from "../common/types";
 import { v4 as uuidv4 } from "uuid";
 import { DocumentExistsError, MutateInSpec } from "couchbase";
+import { ensure } from "./errs";
+import { BadRequest } from "http-errors";
 
 export function createEventsRouter() {
   const router = Router();
@@ -132,6 +135,46 @@ export function createEventsRouter() {
           resolveEventState(
             wrapReducer(identity),
             currentActions.concat(action)
+          )
+        );
+    })
+  );
+
+  router.post(
+    "/_extra/:type/:id/_declareWinner",
+    authenticate("write"),
+    asyncHandler(async (req, res) => {
+      const { type, id } = req.params;
+      invariant(typeof type === "string", "no type param from URL");
+      invariant(typeof id === "string", "no id param from URL");
+
+      const winner: "home" | "away" = req.body.winner;
+      ensure(
+        typeof winner === "string" && (winner === "home" || winner === "away"),
+        BadRequest,
+        "invalid or no winner"
+      );
+
+      const currentActionsResult = await DB.collection("_default").get(
+        key(type, id)
+      );
+      const currentActions = currentActionsResult.content as Action[];
+
+      const actionData = wrapAction(DeclareWinner({ winner }));
+
+      await DB.collection("_default").mutateIn(
+        key(type, id),
+        [MutateInSpec.arrayAppend("", actionData)],
+        {
+          cas: currentActionsResult.cas,
+        }
+      );
+      res
+        .status(200)
+        .json(
+          resolveEventState(
+            wrapReducer<BaseEventType>(identity),
+            currentActions.concat(actionData)
           )
         );
     })
