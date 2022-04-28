@@ -7,4 +7,6 @@ const { components, typeInfo } = createGenericSport(
   (i) => (i === 1 ? "match" : "extra time period")
 );
 
+export type State = ReturnType<typeof typeInfo["reducer"]>;
+
 export { components, typeInfo };
