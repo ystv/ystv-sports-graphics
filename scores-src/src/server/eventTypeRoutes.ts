@@ -21,6 +21,7 @@ import { ensure, invariant } from "./errs";
 import { BadRequest } from "http-errors";
 import { getLogger } from "./loggingSetup";
 import { Action, BaseEventType, EventTypeInfo } from "../common/types";
+import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
 
 export function makeEventAPIFor<
   TState extends BaseEventType,
@@ -264,6 +265,7 @@ export function makeEventAPIFor<
         }
       );
       await dispatchChangeToEvent(key(id), actionData);
+      await updateTournamentSummary(logger.child({ _name: "tsWorker" }));
       res
         .status(200)
         .json(resolveEventState(reducer, currentActions.concat(actionData)));

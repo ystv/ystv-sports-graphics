@@ -18,9 +18,12 @@ import { v4 as uuidv4 } from "uuid";
 import { DocumentExistsError, MutateInSpec } from "couchbase";
 import { ensure } from "./errs";
 import { BadRequest } from "http-errors";
+import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
+import { getLogger } from "./loggingSetup";
 
 export function createEventsRouter() {
   const router = Router();
+  const logger = getLogger("events");
 
   router.get(
     "/",
@@ -169,6 +172,7 @@ export function createEventsRouter() {
           cas: currentActionsResult.cas,
         }
       );
+      await updateTournamentSummary(logger.child({ _name: "tsWorker" }));
       res
         .status(200)
         .json(

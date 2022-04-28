@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import onFinished from "on-finished";
 
 import { createEventTypesRouter } from "./eventTypeRoutes";
+import "./updateTournamentSummary.job";
 import * as db from "./db";
 import * as redis from "./redis";
 import {
@@ -33,6 +34,7 @@ import { Logger } from "winston";
 import { createBootstrapRouter, maybeSetupBootstrap } from "./bootstrap";
 import { createAuthRouter } from "./authRoutes";
 import { createUserManagementRouter } from "./userManagementRoutes";
+import { createTournamentSummaryRouter } from "./tournamentSummaryRoutes";
 
 const errorHandler: (
   log: Logger
@@ -176,6 +178,7 @@ const errorHandler: (
   baseRouter.use("/events", createEventTypesRouter());
   baseRouter.use("/events", createEventsRouter());
   baseRouter.use("/users", createUserManagementRouter());
+  baseRouter.use("/tournamentSummary", createTournamentSummaryRouter());
 
   app.use(config.pathPrefix, baseRouter);
   app.use(config.pathPrefix, createLiveRouter());

@@ -3,9 +3,7 @@ import { getLogger } from "./loggingSetup";
 import got from "got";
 import invariant from "tiny-invariant";
 import { EVENT_TYPES } from "../common/sports";
-import yargs from "yargs";
 import { identity } from "lodash-es";
-import { hideBin } from "yargs/helpers";
 import { BaseEventType } from "../common/types";
 import * as fs from "fs";
 import * as path from "path";
@@ -356,20 +354,15 @@ async function importTimetable() {
   process.exit(0);
 }
 
-yargs(hideBin(process.argv))
-  .command(
-    "import-timetable",
-    "Import timetable.",
-    (yargs) => yargs,
-    async () => {
+(async function () {
+  switch (process.argv[2]) {
+    case "sync":
+      await syncScores();
+      break;
+    case "import-timetable":
       await importTimetable();
-    }
-  )
-  .command(
-    "sync",
-    "Syncs finished events.",
-    (yargs) => yargs,
-    async () => await syncScores()
-  )
-  .demandCommand()
-  .parse();
+      break;
+    default:
+      invariant(false, "Unknown command " + process.argv[2]);
+  }
+})();
