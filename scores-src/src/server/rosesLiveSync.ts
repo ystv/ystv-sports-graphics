@@ -6,6 +6,7 @@ import { EVENT_TYPES } from "../common/sports";
 import yargs from "yargs";
 import { identity } from "lodash-es";
 import { hideBin } from "yargs/helpers";
+import { BaseEventType } from "../common/types";
 
 const logger = getLogger("rosesLiveSync");
 
@@ -104,11 +105,45 @@ interface TimetableEntry {
 }
 
 const mapSportIDsToTypeNames: Record<number, keyof typeof EVENT_TYPES> = {
+  14: "rowing",
   86: "handball",
   26: "lacrosse",
   27: "football",
   25: "netball",
   33: "basketball",
+  54: "running",
+  3: "equestrian",
+  1: "cricket",
+  35: "ultimate",
+  32: "hockey",
+  28: "tennis",
+  10: "pool",
+  5: "indoorHockey",
+  100: "underwaterHockey",
+  42: "americanFootball",
+  40: "powerLifting",
+  98: "eSports",
+  36: "futsal",
+  6: "squash",
+  50: "climbing",
+  24: "sailing",
+  52: "cycling",
+  9: "darts",
+  4: "badminton",
+  21: "rugbyUnion",
+  12: "swimming",
+  20: "canoeSlalom",
+  38: "trampoline",
+  19: "fencing",
+  2: "golf",
+  83: "chess",
+  13: "archery",
+  23: "ballroomDancing",
+  15: "snooker",
+  18: "korfball",
+  91: "poleFitness",
+  55: "dance",
+  47: "snowSports",
 };
 
 export async function syncScores() {
@@ -121,15 +156,54 @@ export async function importTimetable() {
   ).json();
   invariant(Array.isArray(res), "got a non-array timetable");
   logger.info("Got timetable", { len: res.length });
+
+  const allKnownEvents: BaseEventType[] = await sportsAPIClient
+    .get("events")
+    .json();
+  logger.info("Got our events", { len: res.length });
+
   for (const entry of res) {
     const sportTypeId = entry.team.sport.id;
-    if (!(sportTypeId in mapSportIDsToTypeNames)) {
-      logger.debug("Skipping unknown sport type", {
-        id: entry.team.sport.id,
-        name: entry.team.sport.title,
+    const sportTypeName = mapSportIDsToTypeNames[sportTypeId];
+    if (!sportTypeName) {
+      // logger.debug("Skipping unknown sport type", {
+      //   id: entry.team.sport.id,
+      //   name: entry.team.sport.title,
+      // });
+      continue;
+    }
+    const match = allKnownEvents.find((x) => x.rosesLiveID === entry.id);
+    if (match) {
+      continue;
+    }
+    const oneOfOurs = sportTypeName in EVENT_TYPES;
+    if (oneOfOurs) {
+      logger.info("Skipping event due to oneOfOurs", {
+        type: sportTypeName,
+        id: entry.id,
+        title: entry.team.title,
+        start: entry.start,
       });
       continue;
     }
+    logger.info("Creating event", {
+      type: sportTypeName,
+      id: entry.id,
+      title: entry.team.title,
+    });
+    const result: BaseEventType = await sportsAPIClient
+      .post("events/_extra/" + sportTypeName, {
+        json: {
+          name: entry.team.title,
+          type: sportTypeName,
+          startTime: entry.start,
+          notCovered: !oneOfOurs,
+          worthPoints: entry.point.amount,
+          rosesLiveID: entry.id,
+        } as BaseEventType,
+      })
+      .json();
+    logger.debug("Created", { id: result.id });
   }
   process.exit(0);
 }

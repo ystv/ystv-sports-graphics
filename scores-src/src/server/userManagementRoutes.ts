@@ -123,7 +123,6 @@ export function createUserManagementRouter() {
         abortEarly: false,
       });
       const id = `User/${username}`;
-      console.log(id);
       const dbRes = await DB.collection("_default").getAndLock(id, 10);
       try {
         const data: User = dbRes.content;
