@@ -10,4 +10,7 @@ export interface ControlRugbyUnion {
     visible: boolean;
     timerShown: boolean;
   };
+  matchStatusPopup: {
+    visible: boolean;
+  };
 }

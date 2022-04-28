@@ -16,6 +16,9 @@ export function RugbyUnionDashboard() {
           visible: false,
           timerShown: false,
         },
+        matchStatusPopup: {
+          visible: false,
+        },
       },
     }
   );
@@ -50,6 +53,17 @@ export function RugbyUnionDashboard() {
           }
         />
       )}
+      <LiveKillButtons
+        name="Match Status Popup"
+        live={control.matchStatusPopup.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.matchStatusPopup.visible = live;
+            })
+          )
+        }
+      />
     </Container>
   );
 }
