@@ -13,6 +13,7 @@ import { AllUltimateGraphics } from "./ultimate";
 import { AllWaterpoloGraphics } from "./waterpolo";
 import { AllRugbyUnionGraphics } from "./rugby";
 import { AllAmericanFootballGraphics } from "./americanFootball";
+import { AlLBadmintonGraphics } from "./badminton";
 
 const SportGraphics: Record<string, React.ComponentType> = {
   netball: AllNetballGraphics,
@@ -23,6 +24,7 @@ const SportGraphics: Record<string, React.ComponentType> = {
   waterpolo: AllWaterpoloGraphics,
   rugbyUnion: AllRugbyUnionGraphics,
   americanFootball: AllAmericanFootballGraphics,
+  badminton: AlLBadmintonGraphics,
 };
 
 function AllGraphics() {
