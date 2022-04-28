@@ -43,6 +43,10 @@ import {
   components as badmintonComponents,
 } from "./badminton";
 import {
+  typeInfo as canoePoloTypeInfo,
+  components as canoePoloComponents,
+} from "./canoePolo";
+import {
   typeInfo as tableTennisTypeInfo,
   components as tableTennisComponents,
 } from "./tableTennis";
@@ -65,6 +69,7 @@ export const EVENT_TYPES: Record<string, EventTypeInfo<any, any>> = {
   americanFootball: americanFootballTypeInfo,
   rugbyUnion: rugbyUnionTypeInfo,
   badminton: badmintonTypeInfo,
+  canoePolo: canoePoloTypeInfo,
   tableTennis: tableTennisTypeInfo,
   futsal: futsalTypeInfo,
 };
@@ -82,6 +87,7 @@ export const EVENT_COMPONENTS: Record<string, EventComponents<any, any>> = {
   americanFootball: americanFootballComponents,
   rugbyUnion: rugbyUnionComponents,
   badminton: badmintonComponents,
+  canoePolo: canoePoloComponents,
   tableTennis: tableTennisComponents,
   futsal: futsalComponents,
 };
