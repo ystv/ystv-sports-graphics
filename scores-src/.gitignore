@@ -3,3 +3,4 @@ node_modules/
 addon-build/
 
 !.env
+.rosesLiveSync.lock

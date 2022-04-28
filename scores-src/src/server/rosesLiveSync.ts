@@ -7,8 +7,31 @@ import yargs from "yargs";
 import { identity } from "lodash-es";
 import { hideBin } from "yargs/helpers";
 import { BaseEventType } from "../common/types";
+import * as fs from "fs";
+import * as path from "path";
 
 const logger = getLogger("rosesLiveSync");
+
+const lockfilePath = path.join(process.cwd(), ".rosesLiveSync.lock");
+const ourPid = process.pid.toString(10);
+if (fs.existsSync(lockfilePath)) {
+  const contents = fs.readFileSync(lockfilePath, { encoding: "ascii" });
+  if (contents.trim() === ourPid) {
+    logger.warn(
+      "Found a lockfile with our PID. This suggests we didn't properly finish last time. " +
+        "(Also, this should never actually happen!)"
+    );
+  } else {
+    invariant(
+      false,
+      `Lock file exists, likely another process is already working. ` +
+        `If you're sure that there are no other instances of this script, you can delete ${lockfilePath}.`
+    );
+  }
+}
+const lockFile = fs.openSync(lockfilePath, "wx");
+fs.writeSync(lockFile, ourPid);
+fs.closeSync(lockFile);
 
 function conf<T>(varName: string, parser: (v: string) => T): T {
   const val = process.env[varName];
@@ -205,6 +228,7 @@ export async function importTimetable() {
       .json();
     logger.debug("Created", { id: result.id });
   }
+  fs.unlinkSync(lockfilePath);
   process.exit(0);
 }
 
