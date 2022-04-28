@@ -44,6 +44,17 @@ export function UltimateDashboard() {
           )
         }
       />
+      <LiveKillButtons
+        name="Match Status Popup"
+        live={control.matchStatusPopup.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.matchStatusPopup.visible = live;
+            })
+          )
+        }
+      />
     </Container>
   );
 }

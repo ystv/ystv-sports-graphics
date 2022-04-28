@@ -10,4 +10,7 @@ export interface ControlUltimate {
     visible: boolean;
     showTime: boolean;
   };
+  matchStatusPopup: {
+    visible: boolean;
+  };
 }
