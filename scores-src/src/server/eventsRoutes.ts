@@ -136,7 +136,7 @@ export function createEventsRouter() {
         .status(200)
         .json(
           resolveEventState(
-            wrapReducer(identity),
+            wrapReducer<BaseEventType>(identity),
             currentActions.concat(action)
           )
         );

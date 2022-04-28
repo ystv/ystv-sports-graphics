@@ -198,7 +198,8 @@ const mapSportIDsToTypeNames: Record<number, keyof typeof EVENT_TYPES> = {
   47: "snowSports",
 };
 
-const isNodeError = (error: Error): error is NodeJS.ErrnoException =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isNodeError = (error: any): error is NodeJS.ErrnoException =>
   error instanceof Error;
 
 const SCORE_UPDATE_LIVE_MOMENT_TYPE_ID = 15;
