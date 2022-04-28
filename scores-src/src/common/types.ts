@@ -115,6 +115,12 @@ export interface EventComponents<
         ? Parameters<TActions[K]["prepare"]>[0]
         : Parameters<TActions[K]>[0]
     ) => Promise<void>;
+    showActModal: <K extends keyof TActions>(
+      type: K,
+      initialState: TActions[K] extends { prepare: (payload: any) => any }
+        ? Parameters<TActions[K]["prepare"]>[0]
+        : Parameters<TActions[K]>[0]
+    ) => void;
   }) => JSX.Element;
   actionForms: {
     [K in keyof TActions]?: (props: { currentState: any }) => JSX.Element;
