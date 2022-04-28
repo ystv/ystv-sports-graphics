@@ -6,6 +6,7 @@ import { ControlBadminton } from "common/types/control-badminton";
 import { formatMMSSMS, clockTimeAt } from "@ystv/scores/src/common/clock";
 import { useState, useRef, useEffect } from "react";
 import { useTime } from "../hooks";
+import { ScoreboardWithSets } from "../common/scoreboardWithSets";
 
 export function AlLBadmintonGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
@@ -19,17 +20,11 @@ export function AlLBadmintonGraphics() {
     <>
       {control.scoreboard.visible && (
         <GraphicContainer>
-          <Scoreboard
-            homeName="LANC"
-            homePrimaryColor="var(--lancaster-red)"
-            // TODO sets too
+          <ScoreboardWithSets
             homeScore={state.currentSetScoreHome}
-            awayName="YORK"
-            awayPrimaryColor="var(--york-white)"
-            awaySecondaryColor="var(--ystv-dark)"
             awayScore={state.currentSetScoreAway}
-            time={""}
-            timeVisible={false}
+            homeSets={state.setsHome}
+            awaySets={state.setsAway}
           />
         </GraphicContainer>
       )}

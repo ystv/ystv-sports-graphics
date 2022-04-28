@@ -6,6 +6,7 @@ import { Scoreboard } from "../common/scoreboard";
 import { clockTimeAt, formatMMSSMS } from "@ystv/scores/src/common/clock";
 import { useTime } from "../hooks";
 import { MatchStatusPopup } from "../common/matchStatusPopup";
+import { ScoreboardWithSets } from "../common/scoreboardWithSets";
 
 function bannerMsg(half: number) {
   switch (half) {
@@ -37,16 +38,11 @@ export function AllVolleyballGraphics() {
     <>
       {control.scoreboard.visible && (
         <GraphicContainer>
-          <Scoreboard
-            homeName="LANC"
-            homePrimaryColor="var(--lancaster-red)"
+          <ScoreboardWithSets
             homeScore={state.currentSetScoreHome}
-            awayName="YORK"
-            awayPrimaryColor="var(--york-white)"
-            awaySecondaryColor="var(--ystv-dark)"
             awayScore={state.currentSetScoreAway}
-            time=""
-            timeVisible={false}
+            homeSets={state.setsHome}
+            awaySets={state.setsAway}
           />
         </GraphicContainer>
       )}
