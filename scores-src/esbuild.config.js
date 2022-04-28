@@ -36,12 +36,15 @@ const nativeNodeModulesPlugin = {
 };
 
 module.exports = {
-  entryPoints: ["./src/server/index.server.ts"],
+  entryPoints: [
+    "./src/server/index.server.ts",
+    "./src/server/rosesLiveSync.ts",
+  ],
   platform: "node",
   target: ["node16"],
   treeShaking: true,
   sourcemap: true,
   bundle: true,
   plugins: [nativeNodeModulesPlugin],
-  outfile: "./dist/index.server.js",
+  outdir: "./dist",
 };
