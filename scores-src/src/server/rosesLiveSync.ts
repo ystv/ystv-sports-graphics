@@ -7,6 +7,7 @@ import { identity } from "lodash-es";
 import { BaseEventType } from "../common/types";
 import * as fs from "fs";
 import * as path from "path";
+import { ensure } from "./errs";
 
 const logger = getLogger("rosesLiveSync");
 
@@ -20,8 +21,9 @@ if (fs.existsSync(lockfilePath)) {
         "(Also, this should never actually happen!)"
     );
   } else {
-    invariant(
+    ensure(
       false,
+      Error,
       `Lock file exists, likely another process is already working or crashed. ` +
         `If you're sure that there are no other instances of this script, you can delete ${lockfilePath}.`
     );
@@ -33,7 +35,7 @@ fs.closeSync(lockFile);
 
 function conf<T>(varName: string, parser: (v: string) => T): T {
   const val = process.env[varName];
-  invariant(val, `${varName} must be set!`);
+  ensure(!!val, Error, `${varName} must be set!`);
   return parser(val);
 }
 
@@ -262,8 +264,9 @@ async function syncScores() {
         winner = "away";
       } else {
         logger.error("ABOUT TO CRASH!", { entry });
-        invariant(
+        ensure(
           false,
+          Error,
           `The text for an update was not recognised: ${entry.text}`
         );
       }
@@ -364,6 +367,6 @@ async function importTimetable() {
       await importTimetable();
       break;
     default:
-      invariant(false, "Unknown command " + process.argv[2]);
+      throw new Error("Unknown command " + process.argv[2]);
   }
 })();
