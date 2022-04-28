@@ -1,9 +1,24 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "scoreboard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": false
+        },
+        "showTime": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["visible", "showTime"]
+    },
+    "matchStatusPopup": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -15,5 +30,5 @@
       "required": ["visible"]
     }
   },
-  "required": ["scoreboard"]
+  "required": ["scoreboard", "matchStatusPopup"]
 }

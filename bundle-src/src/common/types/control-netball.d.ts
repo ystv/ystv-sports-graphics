@@ -8,5 +8,9 @@
 export interface ControlNetball {
   scoreboard: {
     visible: boolean;
+    showTime: boolean;
+  };
+  matchStatusPopup: {
+    visible: boolean;
   };
 }
