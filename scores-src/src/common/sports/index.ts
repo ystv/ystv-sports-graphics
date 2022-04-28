@@ -46,6 +46,14 @@ import {
   typeInfo as canoePoloTypeInfo,
   components as canoePoloComponents,
 } from "./canoePolo";
+import {
+  typeInfo as tableTennisTypeInfo,
+  components as tableTennisComponents,
+} from "./tableTennis";
+import {
+  typeInfo as futsalTypeInfo,
+  components as futsalComponents,
+} from "./futsal";
 import { EventComponents, EventTypeInfo } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,6 +70,8 @@ export const EVENT_TYPES: Record<string, EventTypeInfo<any, any>> = {
   rugbyUnion: rugbyUnionTypeInfo,
   badminton: badmintonTypeInfo,
   canoePolo: canoePoloTypeInfo,
+  tableTennis: tableTennisTypeInfo,
+  futsal: futsalTypeInfo,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,4 +88,6 @@ export const EVENT_COMPONENTS: Record<string, EventComponents<any, any>> = {
   rugbyUnion: rugbyUnionComponents,
   badminton: badmintonComponents,
   canoePolo: canoePoloComponents,
+  tableTennis: tableTennisComponents,
+  futsal: futsalComponents,
 };

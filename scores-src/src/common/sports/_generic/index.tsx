@@ -23,6 +23,8 @@ import {
   EventComponents,
   EventTypeInfo,
 } from "../../types";
+import { IconPlayerPause, IconPlayerPlay } from "@tabler/icons";
+import { capitalize } from "lodash-es";
 
 export interface State extends BaseEventType {
   scoreHome: number;
@@ -40,13 +42,15 @@ export interface State extends BaseEventType {
  * @param pointsButtons buttons to show to add points (+N) - default is +1
  * @param downwardClockStartingTimeMs if set, clock will go downwards. if a number, will always start at that time. if an array, will start at the Nth
  * @param segmentName a function to get what to call the current half/quarter - should return e.g. "half", "quarter", or "extra time period".
+ * @param quickClock if true, the pause/resume actions will not require confirmation
  * @returns
  */
 export function createGenericSport(
   typeName: string,
   pointsButtons: number[] = [1],
   downwardClockStartingTimeMs?: number | number[],
-  segmentName?: (idx: number) => string
+  segmentName?: (idx: number) => string,
+  quickClock = false
 ) {
   const isDownward = typeof downwardClockStartingTimeMs !== "undefined";
   const schema: Yup.SchemaOf<State> = BaseEvent.shape({
@@ -113,11 +117,7 @@ export function createGenericSport(
       },
       resumeClock: {
         reducer(state, action: Action) {
-          startClockAt(
-            state.clock,
-            action.meta.ts,
-            clockStartsFrom(state.segment)
-          );
+          startClockAt(state.clock, action.meta.ts);
         },
         prepare() {
           return wrapAction({ payload: {} });
@@ -237,6 +237,15 @@ export function createGenericSport(
     ),
   };
 
+  const hiddenActions = new Set(["addPoints", "setPoints"] as Array<
+    keyof typeof slice["actions"]
+  >);
+
+  if (quickClock) {
+    hiddenActions.add("pauseClock");
+    hiddenActions.add("resumeClock");
+  }
+
   const typeInfo: EventTypeInfo<State, typeof slice["actions"]> = {
     reducer: slice.reducer,
     actionCreators: slice.actions,
@@ -244,10 +253,8 @@ export function createGenericSport(
     actionPayloadValidators,
     actionValidChecks,
     actionRenderers,
-    hiddenActions: new Set(["addPoints", "setPoints"] as const),
+    hiddenActions,
   };
-
-  type lol = typeof slice["actions"];
 
   const components: EventComponents<typeof slice["actions"], State> = {
     EditForm: () => (
@@ -258,6 +265,11 @@ export function createGenericSport(
     RenderScore: ({ state, act }) => {
       return (
         <Stack>
+          {typeof segmentName === "function" && (
+            <Text color="dimmed">
+              {capitalize(segmentName(state.segment))} {state.segment}
+            </Text>
+          )}
           <RenderClock
             key={state.clock.state + state.clock.timeLastStartedOrStopped}
             clock={state.clock}
@@ -274,6 +286,7 @@ export function createGenericSport(
                 <Button
                   key={n}
                   onClick={() => act("addPoints", { side: "home", points: n })}
+                  size="lg"
                 >
                   +{n}
                 </Button>
@@ -288,11 +301,36 @@ export function createGenericSport(
                 <Button
                   key={n}
                   onClick={() => act("addPoints", { side: "away", points: n })}
+                  size="lg"
                 >
                   +{n}
                 </Button>
               ))}
             </Stack>
+          </Group>
+          <Group>
+            {state.segment > 0 && quickClock && (
+              <>
+                <Space h="md" />
+                {state.clock.state === "running" ? (
+                  <Button
+                    leftIcon={<IconPlayerPause />}
+                    onClick={() => act("pauseClock", undefined)}
+                    size="md"
+                  >
+                    Pause Clock
+                  </Button>
+                ) : (
+                  <Button
+                    leftIcon={<IconPlayerPlay />}
+                    onClick={() => act("resumeClock", undefined)}
+                    size="md"
+                  >
+                    Unpause Clock
+                  </Button>
+                )}
+              </>
+            )}
           </Group>
           <Space h="lg" />
         </Stack>
