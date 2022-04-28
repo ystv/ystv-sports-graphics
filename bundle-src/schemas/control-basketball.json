@@ -10,9 +10,13 @@
         "visible": {
           "type": "boolean",
           "default": false
+        },
+        "clock": {
+          "type": "boolean",
+          "default": false
         }
       },
-      "required": ["visible"]
+      "required": ["visible", "clock"]
     },
     "matchStatusPopup": {
       "type": "object",

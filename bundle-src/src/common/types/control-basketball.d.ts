@@ -8,6 +8,7 @@
 export interface ControlBasketball {
   scoreboard: {
     visible: boolean;
+    clock: boolean;
   };
   matchStatusPopup: {
     visible: boolean;

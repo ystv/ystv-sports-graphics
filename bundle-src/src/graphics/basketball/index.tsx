@@ -6,6 +6,22 @@ import { ControlBasketball } from "common/types/control-basketball";
 import { formatMMSSMS, clockTimeAt } from "@ystv/scores/src/common/clock";
 import { useState, useRef, useEffect } from "react";
 import { useTime } from "../hooks";
+import { MatchStatusPopup } from "../common/matchStatusPopup";
+
+function bannerMsg(quarter: number) {
+  switch (quarter) {
+    case 1:
+      return "END OF FIRST QUARTER";
+    case 2:
+      return "END OF SECOND QUARTER";
+    case 3:
+      return "END OF THIRD QUARTER";
+    case 4:
+      return "END OF MATCH";
+    default:
+      return "";
+  }
+}
 
 export function AllBasketballGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
@@ -30,7 +46,21 @@ export function AllBasketballGraphics() {
             awaySecondaryColor="var(--ystv-dark)"
             awayScore={state.scoreAway}
             time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
-            timeVisible
+            timeVisible={control.scoreboard.clock}
+          />
+        </GraphicContainer>
+      )}
+      {control.matchStatusPopup.visible && (
+        <GraphicContainer>
+          <MatchStatusPopup
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            banner={bannerMsg(state.segment)}
           />
         </GraphicContainer>
       )}

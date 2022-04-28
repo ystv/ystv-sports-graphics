@@ -32,7 +32,20 @@ export function BasketballDashboard() {
           )
         }
       />
-      {/* <LiveKillButtons
+      <LiveKillButtons
+        divider
+        name="Clock"
+        live={control.scoreboard.clock}
+        disabled={!control.scoreboard.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.scoreboard.clock = live;
+            })
+          )
+        }
+      />
+      <LiveKillButtons
         name="Match Status Popup"
         live={control.matchStatusPopup.visible}
         callback={(live) =>
@@ -42,7 +55,7 @@ export function BasketballDashboard() {
             })
           )
         }
-      /> */}
+      />
     </Container>
   );
 }
