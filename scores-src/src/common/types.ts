@@ -10,6 +10,7 @@ export const BaseEvent: Yup.SchemaOf<BaseEventType> = Yup.object().shape({
     .default(() => new Date().toISOString()),
   name: Yup.string().required(),
   notCovered: Yup.boolean().default(false),
+  rosesLiveID: Yup.number().optional(),
   winner: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).notRequired(),
   worthPoints: Yup.number().integer().required().min(0),
 });
@@ -20,6 +21,7 @@ export interface BaseEventType {
   name: string;
   startTime: string;
   notCovered?: boolean;
+  rosesLiveID?: number;
   winner?: "home" | "away";
   worthPoints: number;
   [K: string]: unknown;

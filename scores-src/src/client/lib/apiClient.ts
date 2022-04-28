@@ -118,8 +118,12 @@ function useAPIRoute<TRes, TParams extends AnyObject | AnyObject[] = AnyObject>(
   };
 }
 
-export function useGETEvents() {
-  const retval = useAPIRoute<InferType<typeof BaseEvent>[]>("/events", {}, 200);
+export function useGETEvents(onlyCovered = false) {
+  const retval = useAPIRoute<InferType<typeof BaseEvent>[]>(
+    "/events",
+    { onlyCovered },
+    200
+  );
   return retval;
 }
 

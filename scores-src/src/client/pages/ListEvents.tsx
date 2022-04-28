@@ -16,9 +16,10 @@ import { PermGate } from "../components/PermGate";
 import { IconRefresh } from "@tabler/icons";
 import { useState } from "react";
 import { showNotification } from "@mantine/notifications";
+import { EVENT_TYPES } from "../../common/sports";
 
 export function ListEvents() {
-  const { data: events, loading, error } = useGETEvents();
+  const { data: events, loading, error } = useGETEvents(true);
 
   const doResync = usePOSTEventResync();
   const [resyncing, setResyncing] = useState<string | null>(null);
@@ -115,6 +116,7 @@ export function ListEvents() {
                   to={`${evt.type}/${evt.id}/edit`}
                   color={"orange"}
                   variant="outline"
+                  disabled={!(evt.type in EVENT_TYPES)}
                 >
                   Edit Event
                 </Button>
@@ -123,6 +125,7 @@ export function ListEvents() {
                 component={Link}
                 to={`${evt.type}/${evt.id}`}
                 variant="filled"
+                disabled={!(evt.type in EVENT_TYPES)}
               >
                 Input Scores
               </Button>
