@@ -5,6 +5,7 @@ import { GraphicContainer } from "../common/container";
 import { Scoreboard } from "../common/scoreboard";
 import { clockTimeAt, formatMMSSMS } from "@ystv/scores/src/common/clock";
 import { useTime } from "../hooks";
+import { MatchStatusPopup } from "../common/matchStatusPopup";
 
 export function AllUltimateGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
@@ -30,6 +31,20 @@ export function AllUltimateGraphics() {
             awayScore={state.scoreAway}
             time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
             timeVisible={control.scoreboard.showTime}
+          />
+        </GraphicContainer>
+      )}
+      {control.matchStatusPopup.visible && (
+        <GraphicContainer>
+          <MatchStatusPopup
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            banner="END OF MATCH"
           />
         </GraphicContainer>
       )}

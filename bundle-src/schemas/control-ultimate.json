@@ -17,7 +17,18 @@
         }
       },
       "required": ["visible", "showTime"]
+    },
+    "matchStatusPopup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["visible"]
     }
   },
-  "required": ["scoreboard"]
+  "required": ["scoreboard", "matchStatusPopup"]
 }
