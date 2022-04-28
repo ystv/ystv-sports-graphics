@@ -15,4 +15,6 @@ const { components, typeInfo } = createGenericSport(
   (i) => (i <= 4 ? "quarter" : "extra time period")
 );
 
+export type State = ReturnType<typeof typeInfo["reducer"]>;
+
 export { components, typeInfo };
