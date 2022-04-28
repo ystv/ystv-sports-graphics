@@ -21,12 +21,36 @@ export function NetballDashboard() {
     <Container fluid>
       <Title order={3}>Quarter {state.quarters.length}</Title>
       <LiveKillButtons
-        name="Small Score"
+        name="Scoreboard"
         live={control.scoreboard.visible}
         callback={(live) =>
           setControl(
             produce(control, (val) => {
               val.scoreboard.visible = live;
+            })
+          )
+        }
+      />
+      <LiveKillButtons
+        divider
+        name="Clock"
+        live={control.scoreboard.showTime}
+        disabled={!control.scoreboard.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.scoreboard.showTime = live;
+            })
+          )
+        }
+      />
+      <LiveKillButtons
+        name="Match Status Popup"
+        live={control.matchStatusPopup.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.matchStatusPopup.visible = live;
             })
           )
         }
