@@ -1,3 +1,5 @@
+import { AnimatePresence } from "framer-motion";
+
 export function GraphicContainer({
   zIndex = 0,
   children,
@@ -11,7 +13,7 @@ export function GraphicContainer({
   };
   return (
     <div style={styles} className="titleSafe">
-      {children}
+      <AnimatePresence>{children}</AnimatePresence>
     </div>
   );
 }
