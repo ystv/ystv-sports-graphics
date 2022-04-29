@@ -47,10 +47,34 @@ export function HandballDashboard() {
       <LiveKillButtons
         name="Match Status Popup"
         live={control.matchStatusPopup.visible}
+        divider
         callback={(live) =>
           setControl(
             produce(control, (val) => {
               val.matchStatusPopup.visible = live;
+            })
+          )
+        }
+      />
+      <LiveKillButtons
+        name="Lineup"
+        live={control.lineup.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.lineup.visible = live;
+            })
+          )
+        }
+      />
+      <LiveKillButtons
+        name="Substitutes vs Starting Players"
+        live={control.lineup.substitutes}
+        disabled={!control.lineup.visible}
+        callback={(live) =>
+          setControl(
+            produce(control, (val) => {
+              val.lineup.substitutes = live;
             })
           )
         }

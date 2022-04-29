@@ -28,7 +28,22 @@
         }
       },
       "required": ["visible"]
+    },
+    "lineup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": false
+        },
+        "substitutes": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["visible", "substitutes"]
     }
   },
-  "required": ["scoreboard", "matchStatusPopup"]
+  "required": ["scoreboard", "matchStatusPopup", "lineup"]
 }

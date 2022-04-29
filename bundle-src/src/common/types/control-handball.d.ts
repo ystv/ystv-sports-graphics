@@ -13,4 +13,8 @@ export interface ControlHandball {
   matchStatusPopup: {
     visible: boolean;
   };
+  lineup: {
+    visible: boolean;
+    substitutes: boolean;
+  };
 }
