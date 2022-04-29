@@ -1,77 +1,76 @@
 :root {
-	--york-white: #ebebeb;
-	/* --lancaster-red-logo: #e80708;
+  --york-white: #ebebeb;
+  /* --lancaster-red-logo: #e80708;
 	--lancaster-red-darker: #b20000;
 	--lancaster-dark-red-logo: #b20000; */
-	--ystv-light: #fbfbfb;
-	--lancaster-red: #e80708;
-	/* --york-white-logo: #ebebeb; */
-	--ystv-dark: #333;
+  --ystv-light: #fbfbfb;
+  --lancaster-red: #e80708;
+  /* --york-white-logo: #ebebeb; */
+  --ystv-dark: #333;
 }
 
-html{
-	/* This is essential for scaling to larger resolutions, this means we can can swap 1920 graphic px values for rem*/
-	font-size: calc(100vw / 1920);
+html {
+  /* This is essential for scaling to larger resolutions, this means we can can swap 1920 graphic px values for rem*/
+  font-size: calc(100vw / 1920);
 }
 
 @font-face {
-	font-family: OpenSans;
-	src: local(OpenSans-ExtraBold),
-	url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
-	font-weight: 800;
-	font-style: normal;
-	font-stretch: normal;
+  font-family: OpenSans;
+  src: url("assets/OpenSans-VariableFont_wdth\,wght.ttf");
+  font-weight: 800;
+  font-style: normal;
+  font-stretch: normal;
 }
 
 .Scoreboard-Small {
-	font-family: OpenSans, sans-serif;
-	font-size: 24rem;
-	font-weight: 800;
-	font-stretch: normal;
-	font-style: normal;
-	line-height: normal;
-	letter-spacing: normal;
+  font-family: OpenSans, sans-serif;
+  font-size: 24rem;
+  font-weight: 800;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
 }
 
 body {
-	margin: 0 !important;
-	padding: 0 !important;
-	position: absolute;
-	top: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute;
+  top: 0;
 
-	width: 100vw;
-	height: 100vh;
-	font-size: 4vh;
-	--light: #fbfbfb;
-	--dark: #333333;
-	font-family: "Open Sans", sans-serif;
+  width: 100vw;
+  height: 100vh;
+  font-size: 4vh;
+  --light: #fbfbfb;
+  --dark: #333333;
+  font-family: OpenSans, sans-serif;
 }
 
 #root {
-	margin: 0;
-	position: absolute;
-	top: 0;
+  margin: 0;
+  position: absolute;
+  top: 0;
 
-	width: 100%;
-	height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .actionSafe {
-	width: 90vw;
-	height: 90vh;
-	margin: 5vh 5vw;
+  width: 90vw;
+  height: 90vh;
+  margin: 5vh 5vw;
 }
 
 .titleSafe {
-	width: 80vw;
-	height: 80vh;
-	margin: 10vh 10vw;
+  width: 80vw;
+  height: 80vh;
+  margin: 10vh 10vw;
 }
 
 .titleSafePadding {
-	width: 80vw;
-	height: 80vh;
-	padding: 10vh 10vw;
+  width: 80vw;
+  height: 80vh;
+  padding: 10vh 10vw;
 }
 
 h1,
@@ -79,5 +78,5 @@ h2,
 h3,
 h4,
 h5 {
-	margin: 0;
+  margin: 0;
 }
