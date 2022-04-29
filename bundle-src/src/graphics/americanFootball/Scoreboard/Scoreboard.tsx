@@ -37,7 +37,7 @@ export function Scoreboard({
         className={styles.Container}
         variants={fadeVariants}
         initial="hidden"
-        animate="visible"
+        animate={isVisible ? "visible" : "hidden"}
         exit="hidden"
       >
         <NameBox name="LANC" primaryColor="var(--lancaster-red)" />
