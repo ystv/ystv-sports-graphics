@@ -17,6 +17,7 @@
   grid-template-areas:
     "left right"
     "banner banner";
+  z-index: -100;
 }
 
 .Box {
@@ -35,6 +36,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+  z-index: -2;
+  box-shadow: inset 0rem 23rem 2rem rgba(255, 255, 255, 0.25);
+}
+
+.crestlanc {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300%;
+  background: url("../assets/LU_Shield_Graphics.svg");
+  background-blend-mode: screen, normal;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  transform: rotate(20deg) translate(-10%, -5%);
+  z-index: -1;
+  opacity: 0.2;
+}
+
+.crestyork {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300%;
+  background: url("../assets/YSU_Shield_BW.svg");
+  background-blend-mode: overlay, normal;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  transform: rotate(-20deg) translate(15%, -15%);
+  z-index: -1;
+  opacity: 0.2;
 }
 
 .Banner {

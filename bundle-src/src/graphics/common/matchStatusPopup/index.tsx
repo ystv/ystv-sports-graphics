@@ -23,6 +23,7 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
             color: props.homeSecondaryColor || "var(--ystv-light)",
           }}
         >
+          <div className={styles["crest" + props.homeName.toLowerCase()]} />
           {props.homeScore}
         </div>
         <div
@@ -32,6 +33,7 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
             color: props.awaySecondaryColor || "var(--ystv-light)",
           }}
         >
+          <div className={styles["crest" + props.awayName.toLowerCase()]} />
           {props.awayScore}
         </div>
         <div className={styles.Banner}>{props.banner}</div>

@@ -19,6 +19,8 @@ export function NameBox({
       className={styles.Background + " " + (sheen ? styles.Sheen : "")}
       style={{ backgroundColor: primaryColor }}
     >
+      {name[0].toLowerCase() === "l" && <div className={styles.CrestLanc} />}
+      {name[0].toLowerCase() === "y" && <div className={styles.CrestYork} />}
       <h5 className={styles.Text} style={{ color: secondaryColor }}>
         {name.substring(0, 4).toUpperCase()}
       </h5>

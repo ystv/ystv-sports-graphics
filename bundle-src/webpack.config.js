@@ -37,25 +37,13 @@ const baseConfig = {
         ],
       },
       {
-        test: /\.(woff2?|ttf|eot|svg|otf)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              name: "[name].[ext]",
-              outputPath: "fonts/",
-            },
-          },
-        ],
-      },
-      {
         test: /\.css$/,
         use: [
           "style-loader",
           {
             loader: "css-loader",
             options: {
-              importLoaders: 1,
+              importLoaders: 3,
               modules: true,
             },
           },
@@ -66,6 +54,10 @@ const baseConfig = {
         test: /\.css$/,
         use: ["style-loader", "css-loader"],
         exclude: /\.module\.css$/,
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        type: "asset/resource",
       },
     ],
   },
