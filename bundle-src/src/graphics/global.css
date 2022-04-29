@@ -20,6 +20,7 @@ html {
   font-weight: 800;
   font-style: normal;
   font-stretch: normal;
+  font-variation-settings: "wght" 375;
 }
 
 .Scoreboard-Small {
