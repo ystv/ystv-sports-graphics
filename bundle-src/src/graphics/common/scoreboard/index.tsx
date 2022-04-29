@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import ScoreBox from "../scoreBox";
 import NameBox from "../teamNameBox";
 import TimeBox from "../timeBox";
@@ -29,7 +30,12 @@ export function Scoreboard({
   timeVisible,
 }: Props) {
   return (
-    <div className={styles.Container}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={styles.Container}
+    >
       <NameBox
         name={homeName}
         primaryColor={homePrimaryColor}
@@ -51,6 +57,6 @@ export function Scoreboard({
         secondaryColor={awaySecondaryColor}
       />
       {timeVisible && <TimeBox time={time} />}
-    </div>
+    </motion.div>
   );
 }

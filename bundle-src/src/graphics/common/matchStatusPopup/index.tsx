@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import styles from "./index.module.css";
 
 export interface MatchStatusPopupProps {
@@ -14,7 +15,12 @@ export interface MatchStatusPopupProps {
 
 export function MatchStatusPopup(props: MatchStatusPopupProps) {
   return (
-    <div className={styles.Wrapper}>
+    <motion.div
+      className={styles.Wrapper}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <div className={styles.Container}>
         <div
           className={styles.Box}
@@ -38,6 +44,6 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
         </div>
         <div className={styles.Banner}>{props.banner}</div>
       </div>
-    </div>
+    </motion.div>
   );
 }
