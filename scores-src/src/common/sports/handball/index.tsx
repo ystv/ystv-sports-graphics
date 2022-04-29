@@ -3,8 +3,8 @@ import { createGenericSport } from "../_generic";
 const { components, typeInfo } = createGenericSport(
   "handball",
   [1],
-  [30 * 60 * 1000, 5 * 60 * 1000],
-  (i) => (i === 1 ? "match" : "extra time period"),
+  [30 * 60 * 1000, 30 * 60 * 1000, 5 * 60 * 1000],
+  (i) => (i < 3 ? "match" : "extra time period"),
   false,
   true
 );
