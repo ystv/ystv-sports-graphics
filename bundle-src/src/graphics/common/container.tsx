@@ -1,11 +1,12 @@
 import { AnimatePresence } from "framer-motion";
+import { ReactNode } from "react";
 
 export function GraphicContainer({
   zIndex = 0,
   children,
 }: {
   zIndex?: number;
-  children: JSX.Element | JSX.Element[];
+  children: ReactNode;
 }) {
   const styles: React.CSSProperties = {
     position: "absolute",
