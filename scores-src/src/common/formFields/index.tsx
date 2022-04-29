@@ -164,8 +164,12 @@ export function Checkbox(props: CheckboxProps) {
   return (
     <FieldComponent name={props.name} type="checkbox">
       {/*eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {({ field, meta }: FormikFieldProps<any>) => (
-        <Check {...field} label={props.title} />
+      {({ field, meta, form }: FormikFieldProps<any>) => (
+        <Check
+          {...field}
+          label={props.title}
+          onChange={(e) => form.setFieldValue(props.name, e.target.checked)}
+        />
         //  DON'T HAVE AN ERROR STATE CURRENTLY
       )}
     </FieldComponent>

@@ -14,6 +14,7 @@ import { RenderClock } from "../../components/Clock";
 import { wrapAction } from "../../eventStateHelpers";
 import {
   ArrayField,
+  Checkbox,
   Field,
   RandomUUIDField,
   SelectField,
@@ -49,12 +50,14 @@ export interface PlayerType {
   id: string;
   name: string;
   designation: string;
+  startsOnBench: boolean;
 }
 
 const PlayerSchema: Yup.SchemaOf<PlayerType> = Yup.object({
   id: Yup.string().uuid().required(),
   name: Yup.string().required(),
   designation: Yup.string().required(),
+  startsOnBench: Yup.boolean().required().default(false),
 });
 
 interface Point {
@@ -323,6 +326,11 @@ export function createGenericSport(
                       title="Designation (number)"
                       independent
                     />
+                    <Checkbox
+                      name={namespace + "startsOnBench"}
+                      title="Starts on bench?"
+                      independent
+                    />
                   </div>
                 )}
               />
@@ -340,6 +348,11 @@ export function createGenericSport(
                     <Field
                       name={namespace + "designation"}
                       title="Designation (number)"
+                      independent
+                    />
+                    <Checkbox
+                      name={namespace + "startsOnBench"}
+                      title="Starts on bench?"
                       independent
                     />
                   </div>
