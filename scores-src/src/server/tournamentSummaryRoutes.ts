@@ -14,7 +14,7 @@ export function createTournamentSummaryRouter() {
 
   router.get(
     "/",
-    authenticate("read"),
+    // authenticate("read"), // vmix no like
     asyncHandler(async (req, res) => {
       let data: TournamentSummary;
       try {
