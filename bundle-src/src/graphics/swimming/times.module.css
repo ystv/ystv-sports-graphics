@@ -1,0 +1,104 @@
+.Table {
+  display: table;
+  min-width: 300rem;
+}
+
+/* .Row:first-child {
+    box-shadow: inset 0px 3.5px 3px rgba(0, 0, 0, 0.45);
+    padding-top: 8rem;
+    margin-top: 0;
+  }
+  .Row:not(:last-child) {
+    border-bottom: 1rem solid rgba(33, 33, 33, 0.15);
+  } */
+
+.CrestLanc {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300%;
+  background: url("../common/assets/LU_Shield_Graphics.svg");
+  background-blend-mode: screen, normal;
+  background-repeat: no-repeat;
+  background-size: 80rem;
+  transform: rotate(20deg) translate(-30rem, -3rem);
+  z-index: -1;
+  opacity: 0.2;
+}
+
+.CrestYork {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400%;
+  height: 400%;
+  background: url("../common/assets/YSU_Shield_BW.svg");
+  background-blend-mode: overlay, normal;
+  background-repeat: no-repeat;
+  background-size: 147rem;
+  transform: rotate(-20deg) translate(9rem, -37rem);
+  z-index: -1;
+  opacity: 0.2;
+}
+
+.Row {
+  display: table-row;
+  /* margin: 2rem 0; */
+  min-height: 64rem;
+  height: 48rem;
+  font-family: OpenSans;
+  font-style: normal;
+  font-size: 36rem;
+  line-height: 49rem;
+  margin: 0;
+}
+
+.Lane {
+  display: table-cell;
+  width: 64rem;
+  height: 100%;
+  min-height: 48rem;
+  font-family: OpenSans;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 65px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  z-index: -2;
+}
+
+.Home {
+  background-color: var(--lancaster-red);
+  color: var(--ystv-light);
+}
+
+.Away {
+  background-color: var(--york-white);
+  color: var(--ystv-dark) !important;
+}
+
+.Name {
+  display: table-cell;
+  background-color: rgba(51, 51, 51, 0.6);
+  font-family: "Open Sans";
+  color: var(--ystv-light);
+  padding-left: 8rem;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 24rem;
+  line-height: 49rem;
+  height: 100%;
+  padding: 0 8rem;
+}
+
+.Time {
+  display: table-cell;
+  padding: 0 16rem;
+  font-size: 24rem;
+}

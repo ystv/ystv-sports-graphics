@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lineup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["visible"]
+    },
+    "liveTimes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": ["visible"]
+    }
+  },
+  "required": ["lineup", "liveTimes"]
+}

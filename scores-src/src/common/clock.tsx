@@ -84,7 +84,7 @@ export function formatMMSSMS(
 
   if (precisionMs > 0) {
     const ms = (time % 1000) / 10 ** (3 - precisionMs);
-    str = ":" + ms.toFixed(0).padStart(precisionMs, "0");
+    str = "." + ms.toFixed(0).padStart(precisionMs, "0");
   }
 
   if (precisionHigh >= 1) {
