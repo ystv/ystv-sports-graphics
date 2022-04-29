@@ -394,7 +394,7 @@ export function createGenericSport(
                           points: n,
                           player: null,
                         })
-                      : act("addPoints", { side: "away", points: n })
+                      : act("addPoints", { side: "home", points: n })
                   }
                   size="lg"
                 >
