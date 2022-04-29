@@ -1,11 +1,40 @@
 .Background {
   width: 94rem;
   height: 40rem;
-  background-color: var(--lancaster-red);
+  box-shadow: inset 0 7rem 1rem 0 rgba(255, 255, 255, 0.26);
+  position: relative;
+  z-index: -100;
+  overflow: hidden;
 }
 
-.Sheen {
-  box-shadow: inset 0 7rem 1rem 0 rgba(255, 255, 255, 0.26);
+.CrestLanc {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300%;
+  background: url("../assets/LU_Shield_Graphics.svg");
+  background-blend-mode: screen, normal;
+  background-repeat: no-repeat;
+  background-size: 80rem;
+  transform: rotate(20deg) translate(-6rem, -3rem);
+  z-index: -1;
+  opacity: 0.2;
+}
+
+.CrestYork {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300%;
+  background: url("../assets/YSU_Shield_BW.svg");
+  background-blend-mode: overlay, normal;
+  background-repeat: no-repeat;
+  background-size: 80rem;
+  transform: rotate(-20deg) translate(20rem, -4rem);
+  z-index: -1;
+  opacity: 0.2;
 }
 
 .Text {
@@ -23,4 +52,5 @@
   color: #fff;
   display: table-cell;
   vertical-align: middle;
+  z-index: 100;
 }
