@@ -31,7 +31,7 @@ export function createTournamentSummaryRouter() {
           throw e;
         }
       }
-      res.status(200).json(data);
+      res.status(200).json(req.query?.vmix === "true" ? [data] : data);
     })
   );
 
