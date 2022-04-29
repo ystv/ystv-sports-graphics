@@ -18,16 +18,16 @@ export function AlLBadmintonGraphics() {
 
   return (
     <>
-      {control.scoreboard.visible && (
-        <GraphicContainer>
+      <GraphicContainer>
+        {control.scoreboard.visible && (
           <ScoreboardWithSets
             homeScore={state.currentSetScoreHome}
             awayScore={state.currentSetScoreAway}
             homeSets={state.setsHome}
             awaySets={state.setsAway}
           />
-        </GraphicContainer>
-      )}
+        )}
+      </GraphicContainer>
     </>
   );
 }

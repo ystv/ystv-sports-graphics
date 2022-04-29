@@ -30,8 +30,8 @@ export function AllHockeyGraphics() {
 
   return (
     <>
-      {control.scoreboard.visible && (
-        <GraphicContainer>
+      <GraphicContainer>
+        {control.scoreboard.visible && (
           <Scoreboard
             homeName="LANC"
             homePrimaryColor="var(--lancaster-red)"
@@ -43,10 +43,10 @@ export function AllHockeyGraphics() {
             time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
             timeVisible={control.scoreboard.showTime}
           />
-        </GraphicContainer>
-      )}
-      {control.matchStatusPopup.visible && (
-        <GraphicContainer>
+        )}
+      </GraphicContainer>
+      <GraphicContainer>
+        {control.matchStatusPopup.visible && (
           <MatchStatusPopup
             homeName="LANC"
             homePrimaryColor="var(--lancaster-red)"
@@ -57,8 +57,8 @@ export function AllHockeyGraphics() {
             awayScore={state.scoreAway}
             banner={bannerMsg(state.segment)}
           />
-        </GraphicContainer>
-      )}
+        )}
+      </GraphicContainer>
     </>
   );
 }
