@@ -386,6 +386,7 @@ export function createGenericSport(
               {pointsButtons.map((n) => (
                 <Button
                   key={n}
+                  disabled={state.segmentPoints.length === 0}
                   onClick={() =>
                     enableLineup
                       ? showActModal("addPoints", {
@@ -409,6 +410,7 @@ export function createGenericSport(
               {pointsButtons.map((n) => (
                 <Button
                   key={n}
+                  disabled={state.segmentPoints.length === 0}
                   onClick={() =>
                     enableLineup
                       ? showActModal("addPoints", {
