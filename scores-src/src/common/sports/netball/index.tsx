@@ -36,7 +36,7 @@ const playerSchema = Yup.object({
   name: Yup.string().required(),
   position: Yup.string()
     .optional()
-    .oneOf(["GS", "GA", "WA", "C", "WD", "GD", "GK"]),
+    .oneOf(["GS", "GA", "WA", "C", "WD", "GD", "GK", "Sub"]),
 });
 
 type PlayerType = Yup.InferType<typeof playerSchema>;
@@ -309,6 +309,7 @@ export function EditForm() {
                   ["GA", "GA"],
                   ["WA", "WA"],
                   ["GS", "GS"],
+                  ["Sub", "Sub"],
                 ]}
               />
             </div>
@@ -336,6 +337,7 @@ export function EditForm() {
                   ["GA", "GA"],
                   ["WA", "WA"],
                   ["GS", "GS"],
+                  ["Sub", "Sub"],
                 ]}
               />
             </div>
