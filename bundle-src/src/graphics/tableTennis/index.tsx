@@ -17,16 +17,16 @@ export function AllTableTennisGraphics() {
 
   return (
     <>
-      {control.scoreboard.visible && (
-        <GraphicContainer>
+      <GraphicContainer>
+        {control.scoreboard.visible && (
           <ScoreboardWithSets
             homeScore={state.currentGameScoreHome}
             awayScore={state.currentGameScoreAway}
             homeSets={state.gamesHome}
             awaySets={state.gamesAway}
           />
-        </GraphicContainer>
-      )}
+        )}
+      </GraphicContainer>
     </>
   );
 }

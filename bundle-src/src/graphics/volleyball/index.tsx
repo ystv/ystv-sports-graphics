@@ -36,18 +36,18 @@ export function AllVolleyballGraphics() {
 
   return (
     <>
-      {control.scoreboard.visible && (
-        <GraphicContainer>
+      <GraphicContainer>
+        {control.scoreboard.visible && (
           <ScoreboardWithSets
             homeScore={state.currentSetScoreHome}
             awayScore={state.currentSetScoreAway}
             homeSets={state.setsHome}
             awaySets={state.setsAway}
           />
-        </GraphicContainer>
-      )}
-      {control.matchStatusPopup.visible && (
-        <GraphicContainer>
+        )}
+      </GraphicContainer>
+      <GraphicContainer>
+        {control.matchStatusPopup.visible && (
           <MatchStatusPopup
             homeName="LANC"
             homePrimaryColor="var(--lancaster-red)"
@@ -58,8 +58,8 @@ export function AllVolleyballGraphics() {
             awayScore={state.currentSetScoreAway}
             banner=""
           />
-        </GraphicContainer>
-      )}
+        )}
+      </GraphicContainer>
     </>
   );
 }
