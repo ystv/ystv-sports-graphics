@@ -56,7 +56,7 @@ const baseConfig = {
         exclude: /\.module\.css$/,
       },
       {
-        test: /\.(png|svg|jpg|gif)$/,
+        test: /\.(png|svg|jpg|gif|woff2|otf|ttf)$/,
         type: "asset/resource",
       },
     ],
