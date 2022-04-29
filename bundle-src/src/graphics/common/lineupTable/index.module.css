@@ -29,6 +29,8 @@
   line-height: 87px;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .Region {
