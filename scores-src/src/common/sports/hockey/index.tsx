@@ -3,8 +3,8 @@ import { createGenericSport } from "../_generic";
 const { components, typeInfo } = createGenericSport(
   "hockey",
   [1],
-  7 * 60 * 1000,
-  (_) => "half"
+  10 * 60 * 1000,
+  (_) => "quarters"
 );
 
 export type State = ReturnType<typeof typeInfo["reducer"]>;
