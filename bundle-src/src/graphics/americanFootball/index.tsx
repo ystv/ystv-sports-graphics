@@ -5,7 +5,11 @@ import { ControlAmericanFootball } from "common/types/control-americanFootball";
 import { Scoreboard } from "./Scoreboard/Scoreboard";
 import { useTime } from "../hooks";
 import { clockTimeAt } from "@ystv/scores/src/common/clock";
-import { MatchStatus } from "./MatchStatus/MatchStatus";
+import { MatchStatusPopup } from "../common/matchStatusPopup";
+
+function bannerMsg(quarter: number) {
+  return `END OF QUARTER ${quarter}`;
+}
 
 export function AllAmericanFootballGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
@@ -30,17 +34,20 @@ export function AllAmericanFootballGraphics() {
           quarter={state.segment}
         />
       </GraphicContainer>
-      <GraphicContainer>
-        <MatchStatus
-          isVisible={control.matchStatusPopup.visible}
-          team1Name="LANC"
-          team1Score={state.scoreHome}
-          team2Name="YORK"
-          team2Score={state.scoreAway}
-          timer={""}
-          isOver={state.segment}
-        />
-      </GraphicContainer>
+      {control.matchStatusPopup.visible && (
+        <GraphicContainer>
+          <MatchStatusPopup
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            banner={bannerMsg(state.segment)}
+          />
+        </GraphicContainer>
+      )}
     </>
   );
 }
