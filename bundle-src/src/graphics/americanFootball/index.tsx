@@ -24,11 +24,10 @@ export function AllAmericanFootballGraphics() {
         <Scoreboard
           isTimerShown={control.scoreboard.timer}
           isVisible={control.scoreboard.visible}
-          team1Name="LANC"
           team1Score={state.scoreHome}
-          team2Name="YORK"
           team2Score={state.scoreAway}
-          timer={clockTimeAt(state.clock, now)}
+          time={clockTimeAt(state.clock, now)}
+          quarter={state.segment}
         />
       </GraphicContainer>
       <GraphicContainer>
