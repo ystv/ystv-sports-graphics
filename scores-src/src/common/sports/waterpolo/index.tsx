@@ -3,7 +3,7 @@ import { createGenericSport } from "../_generic";
 const { components, typeInfo } = createGenericSport(
   "waterpolo",
   [1],
-  7 * 60 * 1000,
+  8 * 60 * 1000,
   (_) => "quarter",
   false,
   true
