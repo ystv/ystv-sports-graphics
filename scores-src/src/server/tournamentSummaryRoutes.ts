@@ -1,6 +1,7 @@
 import { DocumentNotFoundError } from "couchbase";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
+import { startCase } from "lodash-es";
 import { authenticate } from "./auth";
 import { DB } from "./db";
 import { getLogger } from "./loggingSetup";
@@ -31,7 +32,24 @@ export function createTournamentSummaryRouter() {
           throw e;
         }
       }
-      res.status(200).json(req.query?.vmix === "true" ? [data] : data);
+      if (req.query?.vmix === "true") {
+        res.status(200).json([
+          {
+            totalPointsAway: data.totalPointsAway,
+            totalPointsHome: data.totalPointsHome,
+            latestResults: data.latestResults
+              .map(
+                (x) =>
+                  `${startCase(x.eventType)} ${x.name} - ${
+                    x.winner === "home" ? "Lancs" : "York"
+                  } Win`
+              )
+              .join(" · "),
+          },
+        ]);
+      } else {
+        res.status(200).json(data);
+      }
     })
   );
 
