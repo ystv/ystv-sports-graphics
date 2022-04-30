@@ -86,7 +86,7 @@
 .Name {
   display: table-cell;
   background-color: rgba(51, 51, 51, 0.6);
-  font-family: "Open Sans";
+  font-family: OpenSans;
   color: var(--ystv-light);
   padding-left: 8rem;
   font-style: normal;
