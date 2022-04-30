@@ -45,7 +45,9 @@ function Times({ run }: { run: State["runs"][number] }) {
             {lane}
           </motion.span>
           <motion.span className={timesStyles.Name}>
-            {run.swimmersByLane[lane].name.split(" ").slice(1).join(" ")}
+            {run.swimmersByLane[lane].name.includes(" ")
+              ? run.swimmersByLane[lane].name.split(" ").slice(1).join(" ")
+              : run.swimmersByLane[lane].name}
           </motion.span>
           <motion.span
             className={
