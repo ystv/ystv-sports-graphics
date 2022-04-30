@@ -62,6 +62,13 @@ export function EditEventForm() {
                   helper="How many Roses points will the winner get?"
                   independent
                 />
+                <Field
+                  type="number"
+                  name="rosesLiveID"
+                  title="RosesLive ID"
+                  helper="Don't touch this unless you know what you're doing."
+                  independent
+                />
                 <EditForm />
                 <Button type="submit" disabled={isSubmitting}>
                   Save
