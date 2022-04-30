@@ -38,6 +38,7 @@ export function createTournamentSummaryRouter() {
             totalPointsAway: data.totalPointsAway,
             totalPointsHome: data.totalPointsHome,
             latestResults: data.latestResults
+              .slice(Math.max(0, data.latestResults.length - 10))
               .map(
                 (x) =>
                   `${startCase(x.eventType)} ${x.name} - ${
