@@ -43,7 +43,7 @@ export function createTournamentSummaryRouter() {
                 (x) =>
                   `${startCase(x.eventType)} ${x.name} - ${
                     x.winner === "home" ? "Lancs" : "York"
-                  } Win`
+                  } Win (+${x.points})`
               )
               .join(" · "),
           },
