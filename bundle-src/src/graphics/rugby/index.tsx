@@ -38,6 +38,9 @@ export function AllRugbyUnionGraphics() {
     return null;
   }
 
+  const currentHalf =
+    state.halves.length > 0 ? state.halves[state.halves.length - 1] : null;
+
   return (
     <>
       <GraphicContainer>
@@ -50,7 +53,12 @@ export function AllRugbyUnionGraphics() {
             awayPrimaryColor="var(--york-white)"
             awaySecondaryColor="var(--ystv-dark)"
             awayScore={state.scoreAway}
-            time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
+            time={
+              formatMMSSMS(clockTimeAt(state.clock, now), 0, 2) +
+              (currentHalf && currentHalf.timeLost > 0
+                ? `+${currentHalf?.timeLost}`
+                : "")
+            }
             timeVisible={control.scoreboard.timerShown}
           />
         )}
