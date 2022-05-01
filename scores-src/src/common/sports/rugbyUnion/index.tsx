@@ -7,8 +7,8 @@ import {
   formatMMSSMS,
   startClockAt,
   stopClockAt,
-  DownwardClock,
-  DownwardClockType,
+  UpwardClock,
+  UpwardClockType,
 } from "../../clock";
 import { RenderClock } from "../../components/Clock";
 import { wrapAction } from "../../eventStateHelpers";
@@ -55,7 +55,7 @@ export interface State extends BaseEventType {
     home: PlayerType[];
     away: PlayerType[];
   };
-  clock: DownwardClockType;
+  clock: UpwardClockType;
   halves: Array<{
     timeLost: number;
     actions: Array<{
@@ -74,7 +74,7 @@ export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
     home: Yup.array().of(playerSchema).required().default([]),
     away: Yup.array().of(playerSchema).required().default([]),
   }).required(),
-  clock: DownwardClock,
+  clock: UpwardClock,
   halves: Yup.array()
     .of(
       Yup.object({
@@ -122,7 +122,7 @@ const slice = createSlice({
       home: [],
     },
     clock: {
-      type: "downward",
+      type: "upward",
       state: "stopped",
       timeLastStartedOrStopped: 0,
       wallClockLastStarted: 0,
@@ -165,16 +165,16 @@ const slice = createSlice({
           actions: [],
           timeLost: 0,
         });
-        let time: number;
         if (state.halves.length <= MAX_HALVES_WITHOUT_EXTRA_TIME) {
-          time = HALF_DURATION_MS * (state.halves.length - 1);
+          state.clock.timeLastStartedOrStopped =
+            HALF_DURATION_MS * (state.halves.length - 1);
         } else {
-          time =
+          state.clock.timeLastStartedOrStopped =
             HALF_DURATION_MS * MAX_HALVES_WITHOUT_EXTRA_TIME +
             EXTRA_TIME_DURATION_MS *
               (state.halves.length - MAX_HALVES_WITHOUT_EXTRA_TIME - 1);
         }
-        startClockAt(state.clock, action.meta.ts, time);
+        startClockAt(state.clock, action.meta.ts);
       },
       prepare() {
         return wrapAction({ payload: {} });
@@ -240,7 +240,8 @@ export const actionValidChecks: ActionValidChecks<
   pauseClock: (state) => state.clock.state === "running",
   startHalf: (state) =>
     // Safe to use current time here because this isn't called from reducers
-    state.halves.length === 0 || state.clock.state === "stopped",
+    state.halves.length === 0 ||
+    clockTimeAt(state.clock, new Date().valueOf()) === 0,
   resumeCurrentHalf: (state) =>
     state.halves.length > 0 && state.clock.state === "stopped",
   endHalf: (state) => state.clock.state === "running",
