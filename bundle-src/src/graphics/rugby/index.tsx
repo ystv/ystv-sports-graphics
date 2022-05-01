@@ -2,10 +2,25 @@ import { useOnlyReplicantValue } from "common/useReplicant";
 import type { State } from "@ystv/scores/src/common/sports/rugbyUnion";
 import { ControlRugbyUnion } from "common/types/control-rugbyUnion";
 import { GraphicContainer } from "../common/container";
-import { Scoreboard } from "./Scoreboard/Scoreboard";
-import { clockTimeAt } from "@ystv/scores/src/common/clock";
+import { clockTimeAt, formatMMSSMS } from "@ystv/scores/src/common/clock";
 import { useEffect, useRef } from "react";
 import { MatchStatus } from "./MatchStatus/MatchStatus";
+import { Scoreboard } from "../common/scoreboard";
+import { useTime } from "../hooks";
+import { MatchStatusPopup } from "../common/matchStatusPopup";
+
+function bannerMsg(half: number) {
+  switch (half) {
+    case 0:
+      return "";
+    case 1:
+      return "HALF TIME";
+    case 2:
+      return "FULL TIME";
+    default:
+      return "OVERTIME";
+  }
+}
 
 export function AllRugbyUnionGraphics() {
   const state = useOnlyReplicantValue<State>("eventState");
@@ -17,6 +32,8 @@ export function AllRugbyUnionGraphics() {
     lastState.current = state;
   }, [state]);
 
+  const now = useTime();
+
   if (!state || !control) {
     return null;
   }
@@ -24,21 +41,33 @@ export function AllRugbyUnionGraphics() {
   return (
     <>
       <GraphicContainer>
-        <Scoreboard
-          isVisible={control.scoreboard.visible}
-          isTimerShown={control.scoreboard.timerShown}
-          team1Score={state.scoreHome}
-          team2Score={state.scoreAway}
-          timer={clockTimeAt(state.clock, new Date().valueOf())}
-        />
-        <MatchStatus
-          isVisible={control.matchStatusPopup.visible}
-          team1Name="LANC"
-          team2Name="YORK"
-          team1Score={state.scoreHome}
-          team2Score={state.scoreAway}
-          isOver={state.halves.length === 2}
-        />
+        {control.scoreboard.visible && (
+          <Scoreboard
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
+            timeVisible={control.scoreboard.timerShown}
+          />
+        )}
+      </GraphicContainer>
+      <GraphicContainer>
+        {control.matchStatusPopup.visible && (
+          <MatchStatusPopup
+            homeName="LANC"
+            homePrimaryColor="var(--lancaster-red)"
+            homeScore={state.scoreHome}
+            awayName="YORK"
+            awayPrimaryColor="var(--york-white)"
+            awaySecondaryColor="var(--ystv-dark)"
+            awayScore={state.scoreAway}
+            banner={bannerMsg(state.halves.length)}
+          />
+        )}
       </GraphicContainer>
     </>
   );
