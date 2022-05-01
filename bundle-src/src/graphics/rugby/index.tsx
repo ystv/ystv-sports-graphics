@@ -39,7 +39,9 @@ export function AllRugbyUnionGraphics() {
   }
 
   const currentHalf =
-    state.halves.length > 0 ? state.halves[state.halves.length - 1] : null;
+    (state.halves?.length ?? 0) > 0
+      ? state.halves[state.halves.length - 1]
+      : null;
 
   return (
     <>
