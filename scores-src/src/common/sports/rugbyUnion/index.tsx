@@ -167,9 +167,12 @@ const slice = createSlice({
         });
         let time: number;
         if (state.halves.length <= MAX_HALVES_WITHOUT_EXTRA_TIME) {
-          time = HALF_DURATION_MS;
+          time = HALF_DURATION_MS * (state.halves.length - 1);
         } else {
-          time = EXTRA_TIME_DURATION_MS;
+          time =
+            HALF_DURATION_MS * MAX_HALVES_WITHOUT_EXTRA_TIME +
+            EXTRA_TIME_DURATION_MS *
+              (state.halves.length - MAX_HALVES_WITHOUT_EXTRA_TIME - 1);
         }
         startClockAt(state.clock, action.meta.ts, time);
       },
