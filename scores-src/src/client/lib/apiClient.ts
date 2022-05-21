@@ -1,5 +1,5 @@
 import type { InferType } from "yup";
-import type { BaseEvent, BaseEventType, User } from "../../common/types";
+import type { EventMeta, User } from "../../common/types";
 import { stringify } from "qs";
 import useSWR, { useSWRConfig } from "swr";
 import { NavigateFunction, useNavigate } from "react-router-dom";
@@ -119,20 +119,12 @@ function useAPIRoute<TRes, TParams extends AnyObject | AnyObject[] = AnyObject>(
 }
 
 export function useGETEvents(onlyCovered = false) {
-  const retval = useAPIRoute<InferType<typeof BaseEvent>[]>(
-    "/events",
-    { onlyCovered },
-    200
-  );
+  const retval = useAPIRoute<EventMeta[]>("/events", { onlyCovered }, 200);
   return retval;
 }
 
 export function useGETEvent(type: string, id: string) {
-  const retval = useAPIRoute<InferType<typeof BaseEvent>>(
-    `/events/${type}/${id}`,
-    {},
-    200
-  );
+  const retval = useAPIRoute<EventMeta>(`/events/${type}/${id}`, {}, 200);
 
   return retval;
 }
@@ -141,7 +133,7 @@ export function usePOSTEvents() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (type: string, data: BaseEventType) => {
+  return async (type: string, data: EventMeta) => {
     const result = (await fetcher(navigate)(
       "/events/" + type,
       {
@@ -152,7 +144,7 @@ export function usePOSTEvents() {
         body: JSON.stringify(data),
       },
       201
-    )) as BaseEventType;
+    )) as EventMeta;
     mutate("/events");
     mutate(`/events/${result.type}/${result.id}`, result, false);
     return result;
@@ -163,11 +155,7 @@ export function usePUTEvent() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (
-    type: string,
-    id: string,
-    data: InferType<typeof BaseEvent>
-  ) => {
+  return async (type: string, id: string, data: EventMeta) => {
     const result = (await fetcher(navigate)(
       `/events/${type}/${id}`,
       {
@@ -178,7 +166,7 @@ export function usePUTEvent() {
         body: JSON.stringify(data),
       },
       200
-    )) as InferType<typeof BaseEvent>;
+    )) as EventMeta;
     mutate("/events");
     mutate(`/events/${type}/${result.id}`, result, false);
     return result;
@@ -205,7 +193,7 @@ export function usePOSTEventAction() {
         body: JSON.stringify(data),
       },
       200
-    )) as InferType<typeof BaseEvent>;
+    )) as EventMeta;
     mutate("/events");
     mutate(`/events/${type}/${result.id}`, result, false);
     return result;
@@ -293,7 +281,7 @@ export function usePOSTEventUndo() {
         body: JSON.stringify({ ts }),
       },
       200
-    )) as BaseEventType;
+    )) as EventMeta;
     mutate("/events");
     mutate(`/events/${type}/${result.id}`, result, false);
     return result;
@@ -315,7 +303,7 @@ export function usePOSTEventRedo() {
         body: JSON.stringify({ ts }),
       },
       200
-    )) as BaseEventType;
+    )) as EventMeta;
     mutate("/events");
     mutate(`/events/${type}/${result.id}`, result, false);
     return result;
@@ -337,7 +325,7 @@ export function usePOSTEventDeclareWinner() {
         body: JSON.stringify({ winner }),
       },
       200
-    )) as BaseEventType;
+    )) as EventMeta;
     mutate("/events");
     mutate(`/events/${type}/${result.id}`, result, false);
     return result;

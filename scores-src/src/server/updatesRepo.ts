@@ -23,22 +23,33 @@ export type UpdatesMessage = EventUpdateMessage | SpecialMessage;
 
 const UPDATES_STREAM = "eventUpdates";
 
-export async function resync(eventId: string) {
+export async function resync(typeName: string, eventId: string) {
   const msg: UpdatesMessage = {
     _special: "resync",
-    id: eventId,
+    id: `Event/${typeName}/${eventId}`,
   };
   const result = await REDIS.xAdd(
     UPDATES_STREAM,
     "*",
     msg as unknown as Record<string, string>
   );
-  logger.debug("Dispatched resync of " + eventId + ", its MID is " + result);
+  logger.debug(
+    "Dispatched resync of " +
+      typeName +
+      " " +
+      eventId +
+      ", its MID is " +
+      result
+  );
 }
 
-export async function dispatchChangeToEvent(id: string, data: Action) {
+export async function dispatchChangeToEvent(
+  type: string,
+  id: string,
+  data: Action
+) {
   const msg: UpdatesMessage = {
-    id,
+    id: `Event/${type}/${id}`,
     type: data.type,
     payload: JSON.stringify(data.payload),
     meta: JSON.stringify(data.meta),

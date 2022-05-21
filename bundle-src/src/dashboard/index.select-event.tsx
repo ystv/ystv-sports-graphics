@@ -14,12 +14,12 @@ import {
   Stack,
   Title,
 } from "@mantine/core";
-import type { BaseEventType } from "@ystv/scores/src/common/types";
+import type { EventMeta } from "@ystv/scores/src/common/types";
 import { EventID } from "common/types/eventID";
 import invariant from "tiny-invariant";
 
 function Dashboard() {
-  const [events, setEvents] = useState<BaseEventType[] | null>(null);
+  const [events, setEvents] = useState<EventMeta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     async function get() {

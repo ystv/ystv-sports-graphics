@@ -4,8 +4,10 @@ import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
-import { BaseEventType } from "../../common/types";
+import { EventMeta } from "../../common/types";
 import { usePOSTEvents } from "../lib/apiClient";
+
+type EventState = EventMeta & { [K: string]: unknown };
 
 export function CreateEventModal() {
   const nav = useNavigate();
@@ -15,8 +17,8 @@ export function CreateEventModal() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function submit(
-    values: BaseEventType,
-    helpers: FormikHelpers<BaseEventType>
+    values: EventState,
+    helpers: FormikHelpers<EventState>
   ) {
     console.log("submit called");
     helpers.setSubmitting(true);
@@ -50,9 +52,11 @@ export function CreateEventModal() {
       <Formik
         enableReinitialize
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        initialValues={EVENT_TYPES[type].schema.omit(["id", "type"]).cast({})}
+        initialValues={EVENT_TYPES[type].stateSchema
+          .omit(["id", "type"])
+          .cast({})}
         onSubmit={submit}
-        validationSchema={EVENT_TYPES[type].schema.omit(["id", "type"])}
+        validationSchema={EVENT_TYPES[type].stateSchema.omit(["id", "type"])}
       >
         {({ handleSubmit, isSubmitting, errors }) => (
           <Stack>

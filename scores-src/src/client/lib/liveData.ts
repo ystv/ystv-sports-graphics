@@ -10,7 +10,7 @@ import { getAuthToken } from "./apiClient";
 import { resolveEventState, wrapReducer } from "../../common/eventStateHelpers";
 import { EVENT_TYPES } from "../../common/sports";
 import { pick } from "lodash-es";
-import { Action, BaseEventType } from "../../common/types";
+import { Action, EventMeta } from "../../common/types";
 
 const logger = logging.getLogger("liveData");
 logger.setLevel(import.meta.env.DEV ? "trace" : "info");
@@ -44,10 +44,7 @@ export function useLiveData(eventId: string) {
     () =>
       history.length === 0
         ? null
-        : (resolveEventState(
-            EVENT_TYPES[type].reducer,
-            history
-          ) as BaseEventType),
+        : (resolveEventState(EVENT_TYPES[type].reducer, history) as EventMeta),
     [history, type]
   );
 

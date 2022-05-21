@@ -23,7 +23,7 @@ export function EditEventForm() {
     helpers.setSubmitting(true);
     setSubmitError(null);
     try {
-      // @ts-expect-error can't be safely typed
+      //@ts-expect-error no good way to type this
       const result = await update(type, id, values);
       nav("/events");
     } catch (e) {
@@ -43,7 +43,7 @@ export function EditEventForm() {
       {data && (
         <Formik
           initialValues={data}
-          validationSchema={EVENT_TYPES[type].schema.omit(["type", "id"])}
+          validationSchema={EVENT_TYPES[type].stateSchema.omit(["type", "id"])}
           onSubmit={submit}
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (
