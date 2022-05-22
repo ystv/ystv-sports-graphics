@@ -71,4 +71,5 @@ jobs:
         uses: codecov/codecov-action@v3.1.0
         with:
           root_dir: ./nodecg/bundles/ystv-sports-graphics
-          files: scores-src/src/common/coverage/clover.xml,scores-src/src/server/coverage/clover.xml,
+          files: scores-src/src/common/coverage/clover.xml,scores-src/src/server/coverage/clover.xml
+          gcov_ignore: ./nodecg/bundles/ystv-sports-graphics/.yarn
