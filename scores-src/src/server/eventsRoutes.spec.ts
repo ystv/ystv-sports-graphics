@@ -76,5 +76,28 @@ describe("eventsRoutes", () => {
       expect(response.body).toHaveLength(1);
       expect(response.body[0].type).toBe("football");
     });
+
+    test("onlyCovered", async () => {
+      const DB = require("./db").DB as unknown as InMemoryDB;
+      DB.query.mockResolvedValueOnce({
+        rows: [
+          {
+            id: "Event/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            data: [wrapAction(Init({ notCovered: true }))],
+          },
+          {
+            id: "Event/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            data: [wrapAction(Init({}))],
+          },
+        ],
+      });
+
+      const response = await request(app)
+        .get("/api/events?onlyCovered=true")
+        .auth("test", "password");
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].type).toBe("netball");
+    });
   });
 });
