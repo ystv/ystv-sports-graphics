@@ -1,0 +1,75 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Run unit tests
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout NodeCG
+        uses: actions/checkout@v3
+        with:
+          repository: ystv/nodecg
+          ref: ystv
+          path: ./nodecg
+
+      - uses: actions/checkout@v3
+        with:
+          path: ./nodecg/bundles/ystv-sports-graphics
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Dependencies
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: yarn --immutable --inline-builds
+
+      - name: Run unit tests (bundle-src)
+        id: jest_bundle
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
+        run: exit 0
+
+      - name: Run unit tests (scores-src common)
+        id: jest_scores_common
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/common
+        run: yarn jest --coverage
+
+      - name: Run unit tests (scores-src client)
+        id: jest_scores_client
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/client
+        run: exit 0
+
+      - name: Run unit tests (scores-src server)
+        id: jest_scores_server
+        continue-on-error: true
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/server
+        run: yarn jest --coverage
+
+      - name: Fail if any of the previous failed
+        if: steps.jest_bundle.outcome != 'success' || steps.jest_scores_common.outcome != 'success' || steps.jest_scores_client.outcome != 'success' || steps.jest_scores_server.outcome != 'success'
+        run: exit 1
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3.1.0
+        with:
+          root_dir: ./nodecg/bundles/ystv-sports-graphics
+          files: scores-src/src/common/coverage/clover.xml,scores-src/src/server/coverage/clover.xml
+          gcov_ignore: ./nodecg/bundles/ystv-sports-graphics/.yarn

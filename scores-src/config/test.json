@@ -1,0 +1,14 @@
+{
+  "logLevel": "debug",
+  "redis": {
+    "connectionString": "redis://redis"
+  },
+  "allowedOrigins": ["http://localhost:3000", "http://localhost:8000"],
+  "db": {
+    "connectionString": "inMem://",
+    "username": "sports-scores",
+    "password": "password",
+    "bucket": "sports-scores",
+    "scope": "_default"
+  }
+}
