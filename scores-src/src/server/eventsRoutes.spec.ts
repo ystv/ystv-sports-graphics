@@ -7,7 +7,7 @@ import request from "supertest";
 import { createEventsRouter } from "./eventsRoutes";
 import { hash } from "argon2";
 import { InMemoryDB } from "./__mocks__/db";
-import { baseLogger, getLogger } from "./loggingSetup";
+import { getLogger } from "./loggingSetup";
 import { Init, wrapAction } from "../common/eventStateHelpers";
 import { errorHandler } from "./httpUtils";
 
