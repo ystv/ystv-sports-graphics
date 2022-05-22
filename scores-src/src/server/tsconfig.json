@@ -1,19 +1,15 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "rootDir": "..",
-        "noEmit": true,
-        "jsx": "preserve", // only needed for type-checking, esbuild will strip it
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "typeRoots": ["../../node_modules/@types"]
-    },
-    "include": [
-        "../common/**/*.ts",
-        "../common/**/*.tsx",
-        "./**/*.ts"
-    ]
+  "compilerOptions": {
+    "module": "commonjs",
+    "rootDir": "..",
+    "noEmit": true,
+    "jsx": "preserve", // only needed for type-checking, esbuild will strip it
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "typeRoots": ["../../node_modules/@types"]
+  },
+  "include": ["../common/**/*.ts", "../common/**/*.tsx", "./**/*.ts"]
 }
