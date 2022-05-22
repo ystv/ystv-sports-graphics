@@ -118,7 +118,6 @@ function runTests(typeName: string, info: EventTypeInfo<unknown, any>) {
           .get(`/api/events/${typeName}/${createRes.body.id}`)
           .auth("test", "password");
         expect(getRes.statusCode).toBe(200);
-        console.log(getRes.body);
         expect(getRes.body.id).toEqual(createRes.body.id);
       });
 
