@@ -9,7 +9,7 @@ import {
   QueryOptions,
   GetResult,
 } from "couchbase";
-import { isEqual } from "lodash-es";
+import { cloneDeep, isEqual } from "lodash-es";
 
 interface Rec {
   value: unknown;
@@ -29,6 +29,13 @@ export class InMemoryDB {
 
   public query = jest.fn();
 
+  public _dump() {
+    for (const coll of Array.from(this.collections.keys())) {
+      const data = Array.from(this.collections.get(coll)?.entries() ?? []);
+      console.log("Collection " + coll + ":\n" + JSON.stringify(data, null, 4));
+    }
+  }
+
   public collection(name: string) {
     if (!this.collections.has(name)) {
       this.collections.set(name, new Map());
@@ -42,7 +49,7 @@ export class InMemoryDB {
           throw new DocumentNotFoundError();
         }
         return {
-          content: val.value,
+          content: cloneDeep(val.value),
           cas: val.cas,
         } as GetResult;
       },
