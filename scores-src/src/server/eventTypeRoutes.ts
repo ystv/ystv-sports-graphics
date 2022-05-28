@@ -27,6 +27,7 @@ import {
   EventTypeInfo,
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
+import { identity } from "lodash-es";
 
 export function makeEventAPIFor<
   TState extends BaseEventStateType,
@@ -55,10 +56,26 @@ export function makeEventAPIFor<
       const result = await DB.query(
         `SELECT RAW e
         FROM _default e
-        WHERE meta(e).id LIKE 'Event/${typeName}/%'
-        ORDER BY MILLIS(ARRAY_REVERSE(ARRAY x.payload.startTime FOR x IN e WHEN x.type = '@@init' OR x.type = '@@edit' END)[0])`
+        WHERE meta(e).id LIKE 'EventMeta/${typeName}/%'
+        ORDER BY MILLIS(e.startTime)`
       );
-      res.json(result.rows.map((row) => resolveEventState(reducer, row)));
+      const events = await Promise.all(
+        result.rows.map(async (row) => {
+          const meta = row as EventMeta;
+          const history = await DB.collection("_default").get(
+            row.id.replace("EventMeta", "EventHistory")
+          );
+          const state = resolveEventState(
+            EVENT_TYPES[meta.type]?.reducer ?? identity,
+            history.content
+          );
+          return {
+            ...meta,
+            ...state,
+          };
+        })
+      );
+      res.json(events);
     })
   );
 

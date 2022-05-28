@@ -96,9 +96,25 @@ function runTests<
       });
 
       test("one", async () => {
+        const id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+        const testMeta: EventMeta = {
+          id: `EventMeta/football/${id}`,
+          type: "football",
+          name: "Test Event",
+          worthPoints: 4,
+          startTime: "2022-05-28T00:00:00Z",
+        };
         const DB = require("./db").DB as unknown as InMemoryDB;
+        await DB.collection("_default").insert(
+          `EventMeta/football/${id}`,
+          testMeta
+        );
+        await DB.collection("_default").insert(
+          `EventHistory/football/${id}`,
+          []
+        );
         DB.query.mockResolvedValueOnce({
-          rows: [[wrapAction(Init({}))]],
+          rows: [testMeta],
         });
 
         const response = await request(app)
