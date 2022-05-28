@@ -1,0 +1,54 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Start database
+        run: |
+          docker volume create cbdata
+          docker run --rm -d -p 8091-8096:8091-8096 -p 11207-11211:11207-11211 -p 18091-18096:18096-18096 -v cbdata:/cbdata -v $(pwd)/scripts/couchbase-entrypoint.sh:/entrypoint.sh:ro couchbase/server:community-7.1.0
+          docker run --rm -d -p 6379:6379 redis:6-alpine
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Dependencies
+        run: yarn --immutable --inline-builds
+
+      - name: Build app
+        working-directory: ./scores-src
+        run: |
+          yarn build
+          mkdir -p build/Release/
+          cp ../node_modules/couchbase/build/Release/couchbase_impl.node build/Release/couchbase_impl.node
+
+      - name: Run App
+        working-directory: ./scores-src
+        env:
+          NODE_ENV: test
+          DB_CONNECTION_STRING: couchbase://localhost
+        run: yarn prod &
+
+      - name: Run Cypress
+        uses: cypress-io/github-action@v2
+        with:
+          browser: chrome

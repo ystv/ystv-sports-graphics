@@ -12,6 +12,7 @@ module.exports = {
     browser: true,
     es2021: true,
     node: true,
+    "cypress/globals": true,
   },
   extends: [
     "eslint:recommended",
@@ -33,7 +34,7 @@ module.exports = {
       version: "detect",
     },
   },
-  plugins: ["react", "@typescript-eslint"],
+  plugins: ["react", "@typescript-eslint", "cypress"],
   rules: {
     "@typescript-eslint/no-unused-vars": "off",
     "react/prop-types": "off",
