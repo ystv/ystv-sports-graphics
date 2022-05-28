@@ -150,12 +150,6 @@ export function makeEventAPIFor<
         stripUnknown: true,
       });
 
-      // We need to ensure that anyone listening to the changes feed gets the *full*
-      // state (essentially remaining blissfully unaware of the concept of meta).
-      // FIXME: No! We need this to only contain the fields that changed in this edit,
-      // otherwise undo/redo will get horribly confused and undo the edit (which isn't
-      // normally possible).
-      // @@edit will shallow-apply the payload to the previous state, so it's safe.
       const editAction = wrapAction(Edit(newState));
       await DB.collection("_default").replace(metaKey(id), newMeta);
       await DB.collection("_default").mutateIn(
@@ -191,6 +185,11 @@ export function makeEventAPIFor<
       const currentActions = currentActionsResult.content as Action[];
       const undoneIndex = currentActions.findIndex((x) => x.meta.ts === ts);
       ensure(undoneIndex > -1, BadRequest, "no action with that ts");
+      ensure(
+        !currentActions[undoneIndex].type.startsWith("@@"),
+        BadRequest,
+        "can't undo internal actions"
+      );
       const undoAction = wrapAction(Undo({ ts }));
       currentActions.push(undoAction);
 
