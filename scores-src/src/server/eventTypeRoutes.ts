@@ -25,11 +25,7 @@ import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.j
 
 export function makeEventAPIFor<
   TState extends BaseEventType,
-  TActions extends Record<
-    string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload?: any) => Action<Record<string, unknown>>
-  >
+  TActions extends { [K: string]: (payload?: any) => { type: string } }
 >(typeName: string, info: EventTypeInfo<TState, TActions>) {
   const logger = getLogger("eventTypeAPI").child({
     type: typeName,
@@ -309,7 +305,10 @@ export function makeEventAPIFor<
           }
         }
 
-        const actionData = wrapAction(actionCreators[actionType](payload));
+        const actionData = wrapAction(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          actionCreators[actionType](payload) as any
+        );
 
         await DB.collection("_default").mutateIn(
           key(id),

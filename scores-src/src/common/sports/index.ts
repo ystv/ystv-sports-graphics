@@ -64,8 +64,11 @@ import {
 } from "./swimming";
 import { EventComponents, EventTypeInfo } from "../types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const EVENT_TYPES: Record<string, EventTypeInfo<any, any>> = {
+export const EVENT_TYPES: Record<
+  string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  EventTypeInfo<any, { [K: string]: (payload?: any) => { type: string } }>
+> = {
   netball: netballTypeInfo,
   football: footballTypeInfo,
   basketball: basketballTypeInfo,
