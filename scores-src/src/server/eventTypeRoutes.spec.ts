@@ -15,6 +15,7 @@ import { wrapAction, Init } from "../common/eventStateHelpers";
 
 jest.mock("./db");
 jest.mock("./redis");
+jest.mock("./updateTournamentSummary.job");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
@@ -170,6 +171,74 @@ function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
         );
         expect(persistedVal.content).toHaveLength(2);
         expect(persistedVal.content[1].payload.worthPoints).toBe(2);
+      });
+    });
+
+    describe("declareWinner", () => {
+      it("works", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+        const initialVal = info.schema.cast({
+          id: id,
+          type: typeName,
+          name: "test",
+          worthPoints: 4,
+          notCovered: false,
+          startTime: "2022-05-28T00:00:00.000Z",
+        });
+        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
+          wrapAction(Init(initialVal)),
+        ]);
+
+        const res = await request(app)
+          .post(`/api/events/${typeName}/${id}/_declareWinner`)
+          .send({ winner: "away" })
+          .auth("test", "password");
+        expect(res.statusCode).toBe(200);
+        expect(res.body.winner).toBe("away");
+
+        const persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(2);
+        expect(persistedVal.content[1].payload.winner).toBe("away");
+        expect(
+          require("./updateTournamentSummary.job").doUpdate
+        ).toHaveBeenCalled();
+      });
+      it("correctly handles multiple updates", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+        const initialVal = info.schema.cast({
+          id: id,
+          type: typeName,
+          name: "test",
+          worthPoints: 4,
+          notCovered: false,
+          startTime: "2022-05-28T00:00:00.000Z",
+        });
+        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
+          wrapAction(Init(initialVal)),
+        ]);
+
+        const res1 = await request(app)
+          .post(`/api/events/${typeName}/${id}/_declareWinner`)
+          .send({ winner: "away" })
+          .auth("test", "password");
+        expect(res1.statusCode).toBe(200);
+        expect(res1.body.winner).toBe("away");
+
+        const res2 = await request(app)
+          .post(`/api/events/${typeName}/${id}/_declareWinner`)
+          .send({ winner: "home" })
+          .auth("test", "password");
+        expect(res2.statusCode).toBe(200);
+        expect(res2.body.winner).toBe("home");
+        const persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(3);
+        expect(persistedVal.content[2].payload.winner).toBe("home");
       });
     });
   });
