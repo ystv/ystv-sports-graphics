@@ -148,8 +148,13 @@ export function DateField(props: DateFieldProps) {
           value={value}
           onChange={(d) => onChange(d ?? new Date(), "date")}
           error={meta.touched && meta.error}
+          data-cy="datePicker"
         />
-        <TimeInput value={value} onChange={(d) => onChange(d, "time")} />
+        <TimeInput
+          value={value}
+          onChange={(d) => onChange(d, "time")}
+          data-cy="timePicker"
+        />
       </Group>
     </InputWrapper>
   );

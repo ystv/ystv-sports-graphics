@@ -10,6 +10,7 @@ Cypress.Commands.add("login", (username, password) => {
 
 Cypress.Commands.add("resetAndCreateTestUser", (username, password) => {
   cy.request("POST", "/api/_test/resetDB");
+  Cypress.session.clearAllSavedSessions();
   cy.request("POST", "/api/_test/createTestUser", {
     username,
     password: password,

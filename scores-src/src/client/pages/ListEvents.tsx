@@ -89,12 +89,19 @@ export function ListEvents() {
   return (
     <>
       <Title order={1}>All Events</Title>
-      <Button component={Link} to="new" mt={"lg"} mb={"lg"} color={"green"}>
+      <Button
+        component={Link}
+        to="new"
+        mt={"lg"}
+        mb={"lg"}
+        color={"green"}
+        data-cy="createNew"
+      >
         Create New
       </Button>
       <Stack>
         {events.map((evt) => (
-          <Card withBorder radius="md" key={evt.id}>
+          <Card withBorder radius="md" key={evt.id} data-cy="eventRoot">
             <Text size="lg" weight={500}>
               {evt.name}
             </Text>
@@ -117,6 +124,7 @@ export function ListEvents() {
                   color={"orange"}
                   variant="outline"
                   disabled={!(evt.type in EVENT_TYPES)}
+                  data-cy="editEvent"
                 >
                   Edit Event
                 </Button>
