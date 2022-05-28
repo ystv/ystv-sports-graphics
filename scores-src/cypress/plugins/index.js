@@ -1,22 +1,24 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /// <reference types="cypress" />
-// ***********************************************************
-// This example plugins/index.js can be used to load plugins
-//
-// You can change the location of this file or turn off loading
-// the plugins file with the 'pluginsFile' configuration option.
-//
-// You can read more here:
-// https://on.cypress.io/plugins-guide
-// ***********************************************************
 
-// This function is called when a project is opened or re-opened (e.g. due to
-// the project's config changing)
+const del = require("del");
 
 /**
  * @type {Cypress.PluginConfig}
  */
 // eslint-disable-next-line no-unused-vars
 module.exports = (on, config) => {
-  // `on` is used to hook into various events Cypress emits
-  // `config` is the resolved Cypress config
+  // Delete videos for successful tests after the run
+  on("after:spec", (spec, results) => {
+    if (results && results.video) {
+      // Do we have failures for any retry attempts?
+      const failures = results.tests.some((x) =>
+        x.attempts.some((attempt) => attempt.state === "failed")
+      );
+      if (!failures) {
+        // delete the video if the spec passed and no tests retried
+        return del(results.video);
+      }
+    }
+  });
 };

@@ -53,3 +53,10 @@ jobs:
         uses: cypress-io/github-action@v2
         with:
           browser: chrome
+
+      - name: Upload videos of failures
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: E2E test video
+          path: ./cypress/videos
