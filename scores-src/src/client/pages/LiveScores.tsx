@@ -80,7 +80,11 @@ function EventActionModal(props: {
             <Form onReset={handleReset} onSubmit={handleSubmit}>
               <Stack>
                 <ActionForm currentState={props.currentState} />
-                <Button type="submit" disabled={isSubmitting || !isValid}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !isValid}
+                  data-cy="performAction"
+                >
                   Submit
                 </Button>
                 {submitError !== null && (
@@ -167,7 +171,7 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
   result.reverse();
 
   // TODO make this a table rather than a UL
-  return <ul>{result}</ul>;
+  return <ul data-cy="timeline">{result}</ul>;
 }
 
 export function LiveScores() {

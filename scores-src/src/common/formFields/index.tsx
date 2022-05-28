@@ -245,6 +245,7 @@ export function SegmentedSelectField(props: SegmentedSelectFieldProps) {
         {...field}
         onChange={(value: string) => helpers.setValue(value)}
         value={field.value}
+        data-test-form-field={props.name}
       />
     </InputWrapper>
   );
