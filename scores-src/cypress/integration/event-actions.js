@@ -40,6 +40,23 @@ describe("Event Management", () => {
       cy.get("[data-cy=performAction]").click();
 
       cy.contains("Home 0 - Away 1").should("be.visible");
+      cy.get("[data-cy=timeline] > *").should("have.length", 2);
+    });
+
+    it("Undo/Redo last goal", function () {
+      cy.login("admin", "password");
+      cy.visit(`/events/football/${this.eventID}`);
+      cy.contains("Home 0 - Away 1").should("be.visible");
+
+      cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
+      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.get("[data-cy=timeline] > *")
+        .contains("Redo")
+        .should("be.visible")
+        .should("not.be.disabled");
+
+      cy.get("[data-cy=timeline] > *").first().contains("Redo").click();
+      cy.contains("Home 0 - Away 1").should("be.visible");
     });
   });
 });
