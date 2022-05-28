@@ -20,8 +20,8 @@ const handler = async (req, res) => {
   console.log(req.method, req.url);
   const url = new URL(req.url, `http://localhost:${port}`);
   if (url.pathname.startsWith("/api")) {
-    if (req.headers.connection === "upgrade") {
-      proxy.ws(req, res);
+    if (req.headers.connection?.toLowerCase() === "upgrade") {
+      proxy.ws(req, req.socket, req.headers);
     } else {
       proxy.web(req, res);
     }
