@@ -13,6 +13,7 @@ describe("Event Management", () => {
     cy.get("[name=worthPoints]").type("4");
     cy.get("[data-cy=submit]").click();
     cy.visit("/events");
+    cy.reload(); // GRAPHICS-156
     cy.contains("Test Football").should("be.visible");
   });
 
