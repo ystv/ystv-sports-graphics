@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { hash } from "argon2";
 import cookieParser from "cookie-parser";
@@ -11,14 +12,20 @@ import { getLogger } from "./loggingSetup";
 import { InMemoryDB } from "./__mocks__/db";
 import { createEventTypesRouter } from "./eventTypeRoutes";
 import { EVENT_TYPES } from "../common/sports";
-import { wrapAction, Init } from "../common/eventStateHelpers";
+import { wrapAction, Init, Undo } from "../common/eventStateHelpers";
 
 jest.mock("./db");
 jest.mock("./redis");
 jest.mock("./updateTournamentSummary.job");
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
+function runTests<
+  TActions extends { [K: string]: (payload?: any) => { type: string } },
+  TInfo extends EventTypeInfo<BaseEventType, TActions>
+>(
+  typeName: string,
+  info: TInfo,
+  ...testActions: Array<[keyof TActions, Record<string, any>]>
+) {
   describe(typeName, () => {
     let app: Application;
     let ignoreLogErrors: RegExp[] = [];
@@ -43,7 +50,6 @@ function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
       const baseRouter = Router();
       baseRouter.use("/events", createEventTypesRouter());
       app.use("/api", baseRouter);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       app.use(((err: any, req: Request, res: Response, next: NextFunction) => {
         if (err) {
           for (const exp of ignoreLogErrors) {
@@ -54,9 +60,7 @@ function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
           console.warn(err);
           next(err);
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }) as any);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       app.use(errorHandler(getLogger("test")));
     });
 
@@ -234,6 +238,7 @@ function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
           .auth("test", "password");
         expect(res2.statusCode).toBe(200);
         expect(res2.body.winner).toBe("home");
+
         const persistedVal = await DB.collection("_default").get(
           `Event/${typeName}/${id}`
         );
@@ -241,7 +246,197 @@ function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
         expect(persistedVal.content[2].payload.winner).toBe("home");
       });
     });
+
+    describe("actions", () => {
+      it("does not crash", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+        const initialVal = info.schema.cast({
+          id: id,
+          type: typeName,
+          name: "test",
+          worthPoints: 4,
+          notCovered: false,
+          startTime: "2022-05-28T00:00:00.000Z",
+        });
+        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
+          wrapAction(Init(initialVal)),
+        ]);
+
+        for (const [type, payload] of testActions) {
+          const res = await request(app)
+            .post(`/api/events/${typeName}/${id}/${type}`)
+            .send(payload)
+            .auth("test", "password");
+          expect(res.statusCode).toBe(200);
+        }
+
+        const persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+      });
+    });
+
+    describe("undo/redo", () => {
+      it("undoes", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+        const initialVal = info.schema.cast({
+          id: id,
+          type: typeName,
+          name: "test",
+          worthPoints: 4,
+          notCovered: false,
+          startTime: "2022-05-28T00:00:00.000Z",
+        });
+        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
+          wrapAction(Init(initialVal)),
+        ]);
+
+        for (const [type, payload] of testActions) {
+          const res = await request(app)
+            .post(`/api/events/${typeName}/${id}/${type}`)
+            .send(payload)
+            .auth("test", "password");
+          expect(res.statusCode).toBe(200);
+        }
+
+        let persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+        const ts =
+          persistedVal.content[persistedVal.content.length - 1].meta.ts;
+
+        const res = await request(app)
+          .post(`/api/events/${typeName}/${id}/_undo`)
+          .send({ ts })
+          .auth("test", "password");
+        expect(res.statusCode).toBe(200);
+        persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(testActions.length + 2);
+        expect(persistedVal.content[persistedVal.content.length - 1].type).toBe(
+          Undo.type
+        );
+      });
+
+      it("redos (special case)", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+        const initialVal = info.schema.cast({
+          id: id,
+          type: typeName,
+          name: "test",
+          worthPoints: 4,
+          notCovered: false,
+          startTime: "2022-05-28T00:00:00.000Z",
+        });
+        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
+          wrapAction(Init(initialVal)),
+        ]);
+
+        for (const [type, payload] of testActions) {
+          const res = await request(app)
+            .post(`/api/events/${typeName}/${id}/${type}`)
+            .send(payload)
+            .auth("test", "password");
+          expect(res.statusCode).toBe(200);
+        }
+
+        let persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+        const ts =
+          persistedVal.content[persistedVal.content.length - 1].meta.ts;
+
+        const undoRes = await request(app)
+          .post(`/api/events/${typeName}/${id}/_undo`)
+          .send({ ts })
+          .auth("test", "password");
+        expect(undoRes.statusCode).toBe(200);
+        const redoRes = await request(app)
+          .post(`/api/events/${typeName}/${id}/_redo`)
+          .send({ ts })
+          .auth("test", "password");
+        expect(redoRes.statusCode).toBe(200);
+
+        persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+      });
+
+      (testActions.length < 3 ? it.skip : it)(
+        "redos (NO special case)",
+        async () => {
+          const DB = require("./db").DB as unknown as InMemoryDB;
+          const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+          const initialVal = info.schema.cast({
+            id: id,
+            type: typeName,
+            name: "test",
+            worthPoints: 4,
+            notCovered: false,
+            startTime: "2022-05-28T00:00:00.000Z",
+          });
+          await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
+            wrapAction(Init(initialVal)),
+          ]);
+
+          // Apply all but the last action, then undo it, then apply the last
+
+          for (const [type, payload] of testActions.slice(0, -1)) {
+            const res = await request(app)
+              .post(`/api/events/${typeName}/${id}/${type}`)
+              .send(payload)
+              .auth("test", "password");
+            expect(res.statusCode).toBe(200);
+          }
+
+          let persistedVal = await DB.collection("_default").get(
+            `Event/${typeName}/${id}`
+          );
+          expect(persistedVal.content).toHaveLength(testActions.length - 1 + 1);
+          const ts =
+            persistedVal.content[persistedVal.content.length - 1].meta.ts;
+
+          const undoRes = await request(app)
+            .post(`/api/events/${typeName}/${id}/_undo`)
+            .send({ ts })
+            .auth("test", "password");
+          expect(undoRes.statusCode).toBe(200);
+
+          const lastAction = testActions[testActions.length - 1];
+          const lastRes = await request(app)
+            .post(`/api/events/${typeName}/${id}/${lastAction[0]}`)
+            .send(lastAction[1])
+            .auth("test", "password");
+          expect(lastRes.statusCode).toBe(200);
+
+          const redoRes = await request(app)
+            .post(`/api/events/${typeName}/${id}/_redo`)
+            .send({ ts })
+            .auth("test", "password");
+          expect(redoRes.statusCode).toBe(200);
+
+          persistedVal = await DB.collection("_default").get(
+            `Event/${typeName}/${id}`
+          );
+          expect(persistedVal.content).toHaveLength(testActions.length + 3);
+        }
+      );
+    });
   });
 }
 
-runTests("football", EVENT_TYPES.football);
+runTests(
+  "football",
+  EVENT_TYPES.football,
+  ["startHalf", {}],
+  ["goal", { side: "home", player: null }],
+  ["goal", { side: "home", player: null }]
+);

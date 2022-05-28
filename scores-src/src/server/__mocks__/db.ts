@@ -11,7 +11,7 @@ import {
   MutateInSpec,
   MutateInOptions,
 } from "couchbase";
-import { cloneDeep, isEqual } from "lodash-es";
+import { cloneDeep, get, isEqual, set } from "lodash-es";
 import binding from "couchbase/dist/binding";
 
 interface Rec {
@@ -99,15 +99,37 @@ export class InMemoryDB {
             }
           }
         }
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        let val = c.get(key)!.value;
+        // eslint-disable-next-line
+        let val = c.get(key)!.value as any;
         for (const op of specs) {
           switch (op._op) {
             case binding.LCBX_SDCMD_ARRAY_ADD_LAST:
               val = [...(val as unknown[]), JSON.parse(op._data)];
               break;
+            case binding.LCBX_SDCMD_REMOVE:
+              if (op._path[op._path.length - 1] == "]") {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const [_, arrayPath, index] = /(.*?)\[([0-9-]+)\]$/.exec(
+                  op._path
+                )!;
+                let arra: unknown[];
+                if (arrayPath.length === 0) {
+                  arra = val;
+                } else {
+                  arra = get(val, arrayPath);
+                }
+                arra.splice(parseInt(index), 1);
+                set(val, arrayPath, arra);
+              } else {
+                throw new Error(
+                  "Unhandled non-array subdoc case (this is a test bug)"
+                );
+              }
+              break;
             default:
-              throw new Error(`Unsupported subdoc operation ${op._op}`);
+              throw new Error(
+                `Unsupported subdoc operation ${op._op} (this is a test bug)`
+              );
           }
         }
         c.set(key, { value: val, cas: newCas() });
