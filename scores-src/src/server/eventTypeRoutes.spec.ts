@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import request from "supertest";
 import { json as jsonParser } from "body-parser";
 import Express, { Application, NextFunction, Router } from "express";
-import { EventTypeInfo } from "../common/types";
+import { BaseEventType, EventTypeInfo } from "../common/types";
 import { createEventsRouter } from "./eventsRoutes";
 import { errorHandler } from "./httpUtils";
 import { getLogger } from "./loggingSetup";
@@ -17,7 +17,7 @@ jest.mock("./db");
 jest.mock("./redis");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function runTests(typeName: string, info: EventTypeInfo<unknown, any>) {
+function runTests(typeName: string, info: EventTypeInfo<BaseEventType, any>) {
   describe(typeName, () => {
     let app: Application;
     let ignoreLogErrors: RegExp[] = [];
@@ -130,6 +130,46 @@ function runTests(typeName: string, info: EventTypeInfo<unknown, any>) {
           })
           .auth("test", "password");
         expect(createRes.statusCode).toBe(422);
+      });
+    });
+
+    describe("update", () => {
+      it("works", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+        const initialVal = info.schema.cast({
+          id: id,
+          type: typeName,
+          name: "test",
+          worthPoints: 4,
+          notCovered: false,
+          startTime: "2022-05-28T00:00:00.000Z",
+        });
+        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
+          wrapAction(Init(initialVal)),
+        ]);
+
+        const newVal = info.schema.cast({
+          id: id,
+          type: typeName,
+          name: "test",
+          worthPoints: 2,
+          notCovered: false,
+          startTime: "2022-05-28T00:00:00.000Z",
+        });
+
+        const updateRes = await request(app)
+          .put(`/api/events/${typeName}/${id}`)
+          .send(newVal)
+          .auth("test", "password");
+        expect(updateRes.statusCode).toBe(200);
+        expect(updateRes.body.worthPoints).toBe(2);
+
+        const persistedVal = await DB.collection("_default").get(
+          `Event/${typeName}/${id}`
+        );
+        expect(persistedVal.content).toHaveLength(2);
+        expect(persistedVal.content[1].payload.worthPoints).toBe(2);
       });
     });
   });

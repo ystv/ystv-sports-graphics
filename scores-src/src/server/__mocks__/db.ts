@@ -8,8 +8,11 @@ import {
   QueryResult,
   QueryOptions,
   GetResult,
+  MutateInSpec,
+  MutateInOptions,
 } from "couchbase";
 import { cloneDeep, isEqual } from "lodash-es";
+import binding from "couchbase/dist/binding";
 
 interface Rec {
   value: unknown;
@@ -77,6 +80,36 @@ export class InMemoryDB {
         c.set(key, { value: val, cas: newCas() });
       },
       async upsert(key: string, val: unknown, options?: UpsertOptions) {
+        c.set(key, { value: val, cas: newCas() });
+      },
+      async mutateIn(
+        key: string,
+        specs: MutateInSpec[],
+        options?: MutateInOptions
+      ) {
+        if (!c.has(key)) {
+          throw new DocumentNotFoundError(new MemDBError(key));
+        }
+        if (options) {
+          if (options.cas) {
+            if (c.get(key)?.cas !== options.cas) {
+              throw new CasMismatchError(
+                new MemDBError(`expected ${c.get(key)?.cas} got ${options.cas}`)
+              );
+            }
+          }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        let val = c.get(key)!.value;
+        for (const op of specs) {
+          switch (op._op) {
+            case binding.LCBX_SDCMD_ARRAY_ADD_LAST:
+              val = [...(val as unknown[]), JSON.parse(op._data)];
+              break;
+            default:
+              throw new Error(`Unsupported subdoc operation ${op._op}`);
+          }
+        }
         c.set(key, { value: val, cas: newCas() });
       },
     };
