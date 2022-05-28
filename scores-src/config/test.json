@@ -1,7 +1,7 @@
 {
   "logLevel": "debug",
   "redis": {
-    "connectionString": "redis://localhost:6379"
+    "connectionString": "redis://redis"
   },
   "allowedOrigins": ["http://localhost:3000", "http://localhost:8000"],
   "db": {

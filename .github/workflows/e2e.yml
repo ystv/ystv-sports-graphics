@@ -1,4 +1,4 @@
-name: Integration Tests
+name: End-to-End Tests
 
 on:
   pull_request:
@@ -46,6 +46,7 @@ jobs:
         env:
           NODE_ENV: test
           DB_CONNECTION_STRING: couchbase://localhost
+          REDIS_CONNECTION_STRING: redis://localhost
         run: yarn prod &
 
       - name: Run Cypress
