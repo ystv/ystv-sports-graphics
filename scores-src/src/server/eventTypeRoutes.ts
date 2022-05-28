@@ -143,6 +143,8 @@ export function makeEventAPIFor<
       const newMeta: EventMeta = await (
         EventMetaSchema.omit(["type", "id"]) as typeof EventMetaSchema
       ).validate(req.body, { abortEarly: false, stripUnknown: true });
+      newMeta.id = id;
+      newMeta.type = typeName;
       const newState = await stateSchema.validate(req.body, {
         abortEarly: false,
         stripUnknown: true,

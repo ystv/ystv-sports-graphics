@@ -1,10 +1,10 @@
 import { Alert, Button, Modal, Select, Stack, Title } from "@mantine/core";
 import { Form as FormikForm, Formik, FormikHelpers } from "formik";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
-import { EventMeta } from "../../common/types";
+import { EventMeta, EventMetaSchema } from "../../common/types";
 import { usePOSTEvents } from "../lib/apiClient";
 
 type EventState = EventMeta & { [K: string]: unknown };
@@ -15,6 +15,11 @@ export function CreateEventModal() {
   const EditForm = EVENT_COMPONENTS[type].EditForm;
   const create = usePOSTEvents();
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const schema = useMemo(
+    () => EventMetaSchema.concat(EVENT_TYPES[type].stateSchema),
+    [type]
+  );
 
   async function submit(
     values: EventState,
@@ -52,11 +57,9 @@ export function CreateEventModal() {
       <Formik
         enableReinitialize
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        initialValues={EVENT_TYPES[type].stateSchema
-          .omit(["id", "type"])
-          .cast({})}
+        initialValues={schema.omit(["id", "type"]).cast({})}
         onSubmit={submit}
-        validationSchema={EVENT_TYPES[type].stateSchema.omit(["id", "type"])}
+        validationSchema={schema.omit(["id", "type"])}
       >
         {({ handleSubmit, isSubmitting, errors }) => (
           <Stack>
