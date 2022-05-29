@@ -13,7 +13,8 @@
     "build": "cross-env NODE_ENV=production webpack",
     "bundle:storybook": "start-storybook -p 6006 --no-open",
     "build-storybook": "build-storybook",
-    "bundle:schema": "mkdir -p schemas && json2ts -i schemas/ -o src/common/types/ && json2ts -i configschema.json -o src/common/types/config.d.ts"
+    "bundle:schema": "mkdir -p schemas && json2ts -i schemas/ -o src/common/types/ && json2ts -i configschema.json -o src/common/types/config.d.ts",
+    "nodecg": "node ../../../index.js"
   },
   "repository": "https://github.com/ystv/ystv-sports-graphics.git",
   "private": true,
