@@ -291,8 +291,52 @@ describe("Updates Stream", () => {
     expect(actionRes.statusCode).toBe(200);
 
     const message = await ts.waitForMessage();
-    expect(message).toHaveProperty("kind", "CHANGE");
-    expect((message.data as any).halves).toHaveLength(1);
+    expect(message).toMatchInlineSnapshot(
+      {
+        kind: "CHANGE",
+        changed: expect.any(String),
+        mid: expect.any(String),
+        data: {
+          clock: {
+            wallClockLastStarted: expect.any(Number),
+          },
+
+          id: expect.any(String),
+        },
+      },
+      `
+      Object {
+        "changed": Any<String>,
+        "data": Object {
+          "clock": Object {
+            "state": "running",
+            "timeLastStartedOrStopped": 0,
+            "type": "upward",
+            "wallClockLastStarted": Any<Number>,
+          },
+          "halves": Array [
+            Object {
+              "goals": Array [],
+              "stoppageTime": 0,
+            },
+          ],
+          "id": Any<String>,
+          "name": "test",
+          "notCovered": false,
+          "players": Object {
+            "away": Array [],
+            "home": Array [],
+          },
+          "scoreAway": 0,
+          "scoreHome": 0,
+          "startTime": "2022-05-29T00:00:00Z",
+          "worthPoints": 0,
+        },
+        "kind": "CHANGE",
+        "mid": Any<String>,
+      }
+    `
+    );
 
     await ts.close();
   });
@@ -328,8 +372,28 @@ describe("Updates Stream", () => {
     expect(actionRes.statusCode).toBe(200);
 
     const message = await ts.waitForMessage();
-    expect(message).toHaveProperty("kind", "ACTION");
-    expect(message).toHaveProperty("type", "football/startHalf");
+    expect(message).toMatchInlineSnapshot(
+      {
+        kind: "ACTION",
+        event: expect.any(String),
+        mid: expect.any(String),
+        meta: {
+          ts: expect.any(Number),
+        },
+      },
+      `
+      Object {
+        "event": Any<String>,
+        "kind": "ACTION",
+        "meta": Object {
+          "ts": Any<Number>,
+        },
+        "mid": Any<String>,
+        "payload": Object {},
+        "type": "football/startHalf",
+      }
+    `
+    );
 
     await ts.close();
   });
@@ -365,7 +429,43 @@ describe("Updates Stream", () => {
     expect(resyncRes.statusCode).toBe(200);
 
     const message = await ts.waitForMessage();
-    expect(message).toHaveProperty("kind", "CHANGE");
+    expect(message).toMatchInlineSnapshot(
+      {
+        kind: "CHANGE",
+        mid: expect.any(String),
+        changed: expect.any(String),
+        data: {
+          id: expect.any(String),
+        },
+      },
+      `
+      Object {
+        "changed": Any<String>,
+        "data": Object {
+          "clock": Object {
+            "state": "stopped",
+            "timeLastStartedOrStopped": 0,
+            "type": "upward",
+            "wallClockLastStarted": 0,
+          },
+          "halves": Array [],
+          "id": Any<String>,
+          "name": "test",
+          "notCovered": false,
+          "players": Object {
+            "away": Array [],
+            "home": Array [],
+          },
+          "scoreAway": 0,
+          "scoreHome": 0,
+          "startTime": "2022-05-29T00:00:00Z",
+          "worthPoints": 0,
+        },
+        "kind": "CHANGE",
+        "mid": Any<String>,
+      }
+    `
+    );
 
     await ts.close();
   });
@@ -401,8 +501,57 @@ describe("Updates Stream", () => {
     expect(resyncRes.statusCode).toBe(200);
 
     const message = await ts.waitForMessage();
-    expect(message).toHaveProperty("kind", "BULK_ACTIONS");
     expect(message.actions).toHaveLength(1);
+    expect(message).toMatchInlineSnapshot(
+      {
+        event: expect.any(String),
+        actions: [
+          {
+            meta: {
+              ts: expect.any(Number),
+            },
+
+            payload: {
+              id: expect.any(String),
+            },
+          },
+        ],
+      },
+      `
+      Object {
+        "actions": Array [
+          Object {
+            "meta": Object {
+              "ts": Any<Number>,
+            },
+            "payload": Object {
+              "clock": Object {
+                "state": "stopped",
+                "timeLastStartedOrStopped": 0,
+                "type": "upward",
+                "wallClockLastStarted": 0,
+              },
+              "halves": Array [],
+              "id": Any<String>,
+              "name": "test",
+              "notCovered": false,
+              "players": Object {
+                "away": Array [],
+                "home": Array [],
+              },
+              "scoreAway": 0,
+              "scoreHome": 0,
+              "startTime": "2022-05-29T00:00:00Z",
+              "worthPoints": 0,
+            },
+            "type": "@@init",
+          },
+        ],
+        "event": Any<String>,
+        "kind": "BULK_ACTIONS",
+      }
+    `
+    );
 
     await ts.close();
   });
