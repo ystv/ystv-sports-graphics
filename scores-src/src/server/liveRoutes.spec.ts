@@ -260,7 +260,7 @@ describe("Updates Stream", () => {
     await ts.close();
   });
 
-  test("receives event updates", async () => {
+  test("receives event updates (state mode)", async () => {
     const testEventRes = await request
       .post(`http://localhost:${testPort}/api/events/football`)
       .auth("test", "password")
@@ -290,7 +290,46 @@ describe("Updates Stream", () => {
       .send({});
     expect(actionRes.statusCode).toBe(200);
 
-    await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "CHANGE");
+    const message = await ts.waitForMessage();
+    expect(message).toHaveProperty("kind", "CHANGE");
+    expect((message.data as any).halves).toHaveLength(1);
+
+    await ts.close();
+  });
+
+  test("receives event updates (actions mode)", async () => {
+    const testEventRes = await request
+      .post(`http://localhost:${testPort}/api/events/football`)
+      .auth("test", "password")
+      .send({
+        name: "test",
+        worthPoints: 0,
+        startTime: "2022-05-29T00:00:00Z",
+      });
+    const testEvent = testEventRes.body;
+
+    const ts = new TestSocket(
+      `ws://localhost:${testPort}/api/updates/stream/v2?mode=actions&token=${testToken}`
+    );
+    await ts.waitForOpen();
+    await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
+    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await expect(ts.waitForMessage()).resolves.toHaveProperty(
+      "kind",
+      "SUBSCRIBE_OK"
+    );
+
+    const actionRes = await request
+      .post(
+        `http://localhost:${testPort}/api/events/football/${testEvent.id}/startHalf`
+      )
+      .auth("test", "password")
+      .send({});
+    expect(actionRes.statusCode).toBe(200);
+
+    const message = await ts.waitForMessage();
+    expect(message).toHaveProperty("kind", "ACTION");
+    expect(message).toHaveProperty("type", "football/startHalf");
 
     await ts.close();
   });
