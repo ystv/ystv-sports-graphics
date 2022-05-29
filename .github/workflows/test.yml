@@ -40,6 +40,9 @@ jobs:
         working-directory: ./nodecg/bundles/ystv-sports-graphics
         run: yarn --immutable --inline-builds
 
+      - name: Start Redis
+        run: docker run --rm -d -p 6379:6379 redis:6-alpine
+
       - name: Run unit tests (bundle-src)
         id: jest_bundle
         continue-on-error: true
