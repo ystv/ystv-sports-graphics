@@ -386,7 +386,13 @@ export function createLiveRouter() {
       try {
         data = await getActions(logger, lastMid, 5_000);
       } catch (e) {
-        console.error("Redis error", { e });
+        let meta;
+        if (e instanceof Error) {
+          meta = { name: e.name, message: e.message, stack: e.stack };
+        } else {
+          meta = JSON.stringify(e);
+        }
+        logger.error("Redis error", { error: meta });
         if (ws.readyState === ws.CLOSED) {
           break;
         } else if (e instanceof ClientClosedError) {
