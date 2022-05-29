@@ -60,11 +60,20 @@ describe("eventsRoutes", () => {
 
     test("one", async () => {
       const DB = require("./db").DB as unknown as InMemoryDB;
+      DB.collection("_default").insert(
+        "EventHistory/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        []
+      );
       DB.query.mockResolvedValueOnce({
         rows: [
           {
-            id: "Event/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-            data: [wrapAction(Init({}))],
+            id: "EventMeta/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            data: {
+              type: "football",
+              id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+              worthPoints: 4,
+              startTime: "2022-05-29T14:00:00Z",
+            },
           },
         ],
       });
@@ -79,15 +88,34 @@ describe("eventsRoutes", () => {
 
     test("onlyCovered", async () => {
       const DB = require("./db").DB as unknown as InMemoryDB;
+      DB.collection("_default").insert(
+        "EventHistory/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        []
+      );
+      DB.collection("_default").insert(
+        "EventHistory/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        []
+      );
       DB.query.mockResolvedValueOnce({
         rows: [
           {
-            id: "Event/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-            data: [wrapAction(Init({ notCovered: true }))],
+            id: "EventMeta/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            data: {
+              type: "football",
+              id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+              worthPoints: 4,
+              startTime: "2022-05-29T14:00:00Z",
+              notCovered: true,
+            },
           },
           {
-            id: "Event/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-            data: [wrapAction(Init({}))],
+            id: "EventMeta/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            data: {
+              type: "netball",
+              id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+              worthPoints: 4,
+              startTime: "2022-05-29T14:00:00Z",
+            },
           },
         ],
       });
