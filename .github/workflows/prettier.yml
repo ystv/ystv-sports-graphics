@@ -4,7 +4,6 @@ name: Verify Prettier
 
 on:
   pull_request:
-    branches: [ main ]
 
 jobs:
   prettier:
@@ -12,7 +11,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
@@ -27,6 +26,6 @@ jobs:
 
       - name: Install Dependencies
         run: yarn --immutable --inline-builds
-      
+
       - name: Run Prettier and fail if there are any discrepancies
         run: yarn prettier --check '**/*.{js,jsx,ts,tsx}'
