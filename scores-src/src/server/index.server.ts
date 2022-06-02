@@ -36,6 +36,7 @@ import { createAuthRouter } from "./authRoutes";
 import { createUserManagementRouter } from "./userManagementRoutes";
 import { createTournamentSummaryRouter } from "./tournamentSummaryRoutes";
 import { errorHandler } from "./httpUtils";
+import { createTestRouter } from "./testRoutes";
 
 (async () => {
   const indexlogger = logging.getLogger("index.server");
@@ -120,6 +121,10 @@ import { errorHandler } from "./httpUtils";
   baseRouter.use("/events", createEventsRouter());
   baseRouter.use("/users", createUserManagementRouter());
   baseRouter.use("/tournamentSummary", createTournamentSummaryRouter());
+  if (process.env.NODE_ENV === "test") {
+    indexlogger.warn("Adding test routes. DO NOT USE IN PRODUCTION!");
+    baseRouter.use("/_test", createTestRouter());
+  }
 
   app.use(config.pathPrefix, baseRouter);
   app.use(config.pathPrefix, createLiveRouter());

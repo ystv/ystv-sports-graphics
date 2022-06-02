@@ -4,7 +4,6 @@ name: Lint JavaScript
 
 on:
   pull_request:
-    branches: [main]
 
 jobs:
   lint:

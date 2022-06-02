@@ -44,6 +44,7 @@ export function CreateEventModal() {
             value: e,
           }))}
           required
+          data-cy="selectType"
         />
       </Stack>
       <Formik
@@ -76,7 +77,11 @@ export function CreateEventModal() {
               independent
             />
             <EditForm />
-            <Button onClick={() => handleSubmit()} disabled={isSubmitting}>
+            <Button
+              onClick={() => handleSubmit()}
+              disabled={isSubmitting}
+              data-cy="submit"
+            >
               Create
             </Button>
             {submitError !== null && (

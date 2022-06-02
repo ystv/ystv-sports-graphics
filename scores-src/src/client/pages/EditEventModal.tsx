@@ -70,7 +70,7 @@ export function EditEventForm() {
                   independent
                 />
                 <EditForm />
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} data-cy="submit">
                   Save
                 </Button>
                 {submitError !== null && (

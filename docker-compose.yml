@@ -3,7 +3,7 @@ version: '3.9'
 services:
 
   couchbase:
-    image: couchbase/server:community-7.0.2
+    image: ${COUCHBASE_SERVER_IMAGE:-couchbase/server:community-7.1.0}
     volumes:
       - cbdata:/cbdata
       - ./scripts/couchbase-entrypoint.sh:/entrypoint.sh:ro
@@ -26,7 +26,8 @@ services:
     image: redis:6-alpine
   
   server:
-    build: server/
+    build:
+      dockerfile: Dockerfile.server
     init: true
     ports:
       - "8000:8000"
@@ -42,14 +43,6 @@ services:
         condition: service_started
       # couchbase:
       #   condition: service_healthy
-
-  nodecg:
-    image: registry.comp.ystv.co.uk/nodecg/nodecg:v1.9.0-ystv
-    volumes:
-    - .:/usr/src/app/bundles/ystv-sports-graphics
-    ports: 
-    - 9090:9090
-    - 8082:8082
 
 volumes:
   cbdata:

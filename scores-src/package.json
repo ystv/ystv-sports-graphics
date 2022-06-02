@@ -11,7 +11,7 @@
     "build": "rm -rf dist && yarn build:client && yarn build:server",
     "build:server": "node buildProdServer.js",
     "build:client": "vite build",
-    "prod": "concurrently -n server,client npm:prod:server npm:prod:client",
+    "prod": "concurrently -k -n server,client npm:prod:server npm:prod:client",
     "prod:server": "node --enable-source-maps dist/index.server.js",
     "prod:client": "node serveBuiltClient.js",
     "rls": "esbuild ./src/server/rosesLiveSync.ts --bundle --outfile=./dist/rosesLiveSync.js --platform=node --sourcemap && node --enable-source-maps dist/rosesLiveSync.js $@"
@@ -27,6 +27,7 @@
     "@vitejs/plugin-react": "^1.2.0",
     "babel-jest": "^27.5.1",
     "concurrently": "^7.0.0",
+    "del": "^6.1.1",
     "esbuild": "^0.14.23",
     "http-proxy": "^1.18.1",
     "jest": "^27.5.1",
