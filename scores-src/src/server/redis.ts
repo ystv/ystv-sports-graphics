@@ -24,6 +24,6 @@ export async function connect() {
 }
 
 export async function close() {
-  await REDIS.disconnect();
+  await REDIS.quit();
   logger.info("Redis disconnected.");
 }

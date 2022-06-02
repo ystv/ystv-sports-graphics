@@ -4,15 +4,10 @@ import { REDIS } from "./redis";
 import * as logging from "./loggingSetup";
 import { BadRequest } from "http-errors";
 import { randomUUID } from "crypto";
-import {
-  EventUpdateMessage,
-  getActions,
-  SpecialMessage,
-  UpdatesMessage,
-} from "./updatesRepo";
+import { EventUpdateMessage, getActions, SpecialMessage } from "./updatesRepo";
 import { ensure } from "./errs";
 import { DB } from "./db";
-import { DocumentNotFoundError, User } from "couchbase";
+import { DocumentNotFoundError } from "couchbase";
 import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
 import { Request, Router } from "express";
@@ -23,6 +18,7 @@ import { resolveEventState } from "../common/eventStateHelpers";
 import invariant from "tiny-invariant";
 import { EVENT_TYPES } from "../common/sports";
 import { Action } from "../common/types";
+import { ClientClosedError } from "redis";
 
 type SocketMode = "actions" | "state";
 
@@ -31,6 +27,10 @@ function generateSid(): string {
 }
 
 class UserError extends Error {}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export function createLiveRouter() {
   const router = Router();
@@ -62,14 +62,16 @@ export function createLiveRouter() {
       return;
     }
     try {
-      verifySessionID(token, ["read"]);
+      await verifySessionID(token, ["read"]);
     } catch (e) {
       logger.info("Rejecting because the token was invalid");
       ws.close(1008);
       return;
     }
 
-    const subs = new Set<string>(await REDIS.sMembers(`subscriptions:${sid}`));
+    const subs = new Set<string>(
+      await REDIS.sMembers(`subscriptions:${sid.current}`)
+    );
     if (subs.size === 0) {
       // Reset the SID to signal to the client that they've lost their subscriptions
       sid.current = generateSid();
@@ -79,22 +81,26 @@ export function createLiveRouter() {
     // Only declare send() now, to ensure it doesn't capture a logger with stale metadata
     // TODO (GRAPHICS-193): we still get many logs with sid=INVALID
     function send(msg: LiveServerMessage) {
-      ws.send(JSON.stringify(msg), (err) => {
-        if (err) {
-          let meta = {} as Record<string, string>;
-          if (err instanceof Error) {
-            meta = {
-              name: err.name,
-              message: err.message,
-              stack: err.stack ?? "<none>",
-            };
+      return new Promise<void>((resolve, reject) => {
+        ws.send(JSON.stringify(msg), (err) => {
+          if (err) {
+            let meta = {} as Record<string, string>;
+            if (err instanceof Error) {
+              meta = {
+                name: err.name,
+                message: err.message,
+                stack: err.stack ?? "<none>",
+              };
+            } else {
+              meta.err = JSON.stringify(err);
+            }
+            logger.error("WS send error", meta);
+            reject(meta);
           } else {
-            meta.err = JSON.stringify(err);
+            logger.debug("WS sent", { kind: msg.kind });
+            resolve();
           }
-          logger.error("WS send error", meta);
-        } else {
-          logger.debug("WS sent", { kind: msg.kind });
-        }
+        });
       });
     }
 
@@ -108,7 +114,7 @@ export function createLiveRouter() {
     });
 
     logger.debug("HELLO");
-    send({
+    await send({
       kind: "HELLO",
       sid: sid.current,
       subs: Array.from(subs),
@@ -117,7 +123,7 @@ export function createLiveRouter() {
 
     const historyCache = new Map<string, Action[]>();
 
-    function calculateAndSendCurrentState(
+    async function calculateAndSendCurrentState(
       fullyQualifiedId: string,
       mid?: string
     ) {
@@ -127,7 +133,7 @@ export function createLiveRouter() {
       const history = historyCache.get(fullyQualifiedId);
       invariant(Array.isArray(history), "cASCS: no history");
       const state = resolveEventState(EVENT_TYPES[eventType].reducer, history);
-      send({
+      await send({
         kind: "CHANGE",
         changed: fullyQualifiedId,
         mid: mid ?? lastMid,
@@ -148,7 +154,7 @@ export function createLiveRouter() {
           if (mode === "state") {
             calculateAndSendCurrentState(data.id);
           } else {
-            send({
+            await send({
               kind: "BULK_ACTIONS",
               event: data.id,
               actions: history,
@@ -187,7 +193,7 @@ export function createLiveRouter() {
       if (mode === "state") {
         calculateAndSendCurrentState(data.id, mid);
       } else {
-        send({
+        await send({
           kind: "ACTION",
           mid,
           event: data.id,
@@ -238,11 +244,11 @@ export function createLiveRouter() {
       try {
         ensure(typeof msg === "string", UserError, "non-string message");
         const payload: LiveClientMessage = JSON.parse(msg);
-        logger.debug("WS recv", { kind: payload.kind });
+        logger.debug("WS recv", payload);
 
         switch (payload.kind) {
           case "PING":
-            send({ kind: "PONG" });
+            await send({ kind: "PONG" });
             break;
 
           case "SUBSCRIBE": {
@@ -255,9 +261,9 @@ export function createLiveRouter() {
             ensure(idParts.length === 3, UserError, "invalid 'to' format");
             const [_, eventType] = idParts;
             subs.add(payload.to);
-            await REDIS.sAdd(`subscriptions:${sid}`, payload.to);
+            await REDIS.sAdd(`subscriptions:${sid.current}`, payload.to);
             await REDIS.expire(
-              `subscriptions:${sid}`,
+              `subscriptions:${sid.current}`,
               config.subscriptionLifetime
             );
 
@@ -272,7 +278,7 @@ export function createLiveRouter() {
                 throw e;
               }
             }
-            send({
+            await send({
               kind: "SUBSCRIBE_OK",
               to: payload.to,
               current:
@@ -293,8 +299,8 @@ export function createLiveRouter() {
               "invalid 'to' type"
             );
             subs.delete(payload.to);
-            await REDIS.sRem(`subscriptions:${sid}`, payload.to);
-            send({
+            await REDIS.sRem(`subscriptions:${sid.current}`, payload.to);
+            await send({
               kind: "UNSUBSCRIBE_OK",
               to: payload.to,
             });
@@ -313,7 +319,7 @@ export function createLiveRouter() {
             if (mode === "state") {
               calculateAndSendCurrentState(payload.what);
             } else {
-              send({
+              await send({
                 kind: "BULK_ACTIONS",
                 event: payload.what,
                 actions: history,
@@ -326,7 +332,7 @@ export function createLiveRouter() {
             // Take this as an opportunity to renew their subscriptions key,
             // so it'll expire an hour after they're last seen
             await REDIS.expire(
-              `subscriptions:${sid}`,
+              `subscriptions:${sid.current}`,
               config.subscriptionLifetime
             );
             // PONG doesn't need a response
@@ -355,7 +361,7 @@ export function createLiveRouter() {
           logger.error("OnMessage error", { error: e });
           msg = JSON.stringify(e);
         }
-        send({
+        await send({
           kind: "ERROR",
           error: msg,
         });
@@ -363,13 +369,30 @@ export function createLiveRouter() {
     });
 
     for (;;) {
-      const data = await getActions(logger, lastMid, 5_000);
+      let data;
+      try {
+        data = await getActions(logger, lastMid, 5_000);
+      } catch (e) {
+        console.error("Redis error", { e });
+        if (ws.readyState === ws.CLOSED) {
+          break;
+        } else if (e instanceof ClientClosedError) {
+          await send({
+            kind: "ERROR",
+            error: "Redis connection closed - this is probably a bug",
+          });
+          break;
+        } else {
+          await sleep(500);
+          continue;
+        }
+      }
       if (ws.readyState === ws.CLOSED) {
         logger.info("WebSocket state is CLOSED, ending Redis loop.");
         return;
       }
       if (data === null) {
-        send({ kind: "PING" });
+        await send({ kind: "PING" });
         continue;
       }
       for (const msg of data) {

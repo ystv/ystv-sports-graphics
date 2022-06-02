@@ -57,6 +57,11 @@ export async function getActions(
   block?: number,
   signal?: AbortSignal
 ): Promise<Array<{ mid: string; data: UpdatesMessage }> | null> {
+  if (process.env.NODE_ENV === "test" && typeof block === "number") {
+    // When we disconnect from Redis, it'll wait for all pending blocking commands to exit.
+    // The default timeout is high enough that Jest will think it's failed, so override it.
+    block = 500;
+  }
   logger.debug(
     `Listening to updates with lastMID ${lastMid} and block time ${block}`
   );
@@ -65,7 +70,7 @@ export async function getActions(
     data = await REDIS.xRead(
       commandOptions({
         isolated: typeof block === "number",
-        signal,
+        // signal,
       }),
       {
         key: UPDATES_STREAM,
@@ -81,6 +86,10 @@ export async function getActions(
     }
     throw e;
   }
+  // TODO: For some reason sometimes Redis returns null in blocking mode, but only in tests.
+  if (data === null && process.env.NODE_ENV === "test") {
+    data = await REDIS.xRead({ key: UPDATES_STREAM, id: lastMid });
+  }
   if (data === null) {
     return null;
   }
@@ -89,6 +98,7 @@ export async function getActions(
     `expected 1 stream's reply from Redis, got ${JSON.stringify(data)}`
   );
   return data[0].messages.map((msg) => {
+    logger.debug("Got data", { mid: msg.id });
     const payload = msg.message as unknown as UpdatesMessage;
     return {
       mid: msg.id,
