@@ -148,8 +148,11 @@ export function createLiveRouter() {
           if (!subs.has(data.id)) {
             return;
           }
-          const history = (await DB.collection("_default").get(data.id))
-            .content;
+          const history = (
+            await DB.collection("_default").get(
+              data.id.replace("Event/", "EventHistory/")
+            )
+          ).content;
           historyCache.set(data.id, history);
           if (mode === "state") {
             calculateAndSendCurrentState(data.id);
@@ -177,7 +180,11 @@ export function createLiveRouter() {
           meta: JSON.parse(data.meta),
         });
       } else {
-        history = (await DB.collection("_default").get(data.id)).content;
+        history = (
+          await DB.collection("_default").get(
+            data.id.replace("Event/", "EventHistory/")
+          )
+        ).content;
         invariant(
           typeof history !== "undefined",
           "history undefined even after DB get"
@@ -259,7 +266,7 @@ export function createLiveRouter() {
             );
             const idParts = payload.to.split("/");
             ensure(idParts.length === 3, UserError, "invalid 'to' format");
-            const [_, eventType] = idParts;
+            const [_, eventType, eventId] = idParts;
             subs.add(payload.to);
             await REDIS.sAdd(`subscriptions:${sid.current}`, payload.to);
             await REDIS.expire(
@@ -269,8 +276,11 @@ export function createLiveRouter() {
 
             let currentHistory;
             try {
-              currentHistory = (await DB.collection("_default").get(payload.to))
-                .content;
+              currentHistory = (
+                await DB.collection("_default").get(
+                  `EventHistory/${eventType}/${eventId}`
+                )
+              ).content;
             } catch (e) {
               if (e instanceof DocumentNotFoundError) {
                 currentHistory = [];
@@ -313,8 +323,11 @@ export function createLiveRouter() {
               UserError,
               "can't resync not subscribed event"
             );
-            const history = (await DB.collection("_default").get(payload.what))
-              .content;
+            const history = (
+              await DB.collection("_default").get(
+                payload.what.replace("Event/", "EventHistory/")
+              )
+            ).content;
             historyCache.set(payload.what, history);
             if (mode === "state") {
               calculateAndSendCurrentState(payload.what);
@@ -373,7 +386,13 @@ export function createLiveRouter() {
       try {
         data = await getActions(logger, lastMid, 5_000);
       } catch (e) {
-        console.error("Redis error", { e });
+        let meta;
+        if (e instanceof Error) {
+          meta = { name: e.name, message: e.message, stack: e.stack };
+        } else {
+          meta = JSON.stringify(e);
+        }
+        logger.error("Redis error", { error: meta });
         if (ws.readyState === ws.CLOSED) {
           break;
         } else if (e instanceof ClientClosedError) {

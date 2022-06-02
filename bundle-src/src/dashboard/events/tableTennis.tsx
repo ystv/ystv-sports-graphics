@@ -21,7 +21,7 @@ export function TableTennisDashboard() {
 
   return (
     <Container fluid>
-      <Title order={3}>Quarter {state.segment}</Title>
+      <Title order={3}>Game {state.games.length}</Title>
       <LiveKillButtons
         name="Scoreboard"
         live={control.scoreboard.visible}

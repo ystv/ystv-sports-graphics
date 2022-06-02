@@ -5,8 +5,7 @@ import cookieParser from "cookie-parser";
 import request from "supertest";
 import { json as jsonParser } from "body-parser";
 import Express, { Application, NextFunction, Router } from "express";
-import { BaseEventType, EventTypeInfo } from "../common/types";
-import { createEventsRouter } from "./eventsRoutes";
+import { BaseEventStateType, EventMeta, EventTypeInfo } from "../common/types";
 import { errorHandler } from "./httpUtils";
 import { getLogger } from "./loggingSetup";
 import { InMemoryDB } from "./__mocks__/db";
@@ -20,12 +19,32 @@ jest.mock("./updateTournamentSummary.job");
 
 function runTests<
   TActions extends { [K: string]: (payload?: any) => { type: string } },
-  TInfo extends EventTypeInfo<BaseEventType, TActions>
+  TInfo extends EventTypeInfo<BaseEventStateType, TActions>
 >(
   typeName: string,
   info: TInfo,
   ...testActions: Array<[keyof TActions, Record<string, any>]>
 ) {
+  async function initEventDB() {
+    const DB = require("./db").DB as unknown as InMemoryDB;
+    const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+    const initialMeta: Omit<EventMeta, "id" | "type"> = {
+      name: "test",
+      notCovered: false,
+      startTime: "2022-05-28T00:00:00Z",
+      worthPoints: 4,
+    };
+    const initialState = info.stateSchema.cast({});
+    await DB.collection("_default").insert(
+      `EventMeta/${typeName}/${id}`,
+      initialMeta
+    );
+    await DB.collection("_default").insert(`EventHistory/${typeName}/${id}`, [
+      wrapAction(Init(initialState)),
+    ]);
+    return { DB, id };
+  }
+
   describe(typeName, () => {
     let app: Application;
     let ignoreLogErrors: RegExp[] = [];
@@ -77,9 +96,25 @@ function runTests<
       });
 
       test("one", async () => {
+        const id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+        const testMeta: EventMeta = {
+          id: `EventMeta/football/${id}`,
+          type: "football",
+          name: "Test Event",
+          worthPoints: 4,
+          startTime: "2022-05-28T00:00:00Z",
+        };
         const DB = require("./db").DB as unknown as InMemoryDB;
+        await DB.collection("_default").insert(
+          `EventMeta/football/${id}`,
+          testMeta
+        );
+        await DB.collection("_default").insert(
+          `EventHistory/football/${id}`,
+          []
+        );
         DB.query.mockResolvedValueOnce({
-          rows: [[wrapAction(Init({}))]],
+          rows: [testMeta],
         });
 
         const response = await request(app)
@@ -106,7 +141,6 @@ function runTests<
       });
 
       it("returns it on a subsequent get", async () => {
-        const DB = require("./db").DB as unknown as InMemoryDB;
         const createRes = await request(app)
           .post(`/api/events/${typeName}`)
           .send({
@@ -140,59 +174,32 @@ function runTests<
 
     describe("update", () => {
       it("works", async () => {
-        const DB = require("./db").DB as unknown as InMemoryDB;
-        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
-        const initialVal = info.schema.cast({
-          id: id,
-          type: typeName,
-          name: "test",
-          worthPoints: 4,
-          notCovered: false,
-          startTime: "2022-05-28T00:00:00.000Z",
-        });
-        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
-          wrapAction(Init(initialVal)),
-        ]);
+        const { DB, id } = await initEventDB();
 
-        const newVal = info.schema.cast({
-          id: id,
-          type: typeName,
+        const newMeta: Omit<EventMeta, "id" | "type"> = {
           name: "test",
-          worthPoints: 2,
           notCovered: false,
-          startTime: "2022-05-28T00:00:00.000Z",
-        });
+          startTime: "2022-05-28T00:00:00Z",
+          worthPoints: 2,
+        };
 
         const updateRes = await request(app)
           .put(`/api/events/${typeName}/${id}`)
-          .send(newVal)
+          .send(newMeta)
           .auth("test", "password");
         expect(updateRes.statusCode).toBe(200);
         expect(updateRes.body.worthPoints).toBe(2);
 
         const persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+          `EventMeta/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(2);
-        expect(persistedVal.content[1].payload.worthPoints).toBe(2);
+        expect(persistedVal.content.worthPoints).toBe(2);
       });
     });
 
     describe("declareWinner", () => {
       it("works", async () => {
-        const DB = require("./db").DB as unknown as InMemoryDB;
-        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
-        const initialVal = info.schema.cast({
-          id: id,
-          type: typeName,
-          name: "test",
-          worthPoints: 4,
-          notCovered: false,
-          startTime: "2022-05-28T00:00:00.000Z",
-        });
-        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
-          wrapAction(Init(initialVal)),
-        ]);
+        const { DB, id } = await initEventDB();
 
         const res = await request(app)
           .post(`/api/events/${typeName}/${id}/_declareWinner`)
@@ -202,28 +209,15 @@ function runTests<
         expect(res.body.winner).toBe("away");
 
         const persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+          `EventMeta/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(2);
-        expect(persistedVal.content[1].payload.winner).toBe("away");
+        expect(persistedVal.content.winner).toBe("away");
         expect(
           require("./updateTournamentSummary.job").doUpdate
         ).toHaveBeenCalled();
       });
       it("correctly handles multiple updates", async () => {
-        const DB = require("./db").DB as unknown as InMemoryDB;
-        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
-        const initialVal = info.schema.cast({
-          id: id,
-          type: typeName,
-          name: "test",
-          worthPoints: 4,
-          notCovered: false,
-          startTime: "2022-05-28T00:00:00.000Z",
-        });
-        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
-          wrapAction(Init(initialVal)),
-        ]);
+        const { DB, id } = await initEventDB();
 
         const res1 = await request(app)
           .post(`/api/events/${typeName}/${id}/_declareWinner`)
@@ -240,28 +234,15 @@ function runTests<
         expect(res2.body.winner).toBe("home");
 
         const persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+          `EventMeta/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(3);
-        expect(persistedVal.content[2].payload.winner).toBe("home");
+        expect(persistedVal.content.winner).toBe("home");
       });
     });
 
     describe("actions", () => {
       it("does not crash", async () => {
-        const DB = require("./db").DB as unknown as InMemoryDB;
-        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
-        const initialVal = info.schema.cast({
-          id: id,
-          type: typeName,
-          name: "test",
-          worthPoints: 4,
-          notCovered: false,
-          startTime: "2022-05-28T00:00:00.000Z",
-        });
-        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
-          wrapAction(Init(initialVal)),
-        ]);
+        const { DB, id } = await initEventDB();
 
         for (const [type, payload] of testActions) {
           const res = await request(app)
@@ -271,28 +252,16 @@ function runTests<
           expect(res.statusCode).toBe(200);
         }
 
-        const persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+        const persistedHistory = await DB.collection("_default").get(
+          `EventHistory/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+        expect(persistedHistory.content).toHaveLength(testActions.length + 1);
       });
     });
 
     describe("undo/redo", () => {
       it("undoes", async () => {
-        const DB = require("./db").DB as unknown as InMemoryDB;
-        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
-        const initialVal = info.schema.cast({
-          id: id,
-          type: typeName,
-          name: "test",
-          worthPoints: 4,
-          notCovered: false,
-          startTime: "2022-05-28T00:00:00.000Z",
-        });
-        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
-          wrapAction(Init(initialVal)),
-        ]);
+        const { DB, id } = await initEventDB();
 
         for (const [type, payload] of testActions) {
           const res = await request(app)
@@ -302,41 +271,29 @@ function runTests<
           expect(res.statusCode).toBe(200);
         }
 
-        let persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+        let persistedHistory = await DB.collection("_default").get(
+          `EventHistory/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+        expect(persistedHistory.content).toHaveLength(testActions.length + 1);
         const ts =
-          persistedVal.content[persistedVal.content.length - 1].meta.ts;
+          persistedHistory.content[persistedHistory.content.length - 1].meta.ts;
 
         const res = await request(app)
           .post(`/api/events/${typeName}/${id}/_undo`)
           .send({ ts })
           .auth("test", "password");
         expect(res.statusCode).toBe(200);
-        persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+        persistedHistory = await DB.collection("_default").get(
+          `EventHistory/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(testActions.length + 2);
-        expect(persistedVal.content[persistedVal.content.length - 1].type).toBe(
-          Undo.type
-        );
+        expect(persistedHistory.content).toHaveLength(testActions.length + 2);
+        expect(
+          persistedHistory.content[persistedHistory.content.length - 1].type
+        ).toBe(Undo.type);
       });
 
       it("redos (special case)", async () => {
-        const DB = require("./db").DB as unknown as InMemoryDB;
-        const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
-        const initialVal = info.schema.cast({
-          id: id,
-          type: typeName,
-          name: "test",
-          worthPoints: 4,
-          notCovered: false,
-          startTime: "2022-05-28T00:00:00.000Z",
-        });
-        await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
-          wrapAction(Init(initialVal)),
-        ]);
+        const { DB, id } = await initEventDB();
 
         for (const [type, payload] of testActions) {
           const res = await request(app)
@@ -346,12 +303,12 @@ function runTests<
           expect(res.statusCode).toBe(200);
         }
 
-        let persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+        let persistedHistory = await DB.collection("_default").get(
+          `EventHistory/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+        expect(persistedHistory.content).toHaveLength(testActions.length + 1);
         const ts =
-          persistedVal.content[persistedVal.content.length - 1].meta.ts;
+          persistedHistory.content[persistedHistory.content.length - 1].meta.ts;
 
         const undoRes = await request(app)
           .post(`/api/events/${typeName}/${id}/_undo`)
@@ -364,28 +321,16 @@ function runTests<
           .auth("test", "password");
         expect(redoRes.statusCode).toBe(200);
 
-        persistedVal = await DB.collection("_default").get(
-          `Event/${typeName}/${id}`
+        persistedHistory = await DB.collection("_default").get(
+          `EventHistory/${typeName}/${id}`
         );
-        expect(persistedVal.content).toHaveLength(testActions.length + 1);
+        expect(persistedHistory.content).toHaveLength(testActions.length + 1);
       });
 
       (testActions.length < 3 ? it.skip : it)(
         "redos (NO special case)",
         async () => {
-          const DB = require("./db").DB as unknown as InMemoryDB;
-          const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
-          const initialVal = info.schema.cast({
-            id: id,
-            type: typeName,
-            name: "test",
-            worthPoints: 4,
-            notCovered: false,
-            startTime: "2022-05-28T00:00:00.000Z",
-          });
-          await DB.collection("_default").insert(`Event/${typeName}/${id}`, [
-            wrapAction(Init(initialVal)),
-          ]);
+          const { DB, id } = await initEventDB();
 
           // Apply all but the last action, then undo it, then apply the last
 
@@ -397,12 +342,15 @@ function runTests<
             expect(res.statusCode).toBe(200);
           }
 
-          let persistedVal = await DB.collection("_default").get(
-            `Event/${typeName}/${id}`
+          let persistedHistory = await DB.collection("_default").get(
+            `EventHistory/${typeName}/${id}`
           );
-          expect(persistedVal.content).toHaveLength(testActions.length - 1 + 1);
+          expect(persistedHistory.content).toHaveLength(
+            testActions.length - 1 + 1
+          );
           const ts =
-            persistedVal.content[persistedVal.content.length - 1].meta.ts;
+            persistedHistory.content[persistedHistory.content.length - 1].meta
+              .ts;
 
           const undoRes = await request(app)
             .post(`/api/events/${typeName}/${id}/_undo`)
@@ -423,10 +371,10 @@ function runTests<
             .auth("test", "password");
           expect(redoRes.statusCode).toBe(200);
 
-          persistedVal = await DB.collection("_default").get(
-            `Event/${typeName}/${id}`
+          persistedHistory = await DB.collection("_default").get(
+            `EventHistory/${typeName}/${id}`
           );
-          expect(persistedVal.content).toHaveLength(testActions.length + 3);
+          expect(persistedHistory.content).toHaveLength(testActions.length + 3);
         }
       );
     });

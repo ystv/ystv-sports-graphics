@@ -7,7 +7,6 @@ import { PreconditionFailed } from "http-errors";
 import { DocumentExistsError, MutateInSpec } from "couchbase";
 import { dispatchChangeToEvent, resync } from "./updatesRepo";
 import {
-  DeclareWinner,
   Edit,
   Init,
   Redo,
@@ -20,11 +19,19 @@ import { EVENT_TYPES } from "../common/sports";
 import { ensure, invariant } from "./errs";
 import { BadRequest } from "http-errors";
 import { getLogger } from "./loggingSetup";
-import { Action, BaseEventType, EventTypeInfo } from "../common/types";
+import {
+  Action,
+  BaseEventStateType,
+  EventMeta,
+  EventMetaSchema,
+  EventTypeInfo,
+} from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
+import { identity } from "lodash-es";
 
 export function makeEventAPIFor<
-  TState extends BaseEventType,
+  TState extends BaseEventStateType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TActions extends { [K: string]: (payload?: any) => { type: string } }
 >(typeName: string, info: EventTypeInfo<TState, TActions>) {
   const logger = getLogger("eventTypeAPI").child({
@@ -32,13 +39,14 @@ export function makeEventAPIFor<
   });
   const router = Router();
 
-  const key = (id: string) => `Event/${typeName}/${id}`;
+  const metaKey = (id: string) => `EventMeta/${typeName}/${id}`;
+  const historyKey = (id: string) => `EventHistory/${typeName}/${id}`;
   const {
     reducer,
     actionCreators,
     actionPayloadValidators,
     actionValidChecks,
-    schema,
+    stateSchema,
   } = info;
 
   router.get(
@@ -48,10 +56,26 @@ export function makeEventAPIFor<
       const result = await DB.query(
         `SELECT RAW e
         FROM _default e
-        WHERE meta(e).id LIKE 'Event/${typeName}/%'
-        ORDER BY MILLIS(ARRAY_REVERSE(ARRAY x.payload.startTime FOR x IN e WHEN x.type = '@@init' OR x.type = '@@edit' END)[0])`
+        WHERE meta(e).id LIKE 'EventMeta/${typeName}/%'
+        ORDER BY MILLIS(e.startTime)`
       );
-      res.json(result.rows.map((row) => resolveEventState(reducer, row)));
+      const events = await Promise.all(
+        result.rows.map(async (row) => {
+          const meta = row as EventMeta;
+          const history = await DB.collection("_default").get(
+            row.id.replace("EventMeta", "EventHistory")
+          );
+          const state = resolveEventState(
+            EVENT_TYPES[meta.type]?.reducer ?? identity,
+            history.content
+          );
+          return {
+            ...meta,
+            ...state,
+          };
+        })
+      );
+      res.json(events);
     })
   );
 
@@ -60,10 +84,13 @@ export function makeEventAPIFor<
     authenticate("read"),
     asyncHandler(async (req, res) => {
       const id = req.params.id;
-      const data = await DB.collection("_default").get(key(id));
+      const meta = await DB.collection("_default").get(metaKey(id));
+      const history = await DB.collection("_default").get(historyKey(id));
+      const state = resolveEventState(reducer, history.content);
       res.json({
-        ...resolveEventState(reducer, data.content),
-        _cas: data.cas,
+        ...meta.content,
+        ...state,
+        _cas: meta.cas,
       });
     })
   );
@@ -73,7 +100,7 @@ export function makeEventAPIFor<
     authenticate("read"),
     asyncHandler(async (req, res) => {
       const id = req.params.id;
-      const data = await DB.collection("_default").get(key(id));
+      const data = await DB.collection("_default").get(historyKey(id));
       res.json(data.content);
     })
   );
@@ -82,19 +109,21 @@ export function makeEventAPIFor<
     "/",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const val: TState = await schema
-        .omit(["id", "type"])
-        .validate(req.body, { abortEarly: false });
+      const meta: EventMeta = await (
+        EventMetaSchema.omit(["type", "id"]) as typeof EventMetaSchema
+      ).validate(req.body, { abortEarly: false, stripUnknown: true });
+      const initialState = await stateSchema.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
+      meta.type = typeName;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const initAction = wrapAction(Init(val) as any);
       let id: string;
-
       for (;;) {
         try {
           id = uuidv4();
-          initAction.payload.id = id;
-          await DB.collection("_default").insert(key(id), [initAction]);
+          meta.id = id;
+          await DB.collection("_default").insert(metaKey(id), meta);
           break;
         } catch (e) {
           if (e instanceof DocumentExistsError) {
@@ -103,9 +132,18 @@ export function makeEventAPIFor<
           throw e;
         }
       }
-      await dispatchChangeToEvent(key(id), initAction);
+
+      const initAction = wrapAction(Init(initialState));
+      await DB.collection("_default").insert(historyKey(id), [initAction]);
+
+      const finalState = {
+        ...meta,
+        ...initialState,
+      };
+      initAction.payload = finalState;
+      await dispatchChangeToEvent(typeName, id, initAction);
       res.statusCode = 201;
-      res.json(val);
+      res.json(finalState);
     })
   );
 
@@ -115,24 +153,37 @@ export function makeEventAPIFor<
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       const cas = req.params["cas"] ?? undefined;
-      const data = await DB.collection("_default").get(key(id));
-      const currentActions = data.content as Action[];
-      const inputData = req.body;
-      const val: TState = await schema
-        .omit(["id", "type"])
-        .validate(inputData, { abortEarly: false, stripUnknown: true });
-      const action = wrapAction(Edit(val));
+      const meta = await DB.collection("_default").get(metaKey(id));
+      const history = await DB.collection("_default").get(historyKey(id));
+      const currentActions = history.content as Action[];
+
+      const newMeta: EventMeta = await (
+        EventMetaSchema.omit(["type", "id"]) as typeof EventMetaSchema
+      ).validate(req.body, { abortEarly: false, stripUnknown: true });
+      newMeta.id = id;
+      newMeta.type = typeName;
+      const newState = await stateSchema.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
+
+      const editAction = wrapAction(Edit(newState));
+      await DB.collection("_default").replace(metaKey(id), newMeta);
       await DB.collection("_default").mutateIn(
-        key(id),
-        [MutateInSpec.arrayAppend("", action)],
+        historyKey(id),
+        [MutateInSpec.arrayAppend("", editAction)],
         {
-          cas: cas ?? data.cas,
+          cas: cas ?? history.cas,
         }
       );
-      await dispatchChangeToEvent(key(id), action);
-      res
-        .status(200)
-        .json(resolveEventState(reducer, currentActions.concat(action)));
+
+      const finalState = {
+        ...newMeta,
+        ...resolveEventState(reducer, currentActions.concat(editAction)),
+      };
+      editAction.payload = finalState;
+      await dispatchChangeToEvent(typeName, id, editAction);
+      res.status(200).json(finalState);
     })
   );
 
@@ -145,10 +196,17 @@ export function makeEventAPIFor<
       const ts = req.body.ts;
       ensure(typeof ts === "number", BadRequest, "no ts given");
 
-      const currentActionsResult = await DB.collection("_default").get(key(id));
+      const currentActionsResult = await DB.collection("_default").get(
+        historyKey(id)
+      );
       const currentActions = currentActionsResult.content as Action[];
       const undoneIndex = currentActions.findIndex((x) => x.meta.ts === ts);
       ensure(undoneIndex > -1, BadRequest, "no action with that ts");
+      ensure(
+        !currentActions[undoneIndex].type.startsWith("@@"),
+        BadRequest,
+        "can't undo internal actions"
+      );
       const undoAction = wrapAction(Undo({ ts }));
       currentActions.push(undoAction);
 
@@ -166,13 +224,13 @@ export function makeEventAPIFor<
       }
 
       await DB.collection("_default").mutateIn(
-        key(id),
+        historyKey(id),
         [MutateInSpec.arrayAppend("", undoAction)],
         {
           cas: currentActionsResult.cas,
         }
       );
-      await dispatchChangeToEvent(key(id), undoAction);
+      await dispatchChangeToEvent(typeName, id, undoAction);
       res.status(200).json(resolveEventState(reducer, currentActions));
     })
   );
@@ -186,7 +244,9 @@ export function makeEventAPIFor<
       const ts = req.body.ts;
       ensure(typeof ts === "number", BadRequest, "no ts given");
 
-      const currentActionsResult = await DB.collection("_default").get(key(id));
+      const currentActionsResult = await DB.collection("_default").get(
+        historyKey(id)
+      );
       const currentActions = currentActionsResult.content as Action[];
       const redoneIndex = currentActions.findIndex((x) => x.meta.ts === ts);
       ensure(redoneIndex > -1, BadRequest, "no action with that ts");
@@ -227,10 +287,10 @@ export function makeEventAPIFor<
         );
       }
 
-      await DB.collection("_default").mutateIn(key(id), spec, {
+      await DB.collection("_default").mutateIn(historyKey(id), spec, {
         cas: currentActionsResult.cas,
       });
-      await dispatchChangeToEvent(key(id), redoAction);
+      await dispatchChangeToEvent(typeName, id, redoAction);
       res.status(200).json(resolveEventState(reducer, currentActions));
     })
   );
@@ -248,33 +308,34 @@ export function makeEventAPIFor<
         "invalid or no winner"
       );
 
-      const currentActionsResult = await DB.collection("_default").get(key(id));
-      const currentActions = currentActionsResult.content as Action[];
+      const metaResult = await DB.collection("_default").get(metaKey(id));
+      const historyResult = await DB.collection("_default").get(historyKey(id));
+      const meta = metaResult.content as EventMeta;
 
-      const actionData = wrapAction(DeclareWinner({ winner }));
+      meta.winner = winner;
 
-      await DB.collection("_default").mutateIn(
-        key(id),
-        [MutateInSpec.arrayAppend("", actionData)],
-        {
-          cas: currentActionsResult.cas,
-        }
-      );
-      await dispatchChangeToEvent(key(id), actionData);
+      await DB.collection("_default").replace(metaKey(id), meta, {
+        cas: metaResult.cas,
+      });
+      const finalState = {
+        ...meta,
+        ...resolveEventState(reducer, historyResult.content),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      await dispatchChangeToEvent(typeName, id, wrapAction(Edit(finalState)));
       await updateTournamentSummary(logger.child({ _name: "tsWorker" }));
-      res
-        .status(200)
-        .json(resolveEventState(reducer, currentActions.concat(actionData)));
+      res.status(200).json(finalState);
     })
   );
 
+  //FIXME
   router.post(
     "/:id/_resync",
     authenticate("write"),
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       invariant(typeof id === "string", "route didn't give us a string id");
-      await resync(key(id));
+      await resync(typeName, id);
       res.status(200).json({ ok: true });
     })
   );
@@ -292,9 +353,12 @@ export function makeEventAPIFor<
             stripUnknown: true,
           });
 
+        const metaResult = await DB.collection("_default").get(metaKey(id));
+        logger.debug("got meta", { meta: metaResult.content });
         const currentActionsResult = await DB.collection("_default").get(
-          key(id)
+          historyKey(id)
         );
+        logger.debug("got history", { history: currentActionsResult.content });
         const currentActions = currentActionsResult.content as Action[];
         const currentState = resolveEventState(reducer, currentActions);
 
@@ -311,16 +375,17 @@ export function makeEventAPIFor<
         );
 
         await DB.collection("_default").mutateIn(
-          key(id),
+          historyKey(id),
           [MutateInSpec.arrayAppend("", actionData)],
           {
             cas: currentActionsResult.cas,
           }
         );
-        await dispatchChangeToEvent(key(id), actionData);
-        res
-          .status(200)
-          .json(resolveEventState(reducer, currentActions.concat(actionData)));
+        await dispatchChangeToEvent(typeName, id, actionData);
+        res.status(200).json({
+          ...metaResult.content,
+          ...resolveEventState(reducer, currentActions.concat(actionData)),
+        });
       })
     );
   }

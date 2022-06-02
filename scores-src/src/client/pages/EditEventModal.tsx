@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import invariant from "tiny-invariant";
 import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
+import { EventMetaSchema } from "../../common/types";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
 export function EditEventForm() {
@@ -17,13 +18,15 @@ export function EditEventForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const nav = useNavigate();
 
+  const schema = EventMetaSchema.concat(EVENT_TYPES[type].stateSchema);
+
   async function submit<T>(values: T, helpers: FormikHelpers<T>) {
     invariant(typeof type === "string", "no type given");
     invariant(typeof id === "string", "no id given");
     helpers.setSubmitting(true);
     setSubmitError(null);
     try {
-      // @ts-expect-error can't be safely typed
+      //@ts-expect-error no good way to type this
       const result = await update(type, id, values);
       nav("/events");
     } catch (e) {
@@ -43,7 +46,7 @@ export function EditEventForm() {
       {data && (
         <Formik
           initialValues={data}
-          validationSchema={EVENT_TYPES[type].schema.omit(["type", "id"])}
+          validationSchema={schema}
           onSubmit={submit}
         >
           {({ handleSubmit, handleReset, isSubmitting, errors }) => (

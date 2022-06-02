@@ -1,7 +1,7 @@
 // import cfg from "./config";
 // import Queue from "bull";
 import { DB } from "./db";
-import { Action, BaseEventType } from "../common/types";
+import { Action, EventMeta } from "../common/types";
 import { invariant } from "./errs";
 import { Logger } from "winston";
 import { identity } from "lodash-es";
@@ -42,36 +42,33 @@ export async function doUpdate(logger: Logger) {
   const allEventResult = await DB.query(
     `SELECT e AS data, meta().id AS id
     FROM _default e
-    WHERE meta(e).id LIKE 'Event/%'
-    ORDER BY MILLIS(ARRAY_REVERSE(ARRAY x.payload.startTime FOR x IN e WHEN x.type = '@@init' OR x.type = '@@edit' END)[0])`
+    WHERE meta(e).id LIKE 'EventMeta/%'
+    ORDER BY MILLIS(e.startTime)`
   );
   logger.debug("Processsing", { len: allEventResult.rows.length });
   for (const row of allEventResult.rows) {
-    const { id, data: actions } = row as { id: string; data: Action[] };
-    const [_, type] = id.split("/");
-    const reducer = wrapReducer(EVENT_TYPES[type]?.reducer ?? identity);
-    const data = actions.reduce(reducer, {} as BaseEventType);
-    if (!data.winner) {
+    const { id, data: meta } = row as { id: string; data: EventMeta };
+    if (!meta.winner) {
       logger.debug("Skipping event with no winner", { id });
       continue;
     }
-    if (data.winner === "home") {
-      result.totalPointsHome += data.worthPoints;
-    } else if (data.winner === "away") {
-      result.totalPointsAway += data.worthPoints;
+    if (meta.winner === "home") {
+      result.totalPointsHome += meta.worthPoints;
+    } else if (meta.winner === "away") {
+      result.totalPointsAway += meta.worthPoints;
     } else {
       invariant(false, "winner wasn't either home or away");
     }
     result.latestResults.push({
-      eventType: data.type,
-      name: data.name,
-      points: data.worthPoints,
-      winner: data.winner,
+      eventType: meta.type,
+      name: meta.name,
+      points: meta.worthPoints,
+      winner: meta.winner,
     });
     logger.debug("Computed", {
       id,
-      winner: data.winner,
-      points: data.worthPoints,
+      winner: meta.winner,
+      points: meta.worthPoints,
     });
   }
   await DB.collection("_default").upsert("TournamentSummary", result);

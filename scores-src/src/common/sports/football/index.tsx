@@ -2,8 +2,7 @@ import * as Yup from "yup";
 import {
   ActionFormProps,
   ActionRenderers,
-  BaseEvent,
-  BaseEventType,
+  BaseEventStateType,
   EventComponents,
   EventTypeInfo,
 } from "../../types";
@@ -45,7 +44,7 @@ const playerSchema = Yup.object({
 
 type PlayerType = Yup.InferType<typeof playerSchema>;
 
-export interface State extends BaseEventType {
+export interface State extends BaseEventStateType {
   players: {
     home: PlayerType[];
     away: PlayerType[];
@@ -157,7 +156,7 @@ const slice = createSlice({
 export const reducer = slice.reducer;
 export const actions = slice.actions;
 
-export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
+export const schema: Yup.SchemaOf<State> = Yup.object().shape({
   scoreHome: Yup.number().default(0),
   scoreAway: Yup.number().default(0),
   clock: UpwardClock,
@@ -356,7 +355,7 @@ export function RenderScore(props: { state: State }) {
 
 export const typeInfo: EventTypeInfo<State, typeof actions> = {
   reducer,
-  schema,
+  stateSchema: schema,
   actionCreators: actions,
   actionPayloadValidators,
   actionRenderers,

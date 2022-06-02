@@ -2,7 +2,7 @@ import * as Yup from "yup";
 import { TypedSchema } from "yup/lib/util/types";
 
 // @ts-expect-error can't type index signature
-export const BaseEvent: Yup.SchemaOf<BaseEventType> = Yup.object().shape({
+export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
   id: Yup.string().uuid().required(),
   type: Yup.string().required(),
   startTime: Yup.string()
@@ -15,7 +15,7 @@ export const BaseEvent: Yup.SchemaOf<BaseEventType> = Yup.object().shape({
   worthPoints: Yup.number().integer().required().min(0),
 });
 
-export interface BaseEventType {
+export interface EventMeta {
   id: string;
   type: string;
   name: string;
@@ -26,6 +26,9 @@ export interface BaseEventType {
   worthPoints: number;
   [K: string]: unknown;
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type BaseEventStateType = {};
 
 export interface ActionMeta {
   ts: number;
@@ -94,7 +97,7 @@ export interface EventTypeInfo<
   TActions extends { [K: string]: (payload?: any) => { type: string } }
 > {
   reducer: Reducer<TState>;
-  schema: Yup.SchemaOf<TState> & Yup.AnyObjectSchema;
+  stateSchema: Yup.SchemaOf<TState> & Yup.AnyObjectSchema;
   actionCreators: TActions;
   actionPayloadValidators: ActionPayloadValidators<TActions>;
   actionValidChecks: ActionValidChecks<TState, TActions>;

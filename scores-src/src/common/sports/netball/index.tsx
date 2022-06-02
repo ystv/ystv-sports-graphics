@@ -18,8 +18,7 @@ import {
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   ActionRenderers,
-  BaseEvent,
-  BaseEventType,
+  BaseEventStateType,
   EventComponents,
   EventTypeInfo,
 } from "../../types";
@@ -56,7 +55,7 @@ const quarterSchema = Yup.object({
     .default([]),
 });
 
-export interface State extends BaseEventType {
+export interface State extends BaseEventStateType {
   players: {
     home: PlayerType[];
     away: PlayerType[];
@@ -146,7 +145,7 @@ const slice = createSlice({
 
 export const reducer = slice.reducer;
 export const actions = slice.actions;
-export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
+export const schema: Yup.SchemaOf<State> = Yup.object().shape({
   players: Yup.object({
     home: Yup.array().of(playerSchema).default([]),
     away: Yup.array().of(playerSchema).default([]),
@@ -350,7 +349,7 @@ export function EditForm() {
 
 export const typeInfo: EventTypeInfo<State, typeof actions> = {
   reducer,
-  schema,
+  stateSchema: schema,
   actionCreators: actions,
   actionPayloadValidators,
   actionRenderers,

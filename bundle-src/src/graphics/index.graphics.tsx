@@ -2,7 +2,7 @@ import ReactDOM from "react-dom";
 import React from "react";
 import { AllNetballGraphics } from "./netball";
 import { AllFootballGraphics } from "./football";
-import { BaseEventType } from "@ystv/scores/src/common/types";
+import { EventMeta } from "@ystv/scores/src/common/types";
 import { useOnlyReplicantValue } from "common/useReplicant";
 import { EventID } from "common/types/eventID";
 
@@ -43,7 +43,7 @@ const SportGraphics: Record<string, React.ComponentType> = {
 
 function AllGraphics() {
   const id = useOnlyReplicantValue<EventID>("eventID");
-  const state = useOnlyReplicantValue<BaseEventType>("eventState");
+  const state = useOnlyReplicantValue<EventMeta>("eventState");
   if (!state || !id) {
     return null;
   }

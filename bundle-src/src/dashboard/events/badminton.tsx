@@ -20,7 +20,7 @@ export function BadmintonDashboard() {
 
   return (
     <Container fluid>
-      <Title order={3}>Quarter {state.segment}</Title>
+      <Title order={3}>Quarter {state.sets.length}</Title>
       <LiveKillButtons
         name="Scoreboard"
         live={control.scoreboard.visible}

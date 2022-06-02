@@ -4,7 +4,7 @@ import got from "got";
 import invariant from "tiny-invariant";
 import { EVENT_TYPES } from "../common/sports";
 import { identity } from "lodash-es";
-import { BaseEventType } from "../common/types";
+import { EventMeta } from "../common/types";
 import * as fs from "fs";
 import * as path from "path";
 import { ensure } from "./errs";
@@ -232,7 +232,7 @@ async function syncScores() {
     len: feed.length,
   });
 
-  const allKnownEvents: BaseEventType[] = await sportsAPIClient
+  const allKnownEvents: EventMeta[] = await sportsAPIClient
     .get("events")
     .json();
   logger.info("Got our events", { len: allKnownEvents.length });
@@ -306,7 +306,7 @@ async function importTimetable() {
   invariant(Array.isArray(res), "got a non-array timetable");
   logger.info("Got timetable", { len: res.length });
 
-  const allKnownEvents: BaseEventType[] = await sportsAPIClient
+  const allKnownEvents: EventMeta[] = await sportsAPIClient
     .get("events")
     .json();
   logger.info("Got our events", { len: allKnownEvents.length });
@@ -340,7 +340,7 @@ async function importTimetable() {
       id: entry.id,
       title: entry.team.title,
     });
-    const result: BaseEventType = await sportsAPIClient
+    const result: EventMeta = await sportsAPIClient
       .post("events/_extra/" + sportTypeName, {
         json: {
           name: entry.team.title,
@@ -349,7 +349,7 @@ async function importTimetable() {
           notCovered: !oneOfOurs,
           worthPoints: entry.point.amount,
           rosesLiveID: entry.id,
-        } as BaseEventType,
+        } as EventMeta,
       })
       .json();
     logger.debug("Created", { id: result.id });

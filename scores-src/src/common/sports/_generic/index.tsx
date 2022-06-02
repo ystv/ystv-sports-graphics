@@ -24,8 +24,7 @@ import {
   ActionPayloadValidators,
   ActionRenderers,
   ActionValidChecks,
-  BaseEvent,
-  BaseEventType,
+  BaseEventStateType,
   EventComponents,
   EventTypeInfo,
 } from "../../types";
@@ -33,7 +32,7 @@ import { IconPlayerPause, IconPlayerPlay } from "@tabler/icons";
 import { capitalize } from "lodash-es";
 import { useFormikContext } from "formik";
 
-export interface State extends BaseEventType {
+export interface State extends BaseEventStateType {
   scoreHome: number;
   scoreAway: number;
   /** The index of the current half/quarter/sub-division of this event, one-based! */
@@ -94,7 +93,7 @@ export function createGenericSport(
     home: Yup.array().of(PlayerSchema.required()).required().default([]),
     away: Yup.array().of(PlayerSchema.required()).required().default([]),
   });
-  const schema: Yup.SchemaOf<State> = BaseEvent.shape({
+  const schema: Yup.SchemaOf<State> = Yup.object().shape({
     scoreHome: Yup.number().required().default(0),
     scoreAway: Yup.number().required().default(0),
     segment: Yup.number().required().default(0),
@@ -298,7 +297,7 @@ export function createGenericSport(
   const typeInfo: EventTypeInfo<State, typeof slice["actions"]> = {
     reducer: slice.reducer,
     actionCreators: slice.actions,
-    schema,
+    stateSchema: schema,
     actionPayloadValidators,
     actionValidChecks,
     actionRenderers,

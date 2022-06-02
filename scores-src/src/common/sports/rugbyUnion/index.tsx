@@ -25,8 +25,7 @@ import {
   ActionPayloadValidators,
   ActionRenderers,
   ActionValidChecks,
-  BaseEvent,
-  BaseEventType,
+  BaseEventStateType,
   EventComponents,
   EventTypeInfo,
 } from "../../types";
@@ -48,7 +47,7 @@ const POINTS_VALUE: Record<ScoreType, number> = {
   dropGoal: 3,
 };
 
-export interface State extends BaseEventType {
+export interface State extends BaseEventStateType {
   scoreAway: number;
   scoreHome: number;
   players: {
@@ -67,7 +66,7 @@ export interface State extends BaseEventType {
   }>;
 }
 
-export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
+export const schema: Yup.SchemaOf<State> = Yup.object().shape({
   scoreHome: Yup.number().default(0),
   scoreAway: Yup.number().default(0),
   players: Yup.object({
@@ -396,7 +395,7 @@ function ScoreForm(props: ActionFormProps<State>) {
 }
 
 export const typeInfo: EventTypeInfo<State, typeof actions> = {
-  schema,
+  stateSchema: schema,
   reducer,
   actionCreators: actions,
   actionPayloadValidators,

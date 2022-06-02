@@ -5,7 +5,7 @@ import { Button, MantineProvider, Title } from "@mantine/core";
 
 import { ScoresServiceConnectionState } from "common/types/scoresServiceConnectionState";
 import { EventID } from "common/types/eventID";
-import { BaseEventType } from "@ystv/scores/src/common/types";
+import { EventMeta } from "@ystv/scores/src/common/types";
 import { NetballDashboard } from "./events/netball";
 import { FootballDashboard } from "./events/football";
 import { BasketballDashboard } from "./events/basketball";
@@ -59,7 +59,7 @@ function Dashboard() {
       defaultValue: null,
     }
   );
-  const eventState = useOnlyReplicantValue<BaseEventType | null>(
+  const eventState = useOnlyReplicantValue<EventMeta | null>(
     "eventState",
     undefined,
     {

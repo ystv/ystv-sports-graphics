@@ -10,8 +10,7 @@ import {
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   ActionRenderers,
-  BaseEvent,
-  BaseEventType,
+  BaseEventStateType,
   EventComponents,
   EventTypeInfo,
 } from "../../types";
@@ -64,7 +63,7 @@ export interface RunState {
   }>;
 }
 
-export interface State extends BaseEventType {
+export interface State extends BaseEventStateType {
   runs: RunState[];
   currentRun: number | null;
 }
@@ -177,7 +176,7 @@ const RunSchema: Yup.SchemaOf<RunState> = Yup.object({
 
 export const reducer = slice.reducer;
 export const actions = slice.actions;
-export const schema: Yup.SchemaOf<State> = BaseEvent.shape({
+export const schema: Yup.SchemaOf<State> = Yup.object().shape({
   currentRun: Yup.number().nullable().default(null),
   runs: Yup.array().of(RunSchema.required()).required().default([]),
 });
@@ -490,7 +489,7 @@ export function EditForm() {
 
 export const typeInfo: EventTypeInfo<State, typeof actions> = {
   reducer,
-  schema,
+  stateSchema: schema,
   actionCreators: actions,
   actionPayloadValidators,
   actionRenderers,

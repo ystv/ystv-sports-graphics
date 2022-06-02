@@ -7,6 +7,7 @@ import { clockTimeAt, formatMMSSMS } from "@ystv/scores/src/common/clock";
 import { useTime } from "../hooks";
 import { MatchStatusPopup } from "../common/matchStatusPopup";
 import { LineupTable } from "../common/lineupTable";
+import { EventMeta } from "@ystv/scores/src/common/types";
 
 function bannerMsg(half: number) {
   if (half === 1) {
@@ -16,7 +17,7 @@ function bannerMsg(half: number) {
 }
 
 export function AllHandballGraphics() {
-  const state = useOnlyReplicantValue<State>("eventState");
+  const state = useOnlyReplicantValue<State & EventMeta>("eventState");
   const control = useOnlyReplicantValue<ControlHandball>("control-handball");
 
   const now = useTime();

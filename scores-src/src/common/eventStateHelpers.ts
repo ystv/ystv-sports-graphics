@@ -1,13 +1,10 @@
 import { createAction } from "@reduxjs/toolkit";
-import { Action, BaseEventType, Reducer } from "./types";
+import { Action, BaseEventStateType, Reducer } from "./types";
 
 export const Init = createAction<Record<string, unknown>>("@@init");
 export const Edit = createAction<Record<string, unknown>>("@@edit");
 export const Undo = createAction<{ ts: number }>("@@undo");
 export const Redo = createAction<{ ts: number }>("@@redo");
-export const DeclareWinner = createAction<{ winner: "home" | "away" }>(
-  "@@declareWinner"
-);
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function wrapReducer<TState extends Record<string, unknown>>(
@@ -22,9 +19,6 @@ export function wrapReducer<TState extends Record<string, unknown>>(
     }
     if (Edit.match(action as any)) {
       return { ...state, ...action.payload };
-    }
-    if (DeclareWinner.match(action as any)) {
-      return { ...state, winner: action.payload.winner };
     }
     return reducer(state, action);
   };
@@ -57,7 +51,7 @@ export function findUndoneActions(history: Action[]) {
   return undone;
 }
 
-export function resolveEventState<TState extends BaseEventType>(
+export function resolveEventState<TState extends BaseEventStateType>(
   reducer: Reducer<TState>,
   actions: Action[]
 ): TState {
