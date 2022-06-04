@@ -5,6 +5,7 @@ import {
 } from "couchbase";
 import { NextFunction, Request, Response } from "express";
 import { isHttpError } from "http-errors";
+import { MulterError, ErrorCode as MulterErrorCode } from "multer";
 import { Logger } from "winston";
 import { ValidationError } from "yup";
 
@@ -56,6 +57,9 @@ export const errorHandler: (
           message: err.message,
         })),
       };
+    } else if (err instanceof MulterError && err.code === "LIMIT_FILE_SIZE") {
+      code = 422;
+      message = `file ${err.field} too large`;
     } else {
       code = 500;
       message = "internal server error, sorry";

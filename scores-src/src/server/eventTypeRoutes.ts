@@ -56,8 +56,12 @@ export function makeEventAPIFor<
       const result = await DB.query(
         `SELECT RAW e
         FROM _default e
-        WHERE meta(e).id LIKE 'EventMeta/${typeName}/%'
-        ORDER BY MILLIS(e.startTime)`
+        WHERE meta(e).id LIKE 'EventMeta/%'
+        AND e.type = $1
+        ORDER BY MILLIS(e.startTime)`,
+        {
+          parameters: [typeName],
+        }
       );
       const events = await Promise.all(
         result.rows.map(async (row) => {

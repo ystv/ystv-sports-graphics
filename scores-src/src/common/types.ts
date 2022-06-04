@@ -27,6 +27,28 @@ export interface EventMeta {
   [K: string]: unknown;
 }
 
+export interface TeamInfo {
+  slug: string;
+  name: string;
+  abbreviation: string;
+  primaryColour: string;
+  secondaryColour: string;
+  crestAttachmentID: string;
+}
+
+export const TeamInfoSchema: Yup.SchemaOf<TeamInfo> = Yup.object({
+  slug: Yup.string().required(),
+  name: Yup.string().required(),
+  abbreviation: Yup.string().required().min(3).max(4),
+  primaryColour: Yup.string()
+    .required()
+    .matches(/^#[0-9a-f]{6}$/i),
+  secondaryColour: Yup.string()
+    .required()
+    .matches(/^#[0-9a-f]{6}$/i),
+  crestAttachmentID: Yup.string().required().uuid(),
+});
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type BaseEventStateType = {};
 

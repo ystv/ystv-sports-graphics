@@ -14,7 +14,14 @@ export let cluster: Cluster;
 let bucket: Bucket;
 export let DB: Scope = null as unknown as Scope;
 
-const INDEXES = ["CREATE PRIMARY INDEX ON `%bucket`"];
+const INDEXES = [
+  "CREATE PRIMARY INDEX ON `%bucket`",
+  "CREATE INDEX idx_events_byType ON `%bucket` (type, MILLIS(startTime)) WHERE meta().id LIKE 'EventMeta/%' OR meta().id LIKE 'EventHistory/%'",
+  "CREATE INDEX idx_events_byHomeTeam ON `%bucket` (homeTeam.slug, homeTeam.crestAttachmentID) WHERE meta().id LIKE 'EventMeta/%'",
+  "CREATE INDEX idx_events_byAwayTeam ON `%bucket` (awayTeam.slug, awayTeam.crestAttachmentID) WHERE meta().id LIKE 'EventMeta/%'",
+  "CREATE INDEX idx_attachments ON `%bucket` (meta().xattrs.mimeType) WHERE meta().id LIKE 'Attachment/%'",
+  "CREATE INDEX idx_teams ON `%bucket` (slug) WHERE meta().id LIKE 'Team/%'",
+];
 
 export async function connect() {
   logger.info("Connecting to DB", {
