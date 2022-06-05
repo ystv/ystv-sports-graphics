@@ -22,6 +22,7 @@ import { getLogger } from "./loggingSetup";
 import {
   Action,
   BaseEventStateType,
+  EventCreateEditSchema,
   EventMeta,
   EventMetaSchema,
   EventTypeInfo,
@@ -113,14 +114,27 @@ export function makeEventAPIFor<
     "/",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const meta: EventMeta = await (
-        EventMetaSchema.omit(["type", "id"]) as typeof EventMetaSchema
-      ).validate(req.body, { abortEarly: false, stripUnknown: true });
-      const initialState = await stateSchema.validate(req.body, {
+      const meta: EventMeta = await EventCreateEditSchema.validate(req.body, {
         abortEarly: false,
         stripUnknown: true,
       });
       meta.type = typeName;
+      // The input contains the slugs for the teams, replace them with the actual data.
+      meta.homeTeam = (
+        await DB.collection("_default").get(
+          `Team/${meta.homeTeam as unknown as string}`
+        )
+      ).content;
+      meta.awayTeam = (
+        await DB.collection("_default").get(
+          `Team/${meta.awayTeam as unknown as string}`
+        )
+      ).content;
+
+      const initialState = await stateSchema.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
 
       let id: string;
       for (;;) {
@@ -161,11 +175,23 @@ export function makeEventAPIFor<
       const history = await DB.collection("_default").get(historyKey(id));
       const currentActions = history.content as Action[];
 
-      const newMeta: EventMeta = await (
-        EventMetaSchema.omit(["type", "id"]) as typeof EventMetaSchema
-      ).validate(req.body, { abortEarly: false, stripUnknown: true });
+      const newMeta: EventMeta = await EventCreateEditSchema.validate(
+        req.body,
+        { abortEarly: false, stripUnknown: true }
+      );
       newMeta.id = id;
       newMeta.type = typeName;
+      newMeta.homeTeam = (
+        await DB.collection("_default").get(
+          `Team/${newMeta.homeTeam as unknown as string}`
+        )
+      ).content;
+      newMeta.awayTeam = (
+        await DB.collection("_default").get(
+          `Team/${newMeta.awayTeam as unknown as string}`
+        )
+      ).content;
+
       const newState = await stateSchema.validate(req.body, {
         abortEarly: false,
         stripUnknown: true,

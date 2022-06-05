@@ -4,7 +4,12 @@ import { ChangeEvent, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
-import { EventMeta, EventMetaSchema } from "../../common/types";
+import {
+  EventCreateEditSchema,
+  EventMeta,
+  EventMetaSchema,
+} from "../../common/types";
+import { TeamSelectField } from "../components/TeamSelect";
 import { usePOSTEvents } from "../lib/apiClient";
 
 type EventState = EventMeta & { [K: string]: unknown };
@@ -13,11 +18,11 @@ export function CreateEventModal() {
   const nav = useNavigate();
   const [type, setType] = useState(Object.keys(EVENT_TYPES)[0]);
   const EditForm = EVENT_COMPONENTS[type].EditForm;
-  const create = usePOSTEvents();
+  const doCreate = usePOSTEvents();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const schema = useMemo(
-    () => EventMetaSchema.concat(EVENT_TYPES[type].stateSchema),
+    () => EventCreateEditSchema.concat(EVENT_TYPES[type].stateSchema),
     [type]
   );
 
@@ -30,7 +35,7 @@ export function CreateEventModal() {
     setSubmitError(null);
     try {
       console.log("POST");
-      const result = await create(type, values);
+      const result = await doCreate(type, values);
       nav("..");
     } catch (e) {
       helpers.setSubmitting(false);
@@ -57,9 +62,9 @@ export function CreateEventModal() {
       <Formik
         enableReinitialize
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        initialValues={schema.omit(["id", "type"]).cast({})}
+        initialValues={schema.cast({})}
         onSubmit={submit}
-        validationSchema={schema.omit(["id", "type"])}
+        validationSchema={schema}
       >
         {({ handleSubmit, isSubmitting, errors }) => (
           <Stack>
@@ -69,6 +74,12 @@ export function CreateEventModal() {
               format="isoStr"
               independent
             />
+            <TeamSelectField
+              name="homeTeam"
+              title="Home Team"
+              helper={`If there's no notion of "home" or "away" in this game, pick arbitrarily.`}
+            />
+            <TeamSelectField name="awayTeam" title="Away Team" />
             <Field
               type="number"
               name="worthPoints"

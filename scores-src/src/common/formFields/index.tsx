@@ -23,13 +23,14 @@ import {
   PasswordInput,
   MultiSelect,
   Group,
+  ColorInput,
 } from "@mantine/core";
 
 import { DatePicker, TimeInput } from "@mantine/dates";
 import invariant from "tiny-invariant";
 import dayjs from "dayjs";
 
-interface BaseFieldProps {
+export interface BaseFieldProps {
   name: string;
   title: string;
   helper?: string;
@@ -261,6 +262,20 @@ export function RandomUUIDField(props: { name: string }) {
     }
   }, [meta.value]);
   return null;
+}
+
+export function ColourField(props: BaseFieldProps) {
+  const [field, meta, helpers] = useField(props);
+  return (
+    <ColorInput
+      format="hex"
+      {...field}
+      label={props.title}
+      description={props.helper}
+      error={meta.touched && meta.error}
+      onChange={(val) => helpers.setValue(val)}
+    />
+  );
 }
 
 interface ArrayFieldProps {

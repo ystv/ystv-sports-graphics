@@ -91,5 +91,8 @@
       "running": false
     }
   ],
-  "_test": {}
+  "_test": {},
+  "dependencies": {
+    "@mantine/modals": "^4.2.8"
+  }
 }

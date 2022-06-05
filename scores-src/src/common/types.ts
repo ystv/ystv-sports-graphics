@@ -1,31 +1,4 @@
 import * as Yup from "yup";
-import { TypedSchema } from "yup/lib/util/types";
-
-// @ts-expect-error can't type index signature
-export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
-  id: Yup.string().uuid().required(),
-  type: Yup.string().required(),
-  startTime: Yup.string()
-    .required()
-    .default(() => new Date().toISOString()),
-  name: Yup.string().required(),
-  notCovered: Yup.boolean().default(false),
-  rosesLiveID: Yup.number().optional(),
-  winner: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).notRequired(),
-  worthPoints: Yup.number().integer().required().min(0),
-});
-
-export interface EventMeta {
-  id: string;
-  type: string;
-  name: string;
-  startTime: string;
-  notCovered?: boolean;
-  rosesLiveID?: number;
-  winner?: "home" | "away";
-  worthPoints: number;
-  [K: string]: unknown;
-}
 
 export interface TeamInfo {
   slug: string;
@@ -48,6 +21,45 @@ export const TeamInfoSchema: Yup.SchemaOf<TeamInfo> = Yup.object({
     .matches(/^#[0-9a-f]{6}$/i),
   crestAttachmentID: Yup.string().required().uuid(),
 });
+
+// @ts-expect-error can't type index signature
+export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
+  id: Yup.string().uuid().required(),
+  type: Yup.string().required(),
+  startTime: Yup.string()
+    .required()
+    .default(() => new Date().toISOString()),
+  name: Yup.string().required(),
+  notCovered: Yup.boolean().default(false),
+  rosesLiveID: Yup.number().optional(),
+  winner: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).notRequired(),
+  worthPoints: Yup.number().integer().required().min(0),
+  homeTeam: TeamInfoSchema,
+  awayTeam: TeamInfoSchema,
+});
+
+/**
+ * Identical to EventMetaSchema except omitting type and id, and replacing the team info objects with slugs.
+ */
+export const EventCreateEditSchema: Yup.SchemaOf<EventMeta> =
+  EventMetaSchema.omit(["type", "id"]).shape({
+    homeTeam: Yup.string().required(),
+    awayTeam: Yup.string().required(),
+  });
+
+export interface EventMeta {
+  id: string;
+  type: string;
+  name: string;
+  startTime: string;
+  notCovered?: boolean;
+  rosesLiveID?: number;
+  winner?: "home" | "away";
+  worthPoints: number;
+  homeTeam: TeamInfo;
+  awayTeam: TeamInfo;
+  [K: string]: unknown;
+}
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type BaseEventStateType = {};

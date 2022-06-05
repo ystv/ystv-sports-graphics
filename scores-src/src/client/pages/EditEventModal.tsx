@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import invariant from "tiny-invariant";
 import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
-import { EventMetaSchema } from "../../common/types";
+import { EventCreateEditSchema } from "../../common/types";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
 export function EditEventForm() {
@@ -18,7 +18,7 @@ export function EditEventForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const nav = useNavigate();
 
-  const schema = EventMetaSchema.concat(EVENT_TYPES[type].stateSchema);
+  const schema = EventCreateEditSchema.concat(EVENT_TYPES[type].stateSchema);
 
   async function submit<T>(values: T, helpers: FormikHelpers<T>) {
     invariant(typeof type === "string", "no type given");
