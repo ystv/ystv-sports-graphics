@@ -13,6 +13,7 @@ import { BootstrapScreen } from "./pages/Bootstrap";
 import { LoginScreen } from "./pages/Login";
 import { ListUsersScreen } from "./pages/ListUsers";
 import { PermGate } from "./components/PermGate";
+import { ListTeamsScreen } from "./pages/ListTeams";
 
 function AppRoutes() {
   return (
@@ -59,6 +60,15 @@ function AppRoutes() {
           element={
             <PermGate require="admin">
               <ListUsersScreen />
+            </PermGate>
+          }
+        />
+
+        <Route
+          path="teams"
+          element={
+            <PermGate require="write">
+              <ListTeamsScreen />
             </PermGate>
           }
         />

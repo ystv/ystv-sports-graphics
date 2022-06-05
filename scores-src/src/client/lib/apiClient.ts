@@ -484,3 +484,34 @@ export function usePOSTTeams() {
     return result;
   };
 }
+
+export function usePUTTeams() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (
+    slug: string,
+    data: Omit<TeamInfo, "crestAttachmentID" | "slug">,
+    crestFile?: File
+  ) => {
+    const formData = new FormData();
+    for (const key of Object.keys(data)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      formData.append(key, (data as any)[key]);
+    }
+    if (crestFile) {
+      formData.append("crest", crestFile);
+    }
+    const result = (await fetcher(navigate)(
+      `/teams/${slug}`,
+      {
+        method: "put",
+        body: formData,
+      },
+      200
+    )) as TeamInfo;
+    mutate("/teams");
+    mutate(`/users/${result.slug}`, result, false);
+    return result;
+  };
+}

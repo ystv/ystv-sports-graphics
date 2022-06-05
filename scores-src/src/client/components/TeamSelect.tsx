@@ -18,7 +18,7 @@ import { useGETTeams, usePOSTTeams } from "../lib/apiClient";
 
 type TeamSelectProps = BaseFieldProps;
 
-function CreateEditTeamFields(props: {
+export function CreateEditTeamFields(props: {
   setCrestFile: (val: File | null) => unknown;
 }) {
   const { errors, touched } = useFormikContext();
@@ -45,11 +45,10 @@ function CreateEditTeamFields(props: {
   );
 }
 
-function CreateTeamModalContents(props: {
+export function CreateTeamModalContents(props: {
   close: () => unknown;
   onCreate?: (slug: string) => unknown;
 }) {
-  const modals = useModals();
   const schema = TeamInfoSchema.omit(["slug", "crestAttachmentID"]);
   const [crestFile, setCrestFile] = useState<File | null>(null);
   const save = usePOSTTeams();
