@@ -5705,6 +5705,7 @@ __metadata:
     "@mantine/dates": ^4.1.4
     "@mantine/form": ^4.1.2
     "@mantine/hooks": ^4.1.2
+    "@mantine/modals": ^4.2.8
     "@mantine/notifications": ^4.1.4
     "@popperjs/core": ^2.11.2
     "@reduxjs/toolkit": ^1.8.1
@@ -22019,7 +22020,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ystv-sports-graphics@workspace:."
   dependencies:
-    "@mantine/modals": ^4.2.8
     "@size-limit/preset-app": ^7.0.8
     "@typescript-eslint/eslint-plugin": latest
     "@typescript-eslint/parser": latest
