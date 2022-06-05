@@ -35,6 +35,7 @@ export const errorHandler: (
       });
     }
 
+    /* istanbul ignore else */
     if (err instanceof DocumentNotFoundError) {
       code = 404;
       message = "entity not found";
