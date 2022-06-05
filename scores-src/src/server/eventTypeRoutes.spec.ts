@@ -5,7 +5,12 @@ import cookieParser from "cookie-parser";
 import request from "supertest";
 import { json as jsonParser } from "body-parser";
 import Express, { Application, NextFunction, Router } from "express";
-import { BaseEventStateType, EventMeta, EventTypeInfo } from "../common/types";
+import {
+  BaseEventStateType,
+  EventMeta,
+  EventTypeInfo,
+  TeamInfo,
+} from "../common/types";
 import { errorHandler } from "./httpUtils";
 import { getLogger } from "./loggingSetup";
 import { InMemoryDB } from "./__mocks__/db";
@@ -28,11 +33,21 @@ function runTests<
   async function initEventDB() {
     const DB = require("./db").DB as unknown as InMemoryDB;
     const id = `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`;
+    const testTeam: TeamInfo = {
+      name: "Test",
+      abbreviation: "TEST",
+      primaryColour: "#000000",
+      secondaryColour: "#000000",
+      crestAttachmentID: "",
+      slug: "test",
+    };
     const initialMeta: Omit<EventMeta, "id" | "type"> = {
       name: "test",
       notCovered: false,
       startTime: "2022-05-28T00:00:00Z",
       worthPoints: 4,
+      homeTeam: testTeam,
+      awayTeam: testTeam,
     };
     const initialState = info.stateSchema.cast({});
     await DB.collection("_default").insert(
@@ -42,6 +57,7 @@ function runTests<
     await DB.collection("_default").insert(`EventHistory/${typeName}/${id}`, [
       wrapAction(Init(initialState)),
     ]);
+    await DB.collection("_default").insert("Team/test", testTeam);
     return { DB, id };
   }
 
@@ -103,6 +119,22 @@ function runTests<
           name: "Test Event",
           worthPoints: 4,
           startTime: "2022-05-28T00:00:00Z",
+          homeTeam: {
+            name: "Test",
+            abbreviation: "TEST",
+            primaryColour: "#000000",
+            secondaryColour: "#000000",
+            crestAttachmentID: "",
+            slug: "test",
+          },
+          awayTeam: {
+            name: "Test",
+            abbreviation: "TEST",
+            primaryColour: "#000000",
+            secondaryColour: "#000000",
+            crestAttachmentID: "",
+            slug: "test",
+          },
         };
         const DB = require("./db").DB as unknown as InMemoryDB;
         await DB.collection("_default").insert(
@@ -127,11 +159,15 @@ function runTests<
 
     describe("create", () => {
       it("creates an event", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        await DB.collection("_default").insert("Team/test", {});
         const createRes = await request(app)
           .post(`/api/events/${typeName}`)
           .send({
             name: "Test",
             worthPoints: 4,
+            homeTeam: "test",
+            awayTeam: "test",
           })
           .auth("test", "password");
         expect(createRes.statusCode).toBe(201);
@@ -141,11 +177,15 @@ function runTests<
       });
 
       it("returns it on a subsequent get", async () => {
+        const DB = require("./db").DB as unknown as InMemoryDB;
+        await DB.collection("_default").insert("Team/test", {});
         const createRes = await request(app)
           .post(`/api/events/${typeName}`)
           .send({
             name: "Test",
             worthPoints: 4,
+            homeTeam: "test",
+            awayTeam: "test",
           })
           .auth("test", "password");
         expect(createRes.statusCode).toBe(201);
@@ -181,6 +221,8 @@ function runTests<
           notCovered: false,
           startTime: "2022-05-28T00:00:00Z",
           worthPoints: 2,
+          homeTeam: "test",
+          awayTeam: "test",
         };
 
         const updateRes = await request(app)
