@@ -32,8 +32,6 @@ describe("Event Management", () => {
       cy.get("[name=primaryColour]").type("#ff0000").blur();
       cy.get("[name=secondaryColour]").type("#000000").blur();
       cy.get("[name=crest]").attachFile("Shield_plain.svg");
-      // Ensure there are no errors
-      cy.get("[data-cy=errors]").should("contain.text", "{}");
       cy.get("[data-cy=submit]").click();
     });
     cy.wait(["@postTeams"], { responseTimeout: 3000 });
@@ -47,14 +45,10 @@ describe("Event Management", () => {
       cy.get("[name=primaryColour]").type("#c7c7c7").blur();
       cy.get("[name=secondaryColour]").type("#3a3a3a").blur();
       cy.get("[name=crest]").attachFile("Shield_plain.svg");
-      // Ensure there are no errors
-      cy.get("[data-cy=errors]").should("contain.text", "{}");
       cy.get("[data-cy=submit]").click();
     });
     cy.wait(["@postTeams"], { responseTimeout: 3000 });
 
-    // Ensure there are no errors
-    cy.get("[data-cy=errors]").should("contain.text", "{}");
     cy.get("[data-cy=submit]")
       .should("have.length", 1)
       .scrollIntoView()
@@ -81,7 +75,6 @@ describe("Event Management", () => {
     cy.contains("Editing Test Football").should("be.visible");
     cy.get("[name=worthPoints]").clear().type("2");
 
-    cy.get("[data-cy=errors]").should("contain.text", "{}");
     cy.get("[data-cy=submit]").click();
     cy.wait(["@putEvents"]);
 
