@@ -6,6 +6,7 @@ import invariant from "tiny-invariant";
 import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { EventCreateEditSchema } from "../../common/types";
+import { TeamSelectField } from "../components/TeamSelect";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
 export function EditEventForm() {
@@ -59,6 +60,12 @@ export function EditEventForm() {
                   format="isoStr"
                   independent
                 />
+                <TeamSelectField
+                  name="homeTeam"
+                  title="Home Team"
+                  helper={`If there's no notion of "home" or "away" in this game, pick arbitrarily.`}
+                />
+                <TeamSelectField name="awayTeam" title="Away Team" />
                 <Field
                   type="number"
                   name="worthPoints"
