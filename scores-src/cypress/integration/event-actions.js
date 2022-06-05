@@ -2,6 +2,18 @@ describe("Event Actions", () => {
   describe("Football", () => {
     before(() => {
       cy.resetAndCreateTestUser("admin", "password");
+      cy.createTeam({
+        name: "Lancaster",
+        abbreviation: "LANC",
+        primaryColour: "#ff0000",
+        secondaryColour: "#fafafa",
+      });
+      cy.createTeam({
+        name: "York",
+        abbreviation: "YORK",
+        primaryColour: "#fafafa",
+        secondaryColour: "#000000",
+      });
       cy.request({
         url: "/api/events/football",
         method: "POST",
@@ -10,6 +22,8 @@ describe("Event Actions", () => {
           worthPoints: 4,
           notCovered: false,
           startTime: "2023-01-02T00:00:00.000Z",
+          homeTeam: "lancaster",
+          awayTeam: "york",
         },
         auth: {
           user: "admin",
