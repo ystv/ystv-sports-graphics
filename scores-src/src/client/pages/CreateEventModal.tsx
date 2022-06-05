@@ -105,7 +105,9 @@ export function CreateEventModal() {
             {submitError !== null && (
               <Alert>Could not create! {submitError}</Alert>
             )}
-            {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
+            {import.meta.env.DEV && (
+              <code data-cy="errors">{JSON.stringify(errors)}</code>
+            )}
           </Stack>
         )}
       </Formik>

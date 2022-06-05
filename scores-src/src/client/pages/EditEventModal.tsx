@@ -45,7 +45,8 @@ export function EditEventForm() {
       )}
       {data && (
         <Formik
-          initialValues={data}
+          // This cast takes care of transforming the home/away team into the slugs, rather than the raw objects.
+          initialValues={schema.cast(data)}
           validationSchema={schema}
           onSubmit={submit}
         >
@@ -79,7 +80,9 @@ export function EditEventForm() {
                 {submitError !== null && (
                   <Alert>Could not save! {submitError}</Alert>
                 )}
-                {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
+                {import.meta.env.DEV && (
+                  <code data-cy="errors">{JSON.stringify(errors)}</code>
+                )}
               </Stack>
             </FormikForm>
           )}

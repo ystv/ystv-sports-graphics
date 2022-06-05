@@ -43,8 +43,28 @@ export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
  */
 export const EventCreateEditSchema: Yup.SchemaOf<EventMeta> =
   EventMetaSchema.omit(["type", "id"]).shape({
-    homeTeam: Yup.string().required(),
-    awayTeam: Yup.string().required(),
+    homeTeam: Yup.string()
+      .required()
+      .transform((val, original, context) => {
+        if (context.isType(val)) {
+          return val;
+        }
+        if (typeof original === "object" && "slug" in original) {
+          return original.slug;
+        }
+        return val;
+      }),
+    awayTeam: Yup.string()
+      .required()
+      .transform((val, original, context) => {
+        if (context.isType(val)) {
+          return val;
+        }
+        if (typeof original === "object" && "slug" in original) {
+          return original.slug;
+        }
+        return val;
+      }),
   });
 
 export interface EventMeta {

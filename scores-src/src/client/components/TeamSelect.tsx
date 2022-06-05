@@ -4,7 +4,13 @@
 
 import { Alert, Button, InputWrapper, Select, SelectItem } from "@mantine/core";
 import { useModals } from "@mantine/modals";
-import { Form, Formik, FormikHelpers, useField } from "formik";
+import {
+  Form,
+  Formik,
+  FormikHelpers,
+  useField,
+  useFormikContext,
+} from "formik";
 import { useState } from "react";
 import { BaseFieldProps, ColourField, Field } from "../../common/formFields";
 import { TeamInfo, TeamInfoSchema } from "../../common/types";
@@ -12,9 +18,38 @@ import { useGETTeams, usePOSTTeams } from "../lib/apiClient";
 
 type TeamSelectProps = BaseFieldProps;
 
+function CreateEditTeamFields(props: {
+  setCrestFile: (val: File | null) => unknown;
+}) {
+  const { errors, touched } = useFormikContext();
+  return (
+    <>
+      <Field name="name" title="Name" />
+      <Field name="abbreviation" title="Abbreviation" helper="3 or 4 letters" />
+      <ColourField name="primaryColour" title="Primary Colour" />
+      <ColourField name="secondaryColour" title="Secondary Colour" />
+      <InputWrapper
+        label="Team Crest"
+        description="SVG please"
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error={(touched as any).crest && (errors as any).crest}
+      >
+        <input
+          type="file"
+          name="crest"
+          onChange={(e) => props.setCrestFile(e.target.files?.[0] ?? null)}
+          accept=".svg"
+        />
+      </InputWrapper>
+    </>
+  );
+}
+
 function CreateTeamModalContents(props: {
+  close: () => unknown;
   onCreate?: (slug: string) => unknown;
 }) {
+  const modals = useModals();
   const schema = TeamInfoSchema.omit(["slug", "crestAttachmentID"]);
   const [crestFile, setCrestFile] = useState<File | null>(null);
   const save = usePOSTTeams();
@@ -34,6 +69,7 @@ function CreateTeamModalContents(props: {
       if (props.onCreate) {
         props.onCreate(result.slug);
       }
+      props.close();
     } catch (e) {
       setSubmitError(String(e));
     } finally {
@@ -47,29 +83,9 @@ function CreateTeamModalContents(props: {
       initialValues={schema.cast({})}
       onSubmit={create}
     >
-      {({ errors, touched, handleSubmit }) => (
-        <Form>
-          <Field name="name" title="Name" />
-          <Field
-            name="abbreviation"
-            title="Abbreviation"
-            helper="3 or 4 letters"
-          />
-          <ColourField name="primaryColour" title="Primary Colour" />
-          <ColourField name="secondaryColour" title="Secondary Colour" />
-          <InputWrapper
-            label="Team Crest"
-            description="SVG please"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            error={(touched as any).crest && (errors as any).crest}
-          >
-            <input
-              type="file"
-              name="crest"
-              onChange={(e) => setCrestFile(e.target.files?.[0] ?? null)}
-              accept=".svg"
-            />
-          </InputWrapper>
+      {({ errors, handleSubmit }) => (
+        <Form data-cy="createTeam">
+          <CreateEditTeamFields setCrestFile={setCrestFile} />
           <Button
             onClick={() => handleSubmit()}
             disabled={submitting}
@@ -80,7 +96,9 @@ function CreateTeamModalContents(props: {
           {submitError !== null && (
             <Alert>Could not create! {submitError}</Alert>
           )}
-          {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
+          {import.meta.env.DEV && (
+            <code data-cy="errors">{JSON.stringify(errors)}</code>
+          )}
         </Form>
       )}
     </Formik>
@@ -93,7 +111,12 @@ function useCreateTeamModal() {
   return (onCreate?: (slug: string) => unknown) => {
     const id = modals.openModal({
       title: "Create Team",
-      children: <CreateTeamModalContents onCreate={onCreate} />,
+      children: (
+        <CreateTeamModalContents
+          close={() => modals.closeModal(id)}
+          onCreate={onCreate}
+        />
+      ),
       zIndex: 300,
     });
   };
@@ -116,6 +139,7 @@ export function TeamSelectField(props: TeamSelectProps) {
   return (
     <Select
       {...field}
+      data-cy={field.name}
       onChange={(value) => helpers.setValue(value)}
       label={props.title}
       description={props.helper}

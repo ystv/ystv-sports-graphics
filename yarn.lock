@@ -8707,6 +8707,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cypress-file-upload@npm:^5.0.8":
+  version: 5.0.8
+  resolution: "cypress-file-upload@npm:5.0.8"
+  peerDependencies:
+    cypress: ">3.0.0"
+  checksum: 9c70ca7e0bb137d0ec0b8d38987219ce15b26ac3a40e3ed4e78e6ad4690392eab905586848eec6ad8edd42ee480e68ccc63007b2ebd0a02f4b3eca116ff017e3
+  languageName: node
+  linkType: hard
+
 "cypress@npm:^9.7.0":
   version: 9.7.0
   resolution: "cypress@npm:9.7.0"
@@ -22016,6 +22025,7 @@ __metadata:
     "@typescript-eslint/parser": latest
     "@ury1350/prettier-config": ^1.0.1
     cypress: ^9.7.0
+    cypress-file-upload: ^5.0.8
     eslint: latest
     eslint-config-prettier: ^8.5.0
     eslint-plugin-cypress: ^2.12.1

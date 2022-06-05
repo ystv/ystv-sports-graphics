@@ -60,6 +60,21 @@ export const errorHandler: (
     } else if (err instanceof MulterError && err.code === "LIMIT_FILE_SIZE") {
       code = 422;
       message = `file ${err.field} too large`;
+    } else if (
+      process.env.NODE_ENV === "development" ||
+      process.env.NODE_ENV === "test"
+    ) {
+      code = 500;
+      message = "internal server error";
+      if (err instanceof Error) {
+        extra = {
+          name: err.name,
+          message: err.message,
+          stack: err.stack,
+        };
+      } else {
+        extra = JSON.parse(JSON.stringify(err));
+      }
     } else {
       code = 500;
       message = "internal server error, sorry";

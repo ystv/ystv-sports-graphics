@@ -1,4 +1,4 @@
-describe("Event Management", () => {
+describe("Event Actions", () => {
   describe("Football", () => {
     before(() => {
       cy.resetAndCreateTestUser("admin", "password");
