@@ -28,7 +28,7 @@ import {
   EventTypeInfo,
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
-import { identity } from "lodash-es";
+import { identity, isEqual, pickBy } from "lodash-es";
 
 export function makeEventAPIFor<
   TState extends BaseEventStateType,
@@ -151,7 +151,12 @@ export function makeEventAPIFor<
         }
       }
 
-      const initAction = wrapAction(Init(initialState));
+      const initAction = wrapAction(
+        Init({
+          ...meta,
+          ...initialState,
+        })
+      );
       await DB.collection("_default").insert(historyKey(id), [initAction]);
 
       const finalState = {
@@ -174,6 +179,7 @@ export function makeEventAPIFor<
       const meta = await DB.collection("_default").get(metaKey(id));
       const history = await DB.collection("_default").get(historyKey(id));
       const currentActions = history.content as Action[];
+      const currentState = resolveEventState(reducer, currentActions);
 
       const newMeta: EventMeta = await EventCreateEditSchema.validate(
         req.body,
@@ -197,7 +203,21 @@ export function makeEventAPIFor<
         stripUnknown: true,
       });
 
-      const editAction = wrapAction(Edit(newState));
+      // We need to ensure that only the changed state keys make it into the history and to changes feed clients.
+      // This is because, if we put the complete state in the Edit action, it will "capture" all the current
+      // values of all the state fields, which will make any actions before this Edit not undo-able.
+      const stateDelta = pickBy(
+        newState,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (val, key) => !isEqual(val, (currentState as any)[key])
+      );
+
+      const editAction = wrapAction(
+        Edit({
+          ...newMeta,
+          ...stateDelta,
+        })
+      );
       await DB.collection("_default").replace(metaKey(id), newMeta);
       await DB.collection("_default").mutateIn(
         historyKey(id),
