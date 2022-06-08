@@ -5,6 +5,14 @@ import TimeBox from "../timeBox";
 import styles from "./index.module.css";
 
 export interface Props {
+  homeName: string;
+  homePrimaryColour: string;
+  homeSecondaryColour: string;
+  homeCrestAttachmentID: string;
+  awayName: string;
+  awayPrimaryColour: string;
+  awaySecondaryColour: string;
+  awayCrestAttachmentID: string;
   homeScore: number;
   awayScore: number;
   homeSets: number;
@@ -12,6 +20,14 @@ export interface Props {
 }
 
 export function ScoreboardWithSets({
+  homeName,
+  homePrimaryColour,
+  homeSecondaryColour,
+  homeCrestAttachmentID,
+  awayName,
+  awayPrimaryColour,
+  awaySecondaryColour,
+  awayCrestAttachmentID,
   awayScore,
   homeScore,
   homeSets,
@@ -20,31 +36,41 @@ export function ScoreboardWithSets({
   return (
     <div className={styles.Container}>
       <div className={styles.Row}>
-        <NameBox name="LANC" primaryColor="var(--lancaster-red)" />
+        <NameBox
+          name={homeName}
+          primaryColor={homePrimaryColour}
+          secondaryColor={homeSecondaryColour}
+          crestAttachmentID={homeCrestAttachmentID}
+        />
         <ScoreBox
           score={homeSets}
-          primaryColor="var(--ystv-dark)"
-          secondaryColor="#fafafa"
+          primaryColor={awayPrimaryColour}
+          secondaryColor={awaySecondaryColour}
           sheen={false}
         />
-        <ScoreBox score={homeScore} primaryColor="var(--lancaster-red)" />
+        <ScoreBox
+          score={homeScore}
+          primaryColor={homePrimaryColour}
+          secondaryColor={homeSecondaryColour}
+        />
       </div>
       <div className={styles.Row}>
         <NameBox
-          name="YORK"
-          primaryColor="var(--york-white)"
-          secondaryColor="var(--ystv-dark)"
+          name={awayName}
+          primaryColor={awayPrimaryColour}
+          secondaryColor={awaySecondaryColour}
+          crestAttachmentID={awayCrestAttachmentID}
         />
         <ScoreBox
           score={awaySets}
-          primaryColor="var(--ystv-dark)"
-          secondaryColor="#fafafa"
+          primaryColor={awayPrimaryColour}
+          secondaryColor={awaySecondaryColour}
           sheen={false}
         />
         <ScoreBox
           score={awayScore}
-          primaryColor="var(--york-white)"
-          secondaryColor="var(--ystv-dark)"
+          primaryColor={homePrimaryColour}
+          secondaryColor={homeSecondaryColour}
         />
       </div>
     </div>

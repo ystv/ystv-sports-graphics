@@ -37,6 +37,7 @@ const ItemVariants = {
   },
 };
 
+// TODO: update for team dictionary
 export function LineupTable(props: LineupTableProps) {
   return (
     <motion.div className={styles.Table}>

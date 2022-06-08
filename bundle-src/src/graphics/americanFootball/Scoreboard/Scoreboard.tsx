@@ -8,19 +8,35 @@ import TimeBox from "../../common/timeBox";
 import { formatMMSSMS } from "@ystv/scores/src/common/clock";
 
 export interface ScoreboardProps {
+  homeName: string;
+  awayName: string;
+  homeScore: number;
+  awayScore: number;
+  homePrimaryColor: string;
+  awayPrimaryColor: string;
+  homeSecondaryColor?: string;
+  awaySecondaryColor?: string;
+  homeCrestAttachmentID?: string;
+  awayCrestAttachmentID?: string;
   isVisible: boolean;
   isTimerShown: boolean;
-  team1Score: number;
-  team2Score: number;
   quarter: number;
   time: number;
 }
 
 export function Scoreboard({
+  awayName,
+  awayPrimaryColor,
+  awayScore,
+  awaySecondaryColor,
+  homeName,
+  homePrimaryColor,
+  homeScore,
+  homeSecondaryColor,
+  homeCrestAttachmentID,
+  awayCrestAttachmentID,
   isVisible = false,
   isTimerShown = false,
-  team1Score = 0,
-  team2Score = 0,
   time = 0,
   quarter = 1,
 }: ScoreboardProps) {
@@ -40,17 +56,25 @@ export function Scoreboard({
         animate={isVisible ? "visible" : "hidden"}
         exit="hidden"
       >
-        <NameBox name="LANC" primaryColor="var(--lancaster-red)" />
-        <ScoreBox primaryColor="var(--lancaster-red)" score={team1Score} />
         <NameBox
-          name="YORK"
-          primaryColor="var(--york-white)"
-          secondaryColor="var(--ystv-dark)"
+          name={homeName}
+          primaryColor={homePrimaryColor}
+          secondaryColor={homeSecondaryColor}
         />
         <ScoreBox
-          primaryColor="var(--york-white)"
-          secondaryColor="var(--ystv-dark)"
-          score={team2Score}
+          primaryColor={homePrimaryColor}
+          secondaryColor={homeSecondaryColor}
+          score={homeScore}
+        />
+        <NameBox
+          name={awayName}
+          primaryColor={awayPrimaryColor}
+          secondaryColor={awaySecondaryColor}
+        />
+        <ScoreBox
+          primaryColor={awayPrimaryColor}
+          secondaryColor={awaySecondaryColor}
+          score={awayScore}
         />
         <NameBox
           name={"Q" + quarter}

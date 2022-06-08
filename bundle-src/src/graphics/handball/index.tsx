@@ -31,12 +31,14 @@ export function AllHandballGraphics() {
       <GraphicContainer>
         {control.scoreboard.visible && (
           <Scoreboard
-            homeName="LANC"
-            homePrimaryColor="var(--lancaster-red)"
+            homeName={state.homeTeam.abbreviation}
+            homePrimaryColor={state.homeTeam.primaryColour}
+            homeCrestAttachmentID={state.homeTeam.crestAttachmentID}
             homeScore={state.scoreHome}
-            awayName="YORK"
-            awayPrimaryColor="var(--york-white)"
-            awaySecondaryColor="var(--ystv-dark)"
+            awayName={state.awayTeam.abbreviation}
+            awayPrimaryColor={state.awayTeam.primaryColour}
+            awaySecondaryColor={state.awayTeam.secondaryColour}
+            awayCrestAttachmentID={state.awayTeam.crestAttachmentID}
             awayScore={state.scoreAway}
             time={formatMMSSMS(clockTimeAt(state.clock, now), 0, 2)}
             timeVisible={control.scoreboard.showTime}
@@ -46,12 +48,14 @@ export function AllHandballGraphics() {
       <GraphicContainer>
         {control.matchStatusPopup.visible && (
           <MatchStatusPopup
-            homeName="LANC"
-            homePrimaryColor="var(--lancaster-red)"
+            homeName={state.homeTeam.abbreviation}
+            homePrimaryColor={state.homeTeam.primaryColour}
+            homeCrestAttachmentID={state.homeTeam.crestAttachmentID}
             homeScore={state.scoreHome}
-            awayName="YORK"
-            awayPrimaryColor="var(--york-white)"
-            awaySecondaryColor="var(--ystv-dark)"
+            awayName={state.awayTeam.abbreviation}
+            awayPrimaryColor={state.awayTeam.primaryColour}
+            awaySecondaryColor={state.awayTeam.secondaryColour}
+            awayCrestAttachmentID={state.awayTeam.crestAttachmentID}
             awayScore={state.scoreAway}
             banner={bannerMsg(state.segment) ?? ""}
           />
