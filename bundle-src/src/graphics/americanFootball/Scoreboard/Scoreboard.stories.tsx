@@ -11,10 +11,11 @@ const Template: Story<ScoreboardProps> = (args) => <Scoreboard {...args} />;
 
 export const Hello = Template.bind({});
 
+// TODO fix this
 Hello.args = {
   isVisible: true,
-  team1Score: 28,
-  team2Score: 12,
+  homeScore: 28,
+  awayScore: 12,
   time: 143,
   isTimerShown: true,
   quarter: 2,
