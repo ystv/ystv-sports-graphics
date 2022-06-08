@@ -104,7 +104,7 @@ describe("Event Actions", () => {
       cy.contains("Home 0 - Away 0").should("be.visible");
     });
 
-    it.skip("Regression - goal with no player, then edit", function () {
+    it("GRAPHICS-226 - goal with no player, then edit", function () {
       cy.intercept({
         method: "PUT",
         path: "/api/events/football/*",
@@ -112,7 +112,7 @@ describe("Event Actions", () => {
 
       cy.login("admin", "password");
       cy.visit(`/events/football/${this.eventID}`);
-      cy.contains("Home 0 - Away 1").should("be.visible");
+      cy.contains("Home 0 - Away 0").should("be.visible");
 
       cy.contains("Goal").click();
       cy.get("[data-test-form-field=side]").contains("Away").click();

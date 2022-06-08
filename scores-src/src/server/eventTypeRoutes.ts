@@ -378,7 +378,6 @@ export function makeEventAPIFor<
     })
   );
 
-  //FIXME
   router.post(
     "/:id/_resync",
     authenticate("write"),
