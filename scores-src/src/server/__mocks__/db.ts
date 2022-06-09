@@ -10,6 +10,7 @@ import {
   GetResult,
   MutateInSpec,
   MutateInOptions,
+  RemoveOptions,
 } from "couchbase";
 import { cloneDeep, get, isEqual, set } from "lodash-es";
 import binding from "couchbase/dist/binding";
@@ -81,6 +82,21 @@ export class InMemoryDB {
       },
       async upsert(key: string, val: unknown, options?: UpsertOptions) {
         c.set(key, { value: val, cas: newCas() });
+      },
+      async remove(key: string, options?: RemoveOptions) {
+        if (!c.has(key)) {
+          throw new DocumentNotFoundError(new MemDBError(key));
+        }
+        if (options) {
+          if (options.cas) {
+            if (c.get(key)?.cas !== options.cas) {
+              throw new CasMismatchError(
+                new MemDBError(`expected ${c.get(key)?.cas} got ${options.cas}`)
+              );
+            }
+          }
+        }
+        c.delete(key);
       },
       async mutateIn(
         key: string,
