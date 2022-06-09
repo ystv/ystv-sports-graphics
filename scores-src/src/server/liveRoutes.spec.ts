@@ -694,12 +694,12 @@ describe("Updates Stream", () => {
         "changed": Any<String>,
         "data": Object {
           "awayTeam": Object {
-            "abbreviation": "TEST",
+            "abbreviation": "FOO",
             "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Test",
+            "name": "Updated Test",
             "primaryColour": "#000000",
             "secondaryColour": "#fafafa",
-            "slug": "test",
+            "slug": "updated-test",
           },
           "clock": Object {
             "state": "stopped",
@@ -709,12 +709,12 @@ describe("Updates Stream", () => {
           },
           "halves": Array [],
           "homeTeam": Object {
-            "abbreviation": "TEST",
+            "abbreviation": "FOO",
             "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Test",
+            "name": "Updated Test",
             "primaryColour": "#000000",
             "secondaryColour": "#fafafa",
-            "slug": "test",
+            "slug": "updated-test",
           },
           "id": Any<String>,
           "name": "test",
