@@ -1,3 +1,4 @@
+import { MutateInSpec } from "couchbase";
 import invariant from "tiny-invariant";
 import { Edit, wrapAction } from "../common/eventStateHelpers";
 import { EventMeta, TeamInfo } from "../common/types";
@@ -21,7 +22,11 @@ async function updateEvent(id: string, newInfo: TeamInfo, oldSlug: string) {
   }
 
   await DB.collection("_default").replace(id, meta, { cas: metaResult.cas });
-  await dispatchChangeToEvent(type, eventId, wrapAction(Edit(meta)));
+  const editAction = wrapAction(Edit(meta));
+  await DB.collection("_default").mutateIn(`EventHistory/${type}/${eventId}`, [
+    MutateInSpec.arrayAppend("", editAction),
+  ]);
+  await dispatchChangeToEvent(type, eventId, editAction);
 }
 
 export async function resyncTeamUpdates(newInfo: TeamInfo, oldSlug: string) {

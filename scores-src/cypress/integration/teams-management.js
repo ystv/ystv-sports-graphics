@@ -73,4 +73,96 @@ describe("Teams Management", () => {
     cy.get("[data-cy=submit]").scrollIntoView().click();
     cy.wait(["@postEvents"], { responseTimeout: 3000 });
   });
+
+  it("Event action, edit team, undo that action", function () {
+    cy.intercept({
+      method: "PUT",
+      path: "/api/teams/*",
+    }).as("putTeams");
+
+    // York already exists from earlier
+    cy.createTeam({
+      name: "Lancaster",
+      abbreviation: "LANC",
+      primaryColour: "#ff0000",
+      secondaryColour: "#fafafa",
+    });
+
+    cy.request({
+      url: "/api/events/football",
+      method: "POST",
+      body: {
+        name: "Test Event",
+        worthPoints: 4,
+        notCovered: false,
+        startTime: "2023-01-02T00:00:00.000Z",
+        homeTeam: "lancaster",
+        awayTeam: "york",
+      },
+      auth: {
+        user: "admin",
+        pass: "password",
+      },
+    }).then((res) => {
+      const eventID = res.body.id;
+
+      cy.login("admin", "password");
+      cy.visit(`/events/football/${eventID}`);
+      cy.contains("Home 0 - Away 0").should("be.visible");
+
+      cy.request({
+        url: `/api/events/football/${eventID}/startHalf`,
+        method: "POST",
+        body: {},
+        auth: {
+          user: "admin",
+          pass: "password",
+        },
+      });
+      cy.request({
+        url: `/api/events/football/${eventID}/goal`,
+        method: "POST",
+        body: {
+          side: "home",
+          player: null,
+        },
+        auth: {
+          user: "admin",
+          pass: "password",
+        },
+      });
+
+      cy.contains("Home 1 - Away 0").should("be.visible");
+
+      cy.visit("/teams");
+      cy.contains("Lancaster").parent().contains("Edit").click();
+      cy.contains("Editing Lancaster").should("be.visible");
+
+      cy.get("[name=name]").clear().type("Anne Lister");
+      cy.get("[name=abbreviation]").clear().type("LIS");
+
+      cy.get("[data-cy=submit]").click();
+
+      cy.wait(["@putTeams"], { responseTimeout: 3000 });
+
+      cy.visit(`/events/football/${eventID}`);
+      cy.contains("Home 1 - Away 0").should("be.visible");
+
+      cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
+      cy.contains("Home 0 - Away 0").should("be.visible");
+
+      // Verify the team change is still in effect
+      cy.request({
+        url: `/api/events/football/${eventID}`,
+        method: "GET",
+        auth: {
+          user: "admin",
+          pass: "password",
+        },
+      }).then((res) => {
+        expect(res.status).to.eq(200);
+        expect(res.body.homeTeam.name).to.eq("Anne Lister");
+      });
+    });
+  });
 });
