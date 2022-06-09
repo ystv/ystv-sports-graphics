@@ -24,6 +24,7 @@ import { createSessionForUser } from "./auth";
 import { WebSocket } from "ws";
 import request from "superagent";
 import { TeamInfo } from "../common/types";
+import { createTeamsRouter } from "./teamsRoutes";
 
 jest.unmock("redis").unmock("./redis");
 jest.mock("./db");
@@ -77,7 +78,10 @@ class TestSocket {
       await once(this.ws, "open");
     }
   }
-  waitForMessage(maxAttempts = 100): Promise<Record<string, unknown>> {
+  waitForMessage(
+    maxAttempts = 100,
+    ignorePings = false
+  ): Promise<Record<string, unknown>> {
     return new Promise((resolve, reject) => {
       let attempt = 0;
       const closeCheck = (code: number) => {
@@ -88,15 +92,17 @@ class TestSocket {
         if (this.messageQueue.length > 0) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const msg = this.messageQueue.shift()!;
-          this.ws.removeListener("close", closeCheck);
-          resolve(msg);
-        } else {
-          if (++attempt > maxAttempts) {
-            reject(new Error("Max attempts exceeded"));
+          if (!ignorePings || msg.kind !== "PING") {
+            this.ws.removeListener("close", closeCheck);
+            resolve(msg);
             return;
           }
-          setTimeout(msgCheck, 50);
         }
+        if (++attempt > maxAttempts) {
+          reject(new Error("Max attempts exceeded"));
+          return;
+        }
+        setTimeout(msgCheck, 50);
       };
       msgCheck();
     });
@@ -149,6 +155,7 @@ describe("Updates Stream", () => {
     app.use(cookieParser());
     const baseRouter = Router();
     baseRouter.use("/events", createEventTypesRouter());
+    baseRouter.use("/teams", createTeamsRouter());
     app.use("/api", baseRouter);
     app.use("/api", createLiveRouter());
     app.use(((err: any, req: Request, res: Response, next: NextFunction) => {
@@ -622,6 +629,211 @@ describe("Updates Stream", () => {
     `
     );
 
+    await ts.close();
+  });
+
+  test("edits to teams are reflected as changes (state mode)", async () => {
+    const testEventRes = await request
+      .post(`http://localhost:${testPort}/api/events/football`)
+      .auth("test", "password")
+      .send({
+        name: "test",
+        worthPoints: 0,
+        startTime: "2022-05-29T00:00:00Z",
+        homeTeam: "test",
+        awayTeam: "test",
+      });
+    const testEvent = testEventRes.body;
+
+    // Mock out the query in teamsRepo.ts
+    const DB = require("./db").DB as unknown as InMemoryDB;
+    DB.query
+      // resyncTeamUpdates
+      .mockResolvedValueOnce({
+        rows: [`EventMeta/football/${testEvent.id}`],
+      })
+      // cleanupOrphanedAttachments
+      .mockResolvedValue({ rows: [] });
+
+    const ts = new TestSocket(
+      `ws://localhost:${testPort}/api/updates/stream/v2?token=${testToken}`
+    );
+    await ts.waitForOpen();
+    await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
+    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await expect(ts.waitForMessage()).resolves.toHaveProperty(
+      "kind",
+      "SUBSCRIBE_OK"
+    );
+
+    expect(
+      request
+        .put(`http://localhost:${testPort}/api/teams/test`)
+        .send({
+          name: "Updated Test",
+          abbreviation: "FOO",
+          primaryColour: "#000000",
+          secondaryColour: "#fafafa",
+        } as TeamInfo)
+        .auth("test", "password")
+        .send({})
+    ).resolves.toHaveProperty("status", 200);
+
+    const message = await ts.waitForMessage(50, true);
+    expect(message).toMatchInlineSnapshot(
+      {
+        kind: "CHANGE",
+        mid: expect.any(String),
+        changed: expect.any(String),
+        data: {
+          id: expect.any(String),
+        },
+      },
+      `
+      Object {
+        "changed": Any<String>,
+        "data": Object {
+          "awayTeam": Object {
+            "abbreviation": "FOO",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Updated Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "updated-test",
+          },
+          "clock": Object {
+            "state": "stopped",
+            "timeLastStartedOrStopped": 0,
+            "type": "upward",
+            "wallClockLastStarted": 0,
+          },
+          "halves": Array [],
+          "homeTeam": Object {
+            "abbreviation": "FOO",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Updated Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "updated-test",
+          },
+          "id": Any<String>,
+          "name": "test",
+          "notCovered": false,
+          "players": Object {
+            "away": Array [],
+            "home": Array [],
+          },
+          "scoreAway": 0,
+          "scoreHome": 0,
+          "startTime": "2022-05-29T00:00:00Z",
+          "type": "football",
+          "worthPoints": 0,
+        },
+        "kind": "CHANGE",
+        "mid": Any<String>,
+      }
+    `
+    );
+    await ts.close();
+  });
+
+  test("edits to teams are reflected as changes (actions mode)", async () => {
+    const testEventRes = await request
+      .post(`http://localhost:${testPort}/api/events/football`)
+      .auth("test", "password")
+      .send({
+        name: "test",
+        worthPoints: 0,
+        startTime: "2022-05-29T00:00:00Z",
+        homeTeam: "test",
+        awayTeam: "test",
+      });
+    const testEvent = testEventRes.body;
+
+    // Mock out the query in teamsRepo.ts
+    const DB = require("./db").DB as unknown as InMemoryDB;
+    DB.query
+      // resyncTeamUpdates
+      .mockResolvedValueOnce({
+        rows: [`EventMeta/football/${testEvent.id}`],
+      })
+      // cleanupOrphanedAttachments
+      .mockResolvedValueOnce({ rows: [] });
+
+    const ts = new TestSocket(
+      `ws://localhost:${testPort}/api/updates/stream/v2?mode=actions&token=${testToken}`
+    );
+    await ts.waitForOpen();
+    await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
+    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await expect(ts.waitForMessage()).resolves.toHaveProperty(
+      "kind",
+      "SUBSCRIBE_OK"
+    );
+
+    expect(
+      request
+        .put(`http://localhost:${testPort}/api/teams/test`)
+        .send({
+          name: "Updated Test",
+          abbreviation: "FOO",
+          primaryColour: "#000000",
+          secondaryColour: "#fafafa",
+        } as TeamInfo)
+        .auth("test", "password")
+        .send({})
+    ).resolves.toHaveProperty("status", 200);
+
+    const message = await ts.waitForMessage(50, true);
+    expect(message).toMatchInlineSnapshot(
+      {
+        kind: "ACTION",
+        event: expect.any(String),
+        mid: expect.any(String),
+        meta: {
+          ts: expect.any(Number),
+        },
+
+        payload: {
+          id: expect.any(String),
+        },
+      },
+      `
+      Object {
+        "event": Any<String>,
+        "kind": "ACTION",
+        "meta": Object {
+          "ts": Any<Number>,
+        },
+        "mid": Any<String>,
+        "payload": Object {
+          "awayTeam": Object {
+            "abbreviation": "FOO",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Updated Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "updated-test",
+          },
+          "homeTeam": Object {
+            "abbreviation": "FOO",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Updated Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "updated-test",
+          },
+          "id": Any<String>,
+          "name": "test",
+          "notCovered": false,
+          "startTime": "2022-05-29T00:00:00Z",
+          "type": "football",
+          "worthPoints": 0,
+        },
+        "type": "@@edit",
+      }
+    `
+    );
     await ts.close();
   });
 });
