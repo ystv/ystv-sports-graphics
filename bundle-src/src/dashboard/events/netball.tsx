@@ -19,7 +19,7 @@ export function NetballDashboard() {
 
   return (
     <Container fluid>
-      <Title order={3}>Quarter {state.quarters}</Title>
+      <Title order={3}>Quarter {state.quarters.length}</Title>
       <LiveKillButtons
         name="Scoreboard"
         live={control.scoreboard.visible}
