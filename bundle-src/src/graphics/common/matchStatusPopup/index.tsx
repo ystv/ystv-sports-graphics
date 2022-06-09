@@ -1,3 +1,4 @@
+import { getAttachmentURL } from "common/attachments";
 import { motion } from "framer-motion";
 import styles from "./index.module.css";
 
@@ -31,12 +32,16 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
             color: props.homeSecondaryColor || "var(--ystv-light)",
           }}
         >
-          <div
-            className={styles.Crest + " " + styles.Home}
-            style={{
-              backgroundImage: `url("${nodecg.bundleConfig.scoresService.apiURL}/attachments/${props.homeCrestAttachmentID}")`,
-            }}
-          />
+          {props.homeCrestAttachmentID && (
+            <div
+              className={styles.Crest + " " + styles.Home}
+              style={{
+                backgroundImage: `url("${getAttachmentURL(
+                  props.homeCrestAttachmentID
+                )}")`,
+              }}
+            />
+          )}
           {props.homeScore}
         </div>
         <div
@@ -46,12 +51,16 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
             color: props.awaySecondaryColor || "var(--ystv-light)",
           }}
         >
-          <div
-            className={styles.Crest + " " + styles.Away}
-            style={{
-              backgroundImage: `url("${nodecg.bundleConfig.scoresService.apiURL}/attachments/${props.awayCrestAttachmentID}")`,
-            }}
-          />
+          {props.awayCrestAttachmentID && (
+            <div
+              className={styles.Crest + " " + styles.Away}
+              style={{
+                backgroundImage: `url("${getAttachmentURL(
+                  props.awayCrestAttachmentID
+                )}")`,
+              }}
+            />
+          )}
           {props.awayScore}
         </div>
         <div className={styles.Banner}>{props.banner}</div>

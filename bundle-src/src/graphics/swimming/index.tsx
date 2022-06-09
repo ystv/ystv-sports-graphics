@@ -1,6 +1,7 @@
 import { formatMMSSMS } from "@ystv/scores/src/common/clock";
 import { State } from "@ystv/scores/src/common/sports/swimming";
 import { EventMeta } from "@ystv/scores/src/common/types";
+import { getAttachmentURL } from "common/attachments";
 import { ControlSwimming } from "common/types/control-swimming";
 import { useOnlyReplicantValue } from "common/useReplicant";
 import { motion } from "framer-motion";
@@ -55,13 +56,11 @@ function Times({
                   : timesStyles.Away)
               }
               style={{
-                backgroundImage: `url("${
-                  nodecg.bundleConfig.scoresService.apiURL
-                }/attachments/${
+                backgroundImage: `url("${getAttachmentURL(
                   run.swimmersByLane[lane].side === "home"
                     ? state.homeTeam.crestAttachmentID
                     : state.awayTeam.crestAttachmentID
-                }")`,
+                )}")`,
               }}
             />
             {lane}
@@ -149,13 +148,11 @@ export function AllSwimmingGraphics() {
                           : lineupStyles.Away)
                       }
                       style={{
-                        backgroundImage: `url("${
-                          nodecg.bundleConfig.scoresService.apiURL
-                        }/attachments/${
+                        backgroundImage: `url("${getAttachmentURL(
                           run.swimmersByLane[lane].side === "home"
                             ? state.homeTeam.crestAttachmentID
                             : state.awayTeam.crestAttachmentID
-                        }")`,
+                        )}")`,
                       }}
                     />
                     {lane}
