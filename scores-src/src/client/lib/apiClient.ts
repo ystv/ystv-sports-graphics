@@ -1,5 +1,5 @@
 import type { InferType } from "yup";
-import type { EventMeta, User } from "../../common/types";
+import { EventMeta, TeamInfo, User } from "../../common/types";
 import { stringify } from "qs";
 import useSWR, { useSWRConfig } from "swr";
 import { NavigateFunction, useNavigate } from "react-router-dom";
@@ -450,5 +450,68 @@ export function useDELETEUsersUsername() {
       204
     );
     mutate("/users");
+  };
+}
+
+export function useGETTeams() {
+  return useAPIRoute<TeamInfo[]>("/teams", {}, 200);
+}
+
+export function usePOSTTeams() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (
+    data: Omit<TeamInfo, "crestAttachmentID" | "slug">,
+    crestFile: File
+  ) => {
+    const formData = new FormData();
+    for (const key of Object.keys(data)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      formData.append(key, (data as any)[key]);
+    }
+    formData.append("crest", crestFile);
+    const result = (await fetcher(navigate)(
+      `/teams/`,
+      {
+        method: "post",
+        body: formData,
+      },
+      201
+    )) as TeamInfo;
+    mutate("/teams");
+    mutate(`/users/${result.slug}`, result, false);
+    return result;
+  };
+}
+
+export function usePUTTeams() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (
+    slug: string,
+    data: Omit<TeamInfo, "crestAttachmentID" | "slug">,
+    crestFile?: File
+  ) => {
+    const formData = new FormData();
+    for (const key of Object.keys(data)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      formData.append(key, (data as any)[key]);
+    }
+    if (crestFile) {
+      formData.append("crest", crestFile);
+    }
+    const result = (await fetcher(navigate)(
+      `/teams/${slug}`,
+      {
+        method: "put",
+        body: formData,
+      },
+      200
+    )) as TeamInfo;
+    mutate("/teams");
+    mutate(`/users/${result.slug}`, result, false);
+    return result;
   };
 }

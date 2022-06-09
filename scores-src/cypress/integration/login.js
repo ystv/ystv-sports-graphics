@@ -3,7 +3,10 @@ describe("Login", () => {
     cy.resetAndCreateTestUser("admin", "password");
   });
   it("works", () => {
-    cy.visit("http://localhost:3000");
-    cy.login("admin", "password");
+    cy.visit("/login");
+    cy.get("input[name=username").type("admin");
+    cy.get("input[name=password").type("password");
+    cy.get("form").contains("Sign In").click();
+    cy.url().should("contain", "/events");
   });
 });

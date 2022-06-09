@@ -3,7 +3,7 @@ import "./loggingSetup";
 import config from "./config";
 import * as logging from "./loggingSetup";
 
-import Express, { NextFunction, Request, Response, Router } from "express";
+import Express, { Router } from "express";
 import ExpressWS from "express-ws";
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
@@ -14,13 +14,7 @@ import { createEventTypesRouter } from "./eventTypeRoutes";
 import "./updateTournamentSummary.job";
 import * as db from "./db";
 import * as redis from "./redis";
-import {
-  CasMismatchError,
-  DocumentLockedError,
-  DocumentNotFoundError,
-} from "couchbase";
-import { ValidationError } from "yup";
-import { isHttpError, NotFound } from "http-errors";
+import { NotFound } from "http-errors";
 import { createEventsRouter } from "./eventsRoutes";
 
 import { createLiveRouter } from "./liveRoutes";
@@ -30,13 +24,14 @@ import {
   metricsHandler,
 } from "./metrics";
 import asyncHandler from "express-async-handler";
-import { Logger } from "winston";
 import { createBootstrapRouter, maybeSetupBootstrap } from "./bootstrap";
 import { createAuthRouter } from "./authRoutes";
 import { createUserManagementRouter } from "./userManagementRoutes";
 import { createTournamentSummaryRouter } from "./tournamentSummaryRoutes";
 import { errorHandler } from "./httpUtils";
 import { createTestRouter } from "./testRoutes";
+import { createTeamsRouter } from "./teamsRoutes";
+import { createAttachmentsRouter } from "./attachmentsRoutes";
 
 (async () => {
   const indexlogger = logging.getLogger("index.server");
@@ -121,6 +116,8 @@ import { createTestRouter } from "./testRoutes";
   baseRouter.use("/events", createEventsRouter());
   baseRouter.use("/users", createUserManagementRouter());
   baseRouter.use("/tournamentSummary", createTournamentSummaryRouter());
+  baseRouter.use("/teams", createTeamsRouter());
+  baseRouter.use("/attachments", createAttachmentsRouter());
   if (process.env.NODE_ENV === "test") {
     indexlogger.warn("Adding test routes. DO NOT USE IN PRODUCTION!");
     baseRouter.use("/_test", createTestRouter());

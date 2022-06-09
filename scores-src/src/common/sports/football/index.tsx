@@ -169,7 +169,7 @@ export const schema: Yup.SchemaOf<State> = Yup.object().shape({
             side: Yup.mixed<"home" | "away">()
               .oneOf(["home", "away"])
               .required(),
-            player: Yup.string().nullable().required(),
+            player: Yup.string().nullable(),
             time: Yup.number().required(),
           })
         ),

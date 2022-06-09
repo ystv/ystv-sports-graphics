@@ -1,5 +1,26 @@
 import * as Yup from "yup";
-import { TypedSchema } from "yup/lib/util/types";
+
+export interface TeamInfo {
+  slug: string;
+  name: string;
+  abbreviation: string;
+  primaryColour: string;
+  secondaryColour: string;
+  crestAttachmentID: string;
+}
+
+export const TeamInfoSchema: Yup.SchemaOf<TeamInfo> = Yup.object({
+  slug: Yup.string().required(),
+  name: Yup.string().required(),
+  abbreviation: Yup.string().required().min(3).max(4),
+  primaryColour: Yup.string()
+    .required()
+    .matches(/^#[0-9a-f]{6}$/i),
+  secondaryColour: Yup.string()
+    .required()
+    .matches(/^#[0-9a-f]{6}$/i),
+  crestAttachmentID: Yup.string().required().uuid(),
+});
 
 // @ts-expect-error can't type index signature
 export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
@@ -13,7 +34,38 @@ export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
   rosesLiveID: Yup.number().optional(),
   winner: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).notRequired(),
   worthPoints: Yup.number().integer().required().min(0),
+  homeTeam: TeamInfoSchema,
+  awayTeam: TeamInfoSchema,
 });
+
+/**
+ * Identical to EventMetaSchema except omitting type and id, and replacing the team info objects with slugs.
+ */
+export const EventCreateEditSchema: Yup.SchemaOf<EventMeta> =
+  EventMetaSchema.omit(["type", "id"]).shape({
+    homeTeam: Yup.string()
+      .required()
+      .transform((val, original, context) => {
+        if (context.isType(val)) {
+          return val;
+        }
+        if (typeof original === "object" && "slug" in original) {
+          return original.slug;
+        }
+        return val;
+      }),
+    awayTeam: Yup.string()
+      .required()
+      .transform((val, original, context) => {
+        if (context.isType(val)) {
+          return val;
+        }
+        if (typeof original === "object" && "slug" in original) {
+          return original.slug;
+        }
+        return val;
+      }),
+  });
 
 export interface EventMeta {
   id: string;
@@ -24,6 +76,8 @@ export interface EventMeta {
   rosesLiveID?: number;
   winner?: "home" | "away";
   worthPoints: number;
+  homeTeam: TeamInfo;
+  awayTeam: TeamInfo;
   [K: string]: unknown;
 }
 

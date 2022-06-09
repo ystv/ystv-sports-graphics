@@ -22,12 +22,13 @@ import { getLogger } from "./loggingSetup";
 import {
   Action,
   BaseEventStateType,
+  EventCreateEditSchema,
   EventMeta,
   EventMetaSchema,
   EventTypeInfo,
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
-import { identity } from "lodash-es";
+import { identity, isEqual, pickBy } from "lodash-es";
 
 export function makeEventAPIFor<
   TState extends BaseEventStateType,
@@ -56,8 +57,12 @@ export function makeEventAPIFor<
       const result = await DB.query(
         `SELECT RAW e
         FROM _default e
-        WHERE meta(e).id LIKE 'EventMeta/${typeName}/%'
-        ORDER BY MILLIS(e.startTime)`
+        WHERE meta(e).id LIKE 'EventMeta/%'
+        AND e.type = $1
+        ORDER BY MILLIS(e.startTime)`,
+        {
+          parameters: [typeName],
+        }
       );
       const events = await Promise.all(
         result.rows.map(async (row) => {
@@ -109,14 +114,27 @@ export function makeEventAPIFor<
     "/",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const meta: EventMeta = await (
-        EventMetaSchema.omit(["type", "id"]) as typeof EventMetaSchema
-      ).validate(req.body, { abortEarly: false, stripUnknown: true });
-      const initialState = await stateSchema.validate(req.body, {
+      const meta: EventMeta = await EventCreateEditSchema.validate(req.body, {
         abortEarly: false,
         stripUnknown: true,
       });
       meta.type = typeName;
+      // The input contains the slugs for the teams, replace them with the actual data.
+      meta.homeTeam = (
+        await DB.collection("_default").get(
+          `Team/${meta.homeTeam as unknown as string}`
+        )
+      ).content;
+      meta.awayTeam = (
+        await DB.collection("_default").get(
+          `Team/${meta.awayTeam as unknown as string}`
+        )
+      ).content;
+
+      const initialState = await stateSchema.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
 
       let id: string;
       for (;;) {
@@ -133,7 +151,12 @@ export function makeEventAPIFor<
         }
       }
 
-      const initAction = wrapAction(Init(initialState));
+      const initAction = wrapAction(
+        Init({
+          ...meta,
+          ...initialState,
+        })
+      );
       await DB.collection("_default").insert(historyKey(id), [initAction]);
 
       const finalState = {
@@ -156,18 +179,45 @@ export function makeEventAPIFor<
       const meta = await DB.collection("_default").get(metaKey(id));
       const history = await DB.collection("_default").get(historyKey(id));
       const currentActions = history.content as Action[];
+      const currentState = resolveEventState(reducer, currentActions);
 
-      const newMeta: EventMeta = await (
-        EventMetaSchema.omit(["type", "id"]) as typeof EventMetaSchema
-      ).validate(req.body, { abortEarly: false, stripUnknown: true });
+      const newMeta: EventMeta = await EventCreateEditSchema.validate(
+        req.body,
+        { abortEarly: false, stripUnknown: true }
+      );
       newMeta.id = id;
       newMeta.type = typeName;
+      newMeta.homeTeam = (
+        await DB.collection("_default").get(
+          `Team/${newMeta.homeTeam as unknown as string}`
+        )
+      ).content;
+      newMeta.awayTeam = (
+        await DB.collection("_default").get(
+          `Team/${newMeta.awayTeam as unknown as string}`
+        )
+      ).content;
+
       const newState = await stateSchema.validate(req.body, {
         abortEarly: false,
         stripUnknown: true,
       });
 
-      const editAction = wrapAction(Edit(newState));
+      // We need to ensure that only the changed state keys make it into the history and to changes feed clients.
+      // This is because, if we put the complete state in the Edit action, it will "capture" all the current
+      // values of all the state fields, which will make any actions before this Edit not undo-able.
+      const stateDelta = pickBy(
+        newState,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (val, key) => !isEqual(val, (currentState as any)[key])
+      );
+
+      const editAction = wrapAction(
+        Edit({
+          ...newMeta,
+          ...stateDelta,
+        })
+      );
       await DB.collection("_default").replace(metaKey(id), newMeta);
       await DB.collection("_default").mutateIn(
         historyKey(id),
@@ -328,7 +378,6 @@ export function makeEventAPIFor<
     })
   );
 
-  //FIXME
   router.post(
     "/:id/_resync",
     authenticate("write"),

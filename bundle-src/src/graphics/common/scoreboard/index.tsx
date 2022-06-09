@@ -13,6 +13,8 @@ export interface Props {
   awayPrimaryColor: string;
   homeSecondaryColor?: string;
   awaySecondaryColor?: string;
+  homeCrestAttachmentID?: string;
+  awayCrestAttachmentID?: string;
   time: string;
   timeVisible: boolean;
 }
@@ -26,6 +28,8 @@ export function Scoreboard({
   homePrimaryColor,
   homeScore,
   homeSecondaryColor,
+  homeCrestAttachmentID,
+  awayCrestAttachmentID,
   time,
   timeVisible,
 }: Props) {
@@ -40,6 +44,7 @@ export function Scoreboard({
         name={homeName}
         primaryColor={homePrimaryColor}
         secondaryColor={homeSecondaryColor}
+        crestAttachmentID={homeCrestAttachmentID}
       />
       <ScoreBox
         score={homeScore}
@@ -55,6 +60,8 @@ export function Scoreboard({
         name={awayName}
         primaryColor={awayPrimaryColor}
         secondaryColor={awaySecondaryColor}
+        crestAttachmentID={awayCrestAttachmentID}
+        away
       />
       {timeVisible && <TimeBox time={time} />}
     </motion.div>

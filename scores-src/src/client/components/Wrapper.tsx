@@ -14,7 +14,12 @@ import {
   ThemeIcon,
 } from "@mantine/core";
 
-import { IconCalendarEvent, IconUser, IconShieldLock } from "@tabler/icons";
+import {
+  IconCalendarEvent,
+  IconUser,
+  IconShieldLock,
+  IconUsers,
+} from "@tabler/icons";
 import { setAuthToken } from "../lib/apiClient";
 import { Permission } from "../../common/types";
 import { PermGate } from "./PermGate";
@@ -96,6 +101,13 @@ export function Wrapper() {
                 color: "blue",
                 label: "Events",
                 link: "/events",
+                require: "read" as Permission,
+              },
+              {
+                icon: <IconUsers size={16} />,
+                color: "indigo",
+                label: "Teams",
+                link: "/teams",
                 require: "read" as Permission,
               },
               {

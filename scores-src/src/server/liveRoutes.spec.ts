@@ -23,6 +23,7 @@ import invariant from "tiny-invariant";
 import { createSessionForUser } from "./auth";
 import { WebSocket } from "ws";
 import request from "superagent";
+import { TeamInfo } from "../common/types";
 
 jest.unmock("redis").unmock("./redis");
 jest.mock("./db");
@@ -200,6 +201,15 @@ describe("Updates Stream", () => {
     await DB.collection("_default").insert("BootstrapState", {
       bootstrapped: true,
     });
+    const testTeam: TeamInfo = {
+      name: "Test",
+      abbreviation: "TEST",
+      slug: "test",
+      primaryColour: "#000000",
+      secondaryColour: "#fafafa",
+      crestAttachmentID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    };
+    await DB.collection("_default").insert("Team/test", testTeam);
     testToken = await createSessionForUser("test");
 
     await REDIS.flushDb(RedisFlushModes.SYNC);
@@ -268,6 +278,8 @@ describe("Updates Stream", () => {
         name: "test",
         worthPoints: 0,
         startTime: "2022-05-29T00:00:00Z",
+        homeTeam: "test",
+        awayTeam: "test",
       });
     const testEvent = testEventRes.body;
 
@@ -308,6 +320,14 @@ describe("Updates Stream", () => {
       Object {
         "changed": Any<String>,
         "data": Object {
+          "awayTeam": Object {
+            "abbreviation": "TEST",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "test",
+          },
           "clock": Object {
             "state": "running",
             "timeLastStartedOrStopped": 0,
@@ -320,6 +340,14 @@ describe("Updates Stream", () => {
               "stoppageTime": 0,
             },
           ],
+          "homeTeam": Object {
+            "abbreviation": "TEST",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "test",
+          },
           "id": Any<String>,
           "name": "test",
           "notCovered": false,
@@ -350,6 +378,8 @@ describe("Updates Stream", () => {
         name: "test",
         worthPoints: 0,
         startTime: "2022-05-29T00:00:00Z",
+        homeTeam: "test",
+        awayTeam: "test",
       });
     const testEvent = testEventRes.body;
 
@@ -407,6 +437,8 @@ describe("Updates Stream", () => {
         name: "test",
         worthPoints: 0,
         startTime: "2022-05-29T00:00:00Z",
+        homeTeam: "test",
+        awayTeam: "test",
       });
     const testEvent = testEventRes.body;
 
@@ -443,6 +475,14 @@ describe("Updates Stream", () => {
       Object {
         "changed": Any<String>,
         "data": Object {
+          "awayTeam": Object {
+            "abbreviation": "TEST",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "test",
+          },
           "clock": Object {
             "state": "stopped",
             "timeLastStartedOrStopped": 0,
@@ -450,6 +490,14 @@ describe("Updates Stream", () => {
             "wallClockLastStarted": 0,
           },
           "halves": Array [],
+          "homeTeam": Object {
+            "abbreviation": "TEST",
+            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "name": "Test",
+            "primaryColour": "#000000",
+            "secondaryColour": "#fafafa",
+            "slug": "test",
+          },
           "id": Any<String>,
           "name": "test",
           "notCovered": false,
@@ -480,6 +528,8 @@ describe("Updates Stream", () => {
         name: "test",
         worthPoints: 0,
         startTime: "2022-05-29T00:00:00Z",
+        homeTeam: "test",
+        awayTeam: "test",
       });
     const testEvent = testEventRes.body;
 
@@ -527,6 +577,14 @@ describe("Updates Stream", () => {
               "ts": Any<Number>,
             },
             "payload": Object {
+              "awayTeam": Object {
+                "abbreviation": "TEST",
+                "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                "name": "Test",
+                "primaryColour": "#000000",
+                "secondaryColour": "#fafafa",
+                "slug": "test",
+              },
               "clock": Object {
                 "state": "stopped",
                 "timeLastStartedOrStopped": 0,
@@ -534,6 +592,14 @@ describe("Updates Stream", () => {
                 "wallClockLastStarted": 0,
               },
               "halves": Array [],
+              "homeTeam": Object {
+                "abbreviation": "TEST",
+                "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                "name": "Test",
+                "primaryColour": "#000000",
+                "secondaryColour": "#fafafa",
+                "slug": "test",
+              },
               "id": Any<String>,
               "name": "test",
               "notCovered": false,

@@ -46,34 +46,25 @@
   border-bottom: 1rem solid rgba(33, 33, 33, 0.15);
 } */
 
-.CrestLanc {
+.Crest {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 300%;
-  background: url("../common/assets/LU_Shield_Graphics.svg");
   background-blend-mode: screen, normal;
   background-repeat: no-repeat;
   background-size: 80rem;
-  transform: rotate(20deg) translate(-30rem, -3rem);
   z-index: -1;
   opacity: 0.2;
 }
 
-.CrestYork {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 400%;
-  height: 400%;
-  background: url("../common/assets/YSU_Shield_BW.svg");
-  background-blend-mode: overlay, normal;
-  background-repeat: no-repeat;
-  background-size: 147rem;
-  transform: rotate(-20deg) translate(9rem, -37rem);
-  z-index: -1;
-  opacity: 0.2;
+.Home {
+  transform: rotate(-20deg) translate(33rem, 3rem);
+}
+
+.Away {
+  transform: rotate(20deg) translate(-27rem, -9rem);
 }
 
 .Row {
@@ -108,16 +99,6 @@
   position: relative;
   overflow: hidden;
   z-index: -2;
-}
-
-.Home {
-  background-color: var(--lancaster-red);
-  color: var(--ystv-light);
-}
-
-.Away {
-  background-color: var(--york-white);
-  color: var(--ystv-dark) !important;
 }
 
 .Name {

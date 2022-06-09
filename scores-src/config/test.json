@@ -1,5 +1,5 @@
 {
-  "logLevel": "warn",
+  "logLevel": "info",
   "redis": {
     "connectionString": "redis://localhost:6379"
   },

@@ -5,7 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import invariant from "tiny-invariant";
 import { DateField, Field } from "../../common/formFields";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
-import { EventMetaSchema } from "../../common/types";
+import { EventCreateEditSchema } from "../../common/types";
+import { TeamSelectField } from "../components/TeamSelect";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
 export function EditEventForm() {
@@ -18,7 +19,7 @@ export function EditEventForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const nav = useNavigate();
 
-  const schema = EventMetaSchema.concat(EVENT_TYPES[type].stateSchema);
+  const schema = EventCreateEditSchema.concat(EVENT_TYPES[type].stateSchema);
 
   async function submit<T>(values: T, helpers: FormikHelpers<T>) {
     invariant(typeof type === "string", "no type given");
@@ -45,7 +46,8 @@ export function EditEventForm() {
       )}
       {data && (
         <Formik
-          initialValues={data}
+          // This cast takes care of transforming the home/away team into the slugs, rather than the raw objects.
+          initialValues={schema.cast(data)}
           validationSchema={schema}
           onSubmit={submit}
         >
@@ -58,6 +60,12 @@ export function EditEventForm() {
                   format="isoStr"
                   independent
                 />
+                <TeamSelectField
+                  name="homeTeam"
+                  title="Home Team"
+                  helper={`If there's no notion of "home" or "away" in this game, pick arbitrarily.`}
+                />
+                <TeamSelectField name="awayTeam" title="Away Team" />
                 <Field
                   type="number"
                   name="worthPoints"
@@ -79,7 +87,9 @@ export function EditEventForm() {
                 {submitError !== null && (
                   <Alert>Could not save! {submitError}</Alert>
                 )}
-                {import.meta.env.DEV && <code>{JSON.stringify(errors)}</code>}
+                {import.meta.env.DEV && (
+                  <code data-cy="errors">{JSON.stringify(errors)}</code>
+                )}
               </Stack>
             </FormikForm>
           )}

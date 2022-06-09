@@ -1,5 +1,6 @@
 import { formatMMSSMS } from "@ystv/scores/src/common/clock";
 import { State } from "@ystv/scores/src/common/sports/swimming";
+import { EventMeta } from "@ystv/scores/src/common/types";
 import { ControlSwimming } from "common/types/control-swimming";
 import { useOnlyReplicantValue } from "common/useReplicant";
 import { motion } from "framer-motion";
@@ -9,7 +10,13 @@ import timesStyles from "./times.module.css";
 
 const POOL_LENGTH_M = 25;
 
-function Times({ run }: { run: State["runs"][number] }) {
+function Times({
+  run,
+  state,
+}: {
+  run: State["runs"][number];
+  state: EventMeta;
+}) {
   const latestSplit =
     run.splits.length > 0 ? run.splits[run.splits.length - 1] : null;
   if (!latestSplit) {
@@ -27,20 +34,35 @@ function Times({ run }: { run: State["runs"][number] }) {
       {ordered.map((lane, idx) => (
         <motion.div key={idx} className={timesStyles.Row}>
           <motion.span
-            className={
-              timesStyles.Lane +
-              " " +
-              (run.swimmersByLane[lane].side === "home"
-                ? timesStyles.Home
-                : timesStyles.Away)
-            }
+            className={timesStyles.Lane}
+            style={{
+              backgroundColor:
+                run.swimmersByLane[lane].side === "home"
+                  ? state.homeTeam.primaryColour
+                  : state.awayTeam.primaryColour,
+              color:
+                run.swimmersByLane[lane].side === "home"
+                  ? state.homeTeam.secondaryColour
+                  : state.awayTeam.secondaryColour,
+            }}
           >
             <span
               className={
-                run.swimmersByLane[lane].side === "home"
-                  ? timesStyles.CrestLanc
-                  : timesStyles.CrestYork
+                timesStyles.Crest +
+                " " +
+                (run.swimmersByLane[lane].side === "home"
+                  ? timesStyles.Home
+                  : timesStyles.Away)
               }
+              style={{
+                backgroundImage: `url("${
+                  nodecg.bundleConfig.scoresService.apiURL
+                }/attachments/${
+                  run.swimmersByLane[lane].side === "home"
+                    ? state.homeTeam.crestAttachmentID
+                    : state.awayTeam.crestAttachmentID
+                }")`,
+              }}
             />
             {lane}
           </motion.span>
@@ -50,13 +72,17 @@ function Times({ run }: { run: State["runs"][number] }) {
               : run.swimmersByLane[lane].name}
           </motion.span>
           <motion.span
-            className={
-              timesStyles.Time +
-              " " +
-              (run.swimmersByLane[lane].side === "home"
-                ? timesStyles.Home
-                : timesStyles.Away)
-            }
+            className={timesStyles.Time}
+            style={{
+              backgroundColor:
+                run.swimmersByLane[lane].side === "home"
+                  ? state.homeTeam.primaryColour
+                  : state.awayTeam.primaryColour,
+              color:
+                run.swimmersByLane[lane].side === "home"
+                  ? state.homeTeam.secondaryColour
+                  : state.awayTeam.secondaryColour,
+            }}
           >
             {idx > 0 && !splitIsLast && "+"}
             {formatMMSSMS(
@@ -76,7 +102,7 @@ function Times({ run }: { run: State["runs"][number] }) {
 }
 
 export function AllSwimmingGraphics() {
-  const state = useOnlyReplicantValue<State>("eventState");
+  const state = useOnlyReplicantValue<State & EventMeta>("eventState");
   const control = useOnlyReplicantValue<ControlSwimming>("control-swimming");
 
   if (!state || !control) {
@@ -102,20 +128,35 @@ export function AllSwimmingGraphics() {
               {Object.keys(run.swimmersByLane).map((lane) => (
                 <motion.div key={lane} className={lineupStyles.Row}>
                   <motion.span
-                    className={
-                      lineupStyles.Lane +
-                      " " +
-                      (run.swimmersByLane[lane].side === "home"
-                        ? lineupStyles.Home
-                        : lineupStyles.Away)
-                    }
+                    className={lineupStyles.Lane}
+                    style={{
+                      backgroundColor:
+                        run.swimmersByLane[lane].side === "home"
+                          ? state.homeTeam.primaryColour
+                          : state.awayTeam.primaryColour,
+                      color:
+                        run.swimmersByLane[lane].side === "home"
+                          ? state.homeTeam.secondaryColour
+                          : state.awayTeam.secondaryColour,
+                    }}
                   >
                     <span
                       className={
-                        run.swimmersByLane[lane].side === "home"
-                          ? lineupStyles.CrestLanc
-                          : lineupStyles.CrestYork
+                        lineupStyles.Crest +
+                        " " +
+                        (run.swimmersByLane[lane].side === "home"
+                          ? lineupStyles.Home
+                          : lineupStyles.Away)
                       }
+                      style={{
+                        backgroundImage: `url("${
+                          nodecg.bundleConfig.scoresService.apiURL
+                        }/attachments/${
+                          run.swimmersByLane[lane].side === "home"
+                            ? state.homeTeam.crestAttachmentID
+                            : state.awayTeam.crestAttachmentID
+                        }")`,
+                      }}
                     />
                     {lane}
                   </motion.span>
@@ -129,7 +170,7 @@ export function AllSwimmingGraphics() {
         )}
       </GraphicContainer>
       <GraphicContainer>
-        {control.liveTimes.visible && <Times run={run} />}
+        {control.liveTimes.visible && <Times run={run} state={state} />}
       </GraphicContainer>
     </>
   );

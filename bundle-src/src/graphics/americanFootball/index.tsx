@@ -6,13 +6,14 @@ import { Scoreboard } from "./Scoreboard/Scoreboard";
 import { useTime } from "../hooks";
 import { clockTimeAt } from "@ystv/scores/src/common/clock";
 import { MatchStatusPopup } from "../common/matchStatusPopup";
+import { EventMeta } from "@ystv/scores/src/common/types";
 
 function bannerMsg(quarter: number) {
   return `END OF QUARTER ${quarter}`;
 }
 
 export function AllAmericanFootballGraphics() {
-  const state = useOnlyReplicantValue<State>("eventState");
+  const state = useOnlyReplicantValue<State & EventMeta>("eventState");
   const control = useOnlyReplicantValue<ControlAmericanFootball>(
     "control-americanFootball"
   );
@@ -28,8 +29,15 @@ export function AllAmericanFootballGraphics() {
         <Scoreboard
           isTimerShown={control.scoreboard.timer}
           isVisible={control.scoreboard.visible}
-          team1Score={state.scoreHome}
-          team2Score={state.scoreAway}
+          homeName={state.homeTeam.abbreviation}
+          homePrimaryColor={state.homeTeam.primaryColour}
+          homeCrestAttachmentID={state.homeTeam.crestAttachmentID}
+          homeScore={state.scoreHome}
+          awayName={state.awayTeam.abbreviation}
+          awayPrimaryColor={state.awayTeam.primaryColour}
+          awaySecondaryColor={state.awayTeam.secondaryColour}
+          awayCrestAttachmentID={state.awayTeam.crestAttachmentID}
+          awayScore={state.scoreAway}
           time={clockTimeAt(state.clock, now)}
           quarter={state.segment}
         />
@@ -37,12 +45,14 @@ export function AllAmericanFootballGraphics() {
       {control.matchStatusPopup.visible && (
         <GraphicContainer>
           <MatchStatusPopup
-            homeName="LANC"
-            homePrimaryColor="var(--lancaster-red)"
+            homeName={state.homeTeam.abbreviation}
+            homePrimaryColor={state.homeTeam.primaryColour}
+            homeCrestAttachmentID={state.homeTeam.crestAttachmentID}
             homeScore={state.scoreHome}
-            awayName="YORK"
-            awayPrimaryColor="var(--york-white)"
-            awaySecondaryColor="var(--ystv-dark)"
+            awayName={state.awayTeam.abbreviation}
+            awayPrimaryColor={state.awayTeam.primaryColour}
+            awaySecondaryColor={state.awayTeam.secondaryColour}
+            awayCrestAttachmentID={state.awayTeam.crestAttachmentID}
             awayScore={state.scoreAway}
             banner={bannerMsg(state.segment)}
           />
