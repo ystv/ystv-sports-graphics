@@ -1,3 +1,4 @@
+import { getAttachmentURL } from "common/attachments";
 import styles from "./index.module.css";
 
 export interface Props {
@@ -23,12 +24,14 @@ export function NameBox({
       className={styles.Background + " " + (sheen ? styles.Sheen : "")}
       style={{ backgroundColor: primaryColor }}
     >
-      <div
-        className={styles.Crest + " " + (away ? styles.Away : styles.Home)}
-        style={{
-          backgroundImage: `url("${nodecg.bundleConfig.scoresService.apiURL}/attachments/${crestAttachmentID}")`,
-        }}
-      />
+      {crestAttachmentID && (
+        <div
+          className={styles.Crest + " " + (away ? styles.Away : styles.Home)}
+          style={{
+            backgroundImage: `url("${getAttachmentURL(crestAttachmentID)}")`,
+          }}
+        />
+      )}
       <h5 className={styles.Text} style={{ color: secondaryColor }}>
         {name.substring(0, 4).toUpperCase()}
       </h5>

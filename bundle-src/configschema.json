@@ -9,6 +9,10 @@
           "type": "string",
           "format": "url"
         },
+        "publicAttachmentsURLBase": {
+          "type": "string",
+          "format": "url"
+        },
         "username": {
           "type": "string"
         },
@@ -17,7 +21,7 @@
         }
       },
       "additionalProperties": false,
-      "required": ["apiURL", "username", "password"]
+      "required": ["apiURL", "username", "password", "publicAttachmentsURLBase"]
     }
   },
   "additionalProperties": false

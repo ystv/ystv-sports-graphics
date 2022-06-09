@@ -8,6 +8,7 @@
 export interface Configschema {
   scoresService?: {
     apiURL: string;
+    publicAttachmentsURLBase: string;
     username: string;
     password: string;
   };
