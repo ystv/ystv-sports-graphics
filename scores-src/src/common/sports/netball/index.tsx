@@ -41,8 +41,6 @@ const playerSchema = Yup.object({
 
 type PlayerType = Yup.InferType<typeof playerSchema>;
 
-const QUARTER_DURATION_MS = 15 * 60 * 1000; // 15 minutes
-
 const quarterSchema = Yup.object({
   goals: Yup.array()
     .of(
@@ -56,6 +54,15 @@ const quarterSchema = Yup.object({
     .default([]),
 });
 
+const RULESETS = {
+  _default: {
+    quarterDurationMs: 15 * 60 * 1000,
+  },
+  tenMinuteQuarters: {
+    quarterDurationMs: 10 * 60 * 1000,
+  },
+};
+
 export interface State extends BaseEventStateType {
   players: {
     home: PlayerType[];
@@ -65,6 +72,7 @@ export interface State extends BaseEventStateType {
   scoreAway: number;
   quarters: Array<Yup.InferType<typeof quarterSchema>>;
   clock: Yup.InferType<typeof DownwardClock>;
+  ruleset: keyof typeof RULESETS;
 }
 
 const slice = createSlice({
@@ -88,6 +96,7 @@ const slice = createSlice({
       wallClockLastStarted: -1,
       timeLastStartedOrStopped: 0,
     },
+    ruleset: "_default",
   } as State,
   reducers: {
     goal: {
@@ -115,7 +124,11 @@ const slice = createSlice({
         state.quarters.push({
           goals: [],
         });
-        startClockAt(state.clock, action.meta.ts, QUARTER_DURATION_MS);
+        startClockAt(
+          state.clock,
+          action.meta.ts,
+          RULESETS[state.ruleset ?? "_default"].quarterDurationMs
+        );
       },
       prepare() {
         return wrapAction({ payload: {} });
@@ -154,9 +167,13 @@ export const schema: Yup.SchemaOf<State> = Yup.object().shape({
   scoreHome: Yup.number().required().default(0),
   scoreAway: Yup.number().required().default(0),
   clock: DownwardClock.shape({
-    startingTime: Yup.number().default(QUARTER_DURATION_MS),
+    startingTime: Yup.number().default(RULESETS._default.quarterDurationMs),
   }),
   quarters: Yup.array().of(quarterSchema).default([]),
+  ruleset: Yup.mixed<keyof typeof RULESETS>()
+    .oneOf(["_default", "tenMinuteQuarters"])
+    .required()
+    .default("_default"),
 });
 
 export const actionPayloadValidators: ActionPayloadValidators<
@@ -208,7 +225,11 @@ export const actionRenderers: ActionRenderers<
     return (
       <span>
         {tag} at{" "}
-        {Math.floor((QUARTER_DURATION_MS - time) / 60 / 1000).toFixed(0)}{" "}
+        {Math.floor(
+          (RULESETS[state.ruleset ?? "_default"].quarterDurationMs - time) /
+            60 /
+            1000
+        ).toFixed(0)}{" "}
         minutes (Q
         {state.quarters.length})
       </span>
@@ -218,7 +239,12 @@ export const actionRenderers: ActionRenderers<
     const time = clockTimeAt(state.clock, action.meta.ts);
     return (
       <span>
-        Clock paused at {formatMMSSMS(QUARTER_DURATION_MS - time, 0, 2)}
+        Clock paused at{" "}
+        {formatMMSSMS(
+          RULESETS[state.ruleset ?? "_default"].quarterDurationMs - time,
+          0,
+          2
+        )}
       </span>
     );
   },
@@ -292,6 +318,14 @@ export function EditForm(props: { meta: EventMeta }) {
   return (
     <>
       <Field name="name" title="Name" independent />
+      <SelectField
+        name="ruleset"
+        title="Ruleset"
+        values={[
+          ["_default", "Standard Rules"],
+          ["tenMinuteQuarters", "Ten Minute Quarters"],
+        ]}
+      />
       <fieldset>
         <Title order={3}>{props.meta.homeTeam?.name ?? "Home Side"}</Title>
         <ArrayField
