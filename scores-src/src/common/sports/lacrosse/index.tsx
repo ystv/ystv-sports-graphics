@@ -20,6 +20,7 @@ import {
   ActionRenderers,
   BaseEventStateType,
   EventComponents,
+  EventMeta,
   EventTypeInfo,
 } from "../../types";
 import {
@@ -195,18 +196,20 @@ export const actionRenderers: ActionRenderers<
   typeof slice["caseReducers"],
   State
 > = {
-  goal: ({ action, state }) => {
+  goal: ({ action, state, meta }) => {
     const goal = action.payload;
+    const teamName =
+      action.payload.side === "home" ? meta.homeTeam.name : meta.awayTeam.name;
     const player =
       goal.player &&
       state.players[goal.side].find(
         (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
       );
     const tag = player
-      ? `${player.name} (${player.number ? player.number + ", " : ""}${
-          goal.side
-        })`
-      : goal.side;
+      ? `${player.name} (${
+          player.number ? player.number + ", " : ""
+        }${teamName})`
+      : teamName;
     const time = clockTimeAt(state.clock, action.meta.ts);
     const quarterDuration =
       state.quarters.length <= MAX_QUARTERS_WITHOUT_OVERTIME
@@ -236,12 +239,13 @@ export const actionRenderers: ActionRenderers<
   startNextQuarter: () => <span>Started next quarter</span>,
 };
 
-export function RenderScore(props: { state: State }) {
+export function RenderScore(props: { state: State; meta: EventMeta }) {
   console.log("RenderScore rendered!", props.state);
   return (
     <TypographyStylesProvider>
       <h1>
-        Home {props.state.scoreHome} - Away {props.state.scoreAway}
+        {props.meta.homeTeam.name} {props.state.scoreHome} -{" "}
+        {props.meta.awayTeam.name} {props.state.scoreAway}
       </h1>
       <small>Quarter {props.state.quarters.length}</small>
       <RenderClock
@@ -258,6 +262,7 @@ export function RenderScore(props: { state: State }) {
 
 export interface ActionFormProps<TState> {
   currentState: TState;
+  meta: EventMeta;
 }
 
 export function GoalForm(props: ActionFormProps<State>) {
@@ -275,8 +280,8 @@ export function GoalForm(props: ActionFormProps<State>) {
         name="side"
         title="Side"
         values={[
-          ["home", "Home"],
-          ["away", "Away"],
+          ["home", props.meta.homeTeam.name],
+          ["away", props.meta.awayTeam.name],
         ]}
       />
       <SelectField
@@ -294,12 +299,12 @@ export function GoalForm(props: ActionFormProps<State>) {
   );
 }
 
-export function EditForm() {
+export function EditForm(props: { meta: EventMeta }) {
   return (
     <>
       <Field name="name" title="Name" independent />
       <fieldset>
-        <Title order={3}>Home Side</Title>
+        <Title order={3}>{props.meta.homeTeam?.name ?? "Home Side"}</Title>
         <ArrayField
           name="players.home"
           title="Players"
@@ -318,7 +323,7 @@ export function EditForm() {
         />
       </fieldset>
       <fieldset>
-        <Title order={3}>Away Side</Title>
+        <Title order={3}>{props.meta.awayTeam?.name ?? "Away Side"}</Title>
         <ArrayField
           name="players.away"
           title="Players"

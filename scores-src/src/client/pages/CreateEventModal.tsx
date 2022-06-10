@@ -66,7 +66,7 @@ export function CreateEventModal() {
         onSubmit={submit}
         validationSchema={schema}
       >
-        {({ handleSubmit, isSubmitting, errors }) => (
+        {({ handleSubmit, isSubmitting, errors, values }) => (
           <Stack>
             <DateField
               name="startTime"
@@ -94,7 +94,8 @@ export function CreateEventModal() {
               helper="Don't touch this unless you know what you're doing."
               independent
             />
-            <EditForm />
+            {/* TODO(GRAPHICS-233): this won't work, because in the edit form homeTeam/awayTeam are just IDs! */}
+            <EditForm meta={values} />
             <Button
               onClick={() => handleSubmit()}
               disabled={isSubmitting}

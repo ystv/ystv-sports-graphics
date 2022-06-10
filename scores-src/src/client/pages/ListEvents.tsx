@@ -110,7 +110,8 @@ export function ListEvents() {
             </Text>
             {evt.winner && (
               <Text size="xs" weight="bold">
-                Winner: {evt.winner === "home" ? "Lancaster" : "York"}
+                Winner:{" "}
+                {evt.winner === "home" ? evt.homeTeam.name : evt.awayTeam.name}
               </Text>
             )}
             <Text size="xs" color="dimmed" mb="xl">

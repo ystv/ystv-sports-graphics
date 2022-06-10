@@ -51,7 +51,7 @@ export function EditEventForm() {
           validationSchema={schema}
           onSubmit={submit}
         >
-          {({ handleSubmit, handleReset, isSubmitting, errors }) => (
+          {({ handleSubmit, handleReset, isSubmitting, errors, values }) => (
             <FormikForm onSubmit={handleSubmit} onReset={handleReset}>
               <Stack>
                 <DateField
@@ -80,7 +80,8 @@ export function EditEventForm() {
                   helper="Don't touch this unless you know what you're doing."
                   independent
                 />
-                <EditForm />
+                {/* TODO(GRAPHICS-233): this won't work, because in the edit form homeTeam/awayTeam are just IDs! */}
+                <EditForm meta={values} />
                 <Button type="submit" disabled={isSubmitting} data-cy="submit">
                   Save
                 </Button>

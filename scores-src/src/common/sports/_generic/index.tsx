@@ -254,19 +254,23 @@ export function createGenericSport(
     ),
     resumeClock: () => <span>Clock resumed.</span>,
     resetClock: () => <span>Clock reset.</span>,
-    addPoints: ({ state, action }) => {
+    addPoints: ({ state, meta, action }) => {
       let tag: string;
+      const teamName =
+        action.payload.side === "home"
+          ? meta.homeTeam.name
+          : meta.awayTeam.name;
       if (action.payload.player && state.players) {
         const playerData = state.players[action.payload.side].find(
           (x) => x.id === action.payload.player
         );
         if (playerData) {
-          tag = `${playerData.name} (${playerData.designation}, ${action.payload.side})`;
+          tag = `${playerData.name} (${playerData.designation}, ${teamName})`;
         } else {
-          tag = action.payload.side;
+          tag = teamName;
         }
       } else {
-        tag = action.payload.side;
+        tag = teamName;
       }
       return (
         <span>
@@ -305,13 +309,13 @@ export function createGenericSport(
   };
 
   const components: EventComponents<typeof slice["actions"], State> = {
-    EditForm: () => (
+    EditForm: ({ meta }) => (
       <>
         <Field name="name" title="Name" independent />
         {enableLineup && (
           <>
             <fieldset>
-              <Title order={3}>Home Side</Title>
+              <Title order={3}>{meta.homeTeam?.name ?? "Home Side"}</Title>
               <ArrayField
                 name="players.home"
                 title="Players"
@@ -335,7 +339,7 @@ export function createGenericSport(
               />
             </fieldset>
             <fieldset>
-              <Title order={3}>Away Side</Title>
+              <Title order={3}>{meta.awayTeam?.name ?? "Away Side"}</Title>
               <ArrayField
                 name="players.away"
                 title="Players"
@@ -362,7 +366,7 @@ export function createGenericSport(
         )}
       </>
     ),
-    RenderScore: ({ state, act, showActModal }) => {
+    RenderScore: ({ state, meta, act, showActModal }) => {
       return (
         <Stack>
           {typeof segmentName === "function" && (
@@ -379,7 +383,7 @@ export function createGenericSport(
           <Group>
             <Stack>
               <Text size="sm" weight="bold" transform="uppercase">
-                Home
+                {meta.homeTeam.name}
               </Text>
               <Text size="xl">{state.scoreHome}</Text>
               {pointsButtons.map((n) => (
@@ -403,7 +407,7 @@ export function createGenericSport(
             </Stack>
             <Stack>
               <Text size="sm" weight="bold" transform="uppercase">
-                Away
+                {meta.awayTeam.name}
               </Text>
               <Text size="xl">{state.scoreAway}</Text>
               {pointsButtons.map((n) => (

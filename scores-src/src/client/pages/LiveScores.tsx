@@ -79,7 +79,10 @@ function EventActionModal(props: {
           <>
             <Form onReset={handleReset} onSubmit={handleSubmit}>
               <Stack>
-                <ActionForm currentState={props.currentState} />
+                <ActionForm
+                  currentState={props.currentState}
+                  meta={props.currentState}
+                />
                 <Button
                   type="submit"
                   disabled={isSubmitting || !isValid}
@@ -148,8 +151,13 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
       <li key={action.type + action.meta.ts}>
         <Wrapper>
           <>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Entry action={action as any} state={state as any} />
+            {/* eslint-disable @typescript-eslint/no-explicit-any */}
+            <Entry
+              action={action as any}
+              state={state as any}
+              meta={state as any}
+            />
+            {/* eslint-enable @typescript-eslint/no-explicit-any */}
             <PermGate require="write" fallback={<></>}>
               <Button
                 compact
@@ -281,10 +289,14 @@ export function LiveScores() {
         <Title order={1}>{state.name}</Title>
         {state.winner && (
           <Text color="yellow">
-            Winner: {state.winner === "home" ? "Lancaster" : "York"}
+            Winner:{" "}
+            {state.winner === "home"
+              ? state.homeTeam.name
+              : state.awayTeam.name}
           </Text>
         )}
         <RenderScore
+          meta={state}
           state={state}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           act={act as any}
@@ -363,10 +375,10 @@ export function LiveScores() {
             <SegmentedControl
               data={[
                 {
-                  label: "Lancaster",
+                  label: state.homeTeam.name,
                   value: "home",
                 },
-                { label: "York", value: "away" },
+                { label: state.awayTeam.name, value: "away" },
               ]}
               value={selectedWinner}
               onChange={(v) => setSelectedWinner(v as "home" | "away")}

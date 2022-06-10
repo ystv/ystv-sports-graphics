@@ -12,6 +12,7 @@ import {
   ActionRenderers,
   BaseEventStateType,
   EventComponents,
+  EventMeta,
   EventTypeInfo,
 } from "../../types";
 import {
@@ -245,6 +246,7 @@ export const actionRenderers: ActionRenderers<
 
 export function RenderScore({
   state,
+  meta,
   act,
 }: Parameters<EventComponents<typeof actions, State>["RenderScore"]>[0]) {
   if (state.currentRun === null) {
@@ -295,7 +297,11 @@ export function RenderScore({
             <tr key={key}>
               <td>{key}</td>
               <td>{run.swimmersByLane[key].name}</td>
-              <td>{run.swimmersByLane[key].side}</td>
+              <td>
+                {run.swimmersByLane[key].side === "home"
+                  ? meta.homeTeam.name
+                  : meta.awayTeam.name}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -353,6 +359,7 @@ export interface ActionFormProps<TState> {
 function LanesFieldRow(props: {
   namespace: string;
   num: string;
+  meta: EventMeta;
   onNumChange: (num: string) => unknown;
   onRemove: () => unknown;
 }) {
@@ -385,10 +392,10 @@ function LanesFieldRow(props: {
             <SegmentedControl
               data={[
                 {
-                  label: "Home",
+                  label: props.meta.homeTeam.name,
                   value: "home",
                 },
-                { label: "Away", value: "away" },
+                { label: props.meta.awayTeam.name, value: "away" },
               ]}
               title="Side"
               value={field.value}
@@ -408,7 +415,7 @@ function LanesFieldRow(props: {
   );
 }
 
-function LanesField(props: { name: string }) {
+function LanesField(props: { name: string; meta: EventMeta }) {
   const [field, meta, helpers] = useField(props.name);
   const rows = Object.keys(field.value);
   function handleRowLaneChange(key: string, oldKey: string) {
@@ -442,6 +449,7 @@ function LanesField(props: { name: string }) {
         <LanesFieldRow
           key={row}
           namespace={`${props.name}[${row}]`}
+          meta={props.meta}
           num={row}
           onRemove={() => handleRowRemove(row)}
           onNumChange={(newKey) => handleRowLaneChange(newKey, row)}
@@ -452,7 +460,7 @@ function LanesField(props: { name: string }) {
   );
 }
 
-export function EditForm() {
+export function EditForm(props: { meta: EventMeta }) {
   return (
     <>
       <Field name="name" title="Name" independent />
@@ -478,7 +486,10 @@ export function EditForm() {
               type="number"
             />
             <InputWrapper label="Swimmer Lanes">
-              <LanesField name={namespace + "swimmersByLane"} />
+              <LanesField
+                name={namespace + "swimmersByLane"}
+                meta={props.meta}
+              />
             </InputWrapper>
           </Stack>
         )}
