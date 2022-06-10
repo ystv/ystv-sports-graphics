@@ -61,6 +61,9 @@ const RULESETS = {
   tenMinuteQuarters: {
     quarterDurationMs: 10 * 60 * 1000,
   },
+  eightMinuteQuarters: {
+    quarterDurationMs: 8 * 60 * 1000,
+  },
 };
 
 export interface State extends BaseEventStateType {
@@ -324,6 +327,7 @@ export function EditForm(props: { meta: EventMeta }) {
         values={[
           ["_default", "Standard Rules"],
           ["tenMinuteQuarters", "Ten Minute Quarters"],
+          ["eightMinuteQuarters", "Eight Minute Quarters"],
         ]}
       />
       <fieldset>
