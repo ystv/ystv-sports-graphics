@@ -61,12 +61,26 @@ export interface State extends BaseEventStateType {
   clock: UpwardClockType;
   scoreHome: number;
   scoreAway: number;
+  ruleset: keyof typeof RULESETS;
 }
 
-const MAX_HALVES_WITHOUT_EXTRA_TIME = 2;
-const HALF_DURATION_MS = 45 * 60 * 1000; // 45 minutes
-const EXTRA_TIME_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+interface Ruleset {
+  halfDurationMs: number;
+  extraTimeDurationMs: number;
+}
 
+const RULESETS = {
+  _default: {
+    halfDurationMs: 45 * 60 * 1000,
+    extraTimeDurationMs: 15 * 60 * 1000,
+  },
+  sixtyMinutes: {
+    halfDurationMs: 30 * 60 * 1000,
+    extraTimeDurationMs: 15 * 60 * 1000,
+  },
+};
+
+const MAX_HALVES_WITHOUT_EXTRA_TIME = 2;
 const slice = createSlice({
   name: "football",
   initialState: {
@@ -88,6 +102,7 @@ const slice = createSlice({
     },
     scoreHome: 0,
     scoreAway: 0,
+    ruleset: "_default",
   } as State,
   reducers: {
     goal: {
@@ -112,17 +127,21 @@ const slice = createSlice({
     },
     startHalf: {
       reducer(state, action: Action) {
+        const halfDuration =
+          RULESETS[state.ruleset ?? "_default"].halfDurationMs;
+        const extraTimeDuration =
+          RULESETS[state.ruleset ?? "_default"].extraTimeDurationMs;
         state.halves.push({
           goals: [],
           stoppageTime: 0,
         });
         if (state.halves.length <= MAX_HALVES_WITHOUT_EXTRA_TIME) {
           state.clock.timeLastStartedOrStopped =
-            HALF_DURATION_MS * (state.halves.length - 1);
+            halfDuration * (state.halves.length - 1);
         } else {
           state.clock.timeLastStartedOrStopped =
-            HALF_DURATION_MS * MAX_HALVES_WITHOUT_EXTRA_TIME +
-            EXTRA_TIME_DURATION_MS *
+            halfDuration * MAX_HALVES_WITHOUT_EXTRA_TIME +
+            extraTimeDuration *
               (state.halves.length - MAX_HALVES_WITHOUT_EXTRA_TIME - 1);
         }
         startClockAt(state.clock, action.meta.ts);
@@ -181,6 +200,10 @@ export const schema: Yup.SchemaOf<State> = Yup.object().shape({
     home: Yup.array().of(playerSchema).required().default([]),
     away: Yup.array().of(playerSchema).required().default([]),
   }),
+  ruleset: Yup.mixed<keyof typeof RULESETS>()
+    .oneOf(["_default", "sixtyMinutes"])
+    .required()
+    .default("_default"),
 });
 
 export const actionPayloadValidators: ActionPayloadValidators<
@@ -295,6 +318,14 @@ export function EditForm(props: { meta: EventMeta }) {
   return (
     <>
       <Field name="name" title="Name" independent />
+      <SelectField
+        name="ruleset"
+        title="Ruleset"
+        values={[
+          ["_default", "Standard Rules"],
+          ["sixtyMinutes", "60 Minute Matches"],
+        ]}
+      />
       <fieldset>
         <Title order={3}>{props.meta.homeTeam?.name ?? "Home Side"}</Title>
         <ArrayField
