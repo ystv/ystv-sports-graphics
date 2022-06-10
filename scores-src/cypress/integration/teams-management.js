@@ -108,7 +108,7 @@ describe("Teams Management", () => {
 
       cy.login("admin", "password");
       cy.visit(`/events/football/${eventID}`);
-      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.request({
         url: `/api/events/football/${eventID}/startHalf`,
@@ -132,7 +132,7 @@ describe("Teams Management", () => {
         },
       });
 
-      cy.contains("Home 1 - Away 0").should("be.visible");
+      cy.contains("Lancaster 1 - York 0").should("be.visible");
 
       cy.visit("/teams");
       cy.contains("Lancaster").parent().contains("Edit").click();
@@ -146,10 +146,10 @@ describe("Teams Management", () => {
       cy.wait(["@putTeams"], { responseTimeout: 3000 });
 
       cy.visit(`/events/football/${eventID}`);
-      cy.contains("Home 1 - Away 0").should("be.visible");
+      cy.contains("Anne Lister 1 - York 0").should("be.visible");
 
       cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
-      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.contains("Anne Lister 0 - York 0").should("be.visible");
 
       // Verify the team change is still in effect
       cy.request({

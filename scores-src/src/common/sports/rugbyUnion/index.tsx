@@ -27,6 +27,7 @@ import {
   ActionValidChecks,
   BaseEventStateType,
   EventComponents,
+  EventMeta,
   EventTypeInfo,
 } from "../../types";
 
@@ -252,21 +253,23 @@ export const actionRenderers: ActionRenderers<
   typeof slice["caseReducers"],
   State
 > = {
-  score: ({ action, state }) => {
+  score: ({ action, state, meta }) => {
     const goal = action.payload;
     const player =
       goal.player &&
       state.players[goal.side].find(
         (x: Yup.InferType<typeof playerSchema>) => x.id === goal.player
       );
+    const teamName =
+      action.payload.side === "home" ? meta.homeTeam.name : meta.awayTeam.name;
     const tag =
       action.payload.type +
       " by " +
       (player
-        ? `${player.name} (${player.number ? player.number + ", " : ""}${
-            goal.side
-          })`
-        : goal.side);
+        ? `${player.name} (${
+            player.number ? player.number + ", " : ""
+          }${teamName})`
+        : teamName);
     const time = clockTimeAt(state.clock, action.meta.ts);
     return (
       <span>
@@ -288,12 +291,12 @@ export const actionRenderers: ActionRenderers<
   ),
 };
 
-export function EditForm() {
+export function EditForm(props: { meta: EventMeta }) {
   return (
     <div>
       <Field name="name" title="Name" independent />
       <fieldset>
-        <label>Home Side</label>
+        <label>{props.meta.homeTeam?.name ?? "Home Side"}</label>
         <ArrayField
           name="players.home"
           title="Players"
@@ -308,7 +311,7 @@ export function EditForm() {
         />
       </fieldset>
       <fieldset>
-        <label>Away Side</label>
+        <label>{props.meta.awayTeam?.name ?? "Away Side"}</label>
         <ArrayField
           name="players.away"
           title="Players"
@@ -326,7 +329,7 @@ export function EditForm() {
   );
 }
 
-export function RenderScore(props: { state: State }) {
+export function RenderScore(props: { state: State; meta: EventMeta }) {
   const currentHalf =
     props.state.halves.length > 0
       ? props.state.halves[props.state.halves.length - 1]
@@ -334,7 +337,8 @@ export function RenderScore(props: { state: State }) {
   return (
     <div>
       <h1>
-        Home {props.state.scoreHome} - Away {props.state.scoreAway}
+        {props.meta.homeTeam.name} {props.state.scoreHome} -{" "}
+        {props.meta.awayTeam.name} {props.state.scoreAway}
       </h1>
       <div>
         <RenderClock
@@ -374,8 +378,8 @@ function ScoreForm(props: ActionFormProps<State>) {
         name="side"
         title="Side"
         values={[
-          ["home", "Home"],
-          ["away", "Away"],
+          ["home", props.meta.homeTeam.name],
+          ["away", props.meta.awayTeam.name],
         ]}
       />
       <SelectField

@@ -120,6 +120,7 @@ export type ActionValidChecks<
 
 export interface ActionFormProps<TState> {
   currentState: TState;
+  meta: EventMeta;
 }
 
 export type Permission = "SUDO" | "read" | "write" | "admin";
@@ -142,6 +143,7 @@ export type ActionRenderers<
   [K in keyof TActions]: (props: {
     action: Parameters<TCaseReducers[K]>[1];
     state: TState;
+    meta: EventMeta;
   }) => JSX.Element;
 };
 
@@ -163,9 +165,10 @@ export interface EventComponents<
   TActions extends { [K: string]: (payload?: any) => { type: string } },
   TState
 > {
-  EditForm: () => JSX.Element;
+  EditForm: (props: { meta: EventMeta }) => JSX.Element;
   RenderScore: (props: {
     state: TState;
+    meta: EventMeta;
     act: <K extends keyof TActions>(
       type: K,
       payload: TActions[K] extends { prepare: (payload: any) => any }
@@ -180,6 +183,9 @@ export interface EventComponents<
     ) => void;
   }) => JSX.Element;
   actionForms: {
-    [K in keyof TActions]?: (props: { currentState: any }) => JSX.Element;
+    [K in keyof TActions]?: (props: {
+      currentState: TState;
+      meta: EventMeta;
+    }) => JSX.Element;
   };
 }

@@ -37,7 +37,7 @@ describe("Event Actions", () => {
     it("Start a half", function () {
       cy.login("admin", "password");
       cy.visit(`/events/football/${this.eventID}`);
-      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Start Half").click();
       cy.get("[data-cy=performAction]").click();
@@ -47,10 +47,10 @@ describe("Event Actions", () => {
     it("Goal", function () {
       cy.login("admin", "password");
       cy.visit(`/events/football/${this.eventID}`);
-      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Goal").click();
-      cy.get("[data-test-form-field=side]").contains("Away").click();
+      cy.get("[data-test-form-field=side]").contains("York").click();
       cy.get("label")
         .contains("Player")
         .parent()
@@ -59,24 +59,24 @@ describe("Event Actions", () => {
       cy.get(".mantine-Select-item").contains("Unknown").click();
       cy.get("[data-cy=performAction]").click();
 
-      cy.contains("Home 0 - Away 1").should("be.visible");
+      cy.contains("Lancaster 0 - York 1").should("be.visible");
       cy.get("[data-cy=timeline] > *").should("have.length", 2);
     });
 
     it("Undo/Redo last goal", function () {
       cy.login("admin", "password");
       cy.visit(`/events/football/${this.eventID}`);
-      cy.contains("Home 0 - Away 1").should("be.visible");
+      cy.contains("Lancaster 0 - York 1").should("be.visible");
 
       cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
-      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.contains("Lancaster 0 - York 0").should("be.visible");
       cy.get("[data-cy=timeline] > *")
         .contains("Redo")
         .should("be.visible")
         .should("not.be.disabled");
 
       cy.get("[data-cy=timeline] > *").first().contains("Redo").click();
-      cy.contains("Home 0 - Away 1").should("be.visible");
+      cy.contains("Lancaster 0 - York 1").should("be.visible");
     });
 
     it("Action, then edit, then undo that action", function () {
@@ -87,7 +87,7 @@ describe("Event Actions", () => {
 
       cy.login("admin", "password");
       cy.visit(`/events/football/${this.eventID}`);
-      cy.contains("Home 0 - Away 1").should("be.visible");
+      cy.contains("Lancaster 0 - York 1").should("be.visible");
 
       cy.visit("/events");
       cy.contains("Test Event")
@@ -101,7 +101,7 @@ describe("Event Actions", () => {
 
       cy.visit(`/events/football/${this.eventID}`);
       cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
-      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.contains("Lancaster 0 - York 0").should("be.visible");
     });
 
     it("GRAPHICS-226 - goal with no player, then edit", function () {
@@ -112,10 +112,10 @@ describe("Event Actions", () => {
 
       cy.login("admin", "password");
       cy.visit(`/events/football/${this.eventID}`);
-      cy.contains("Home 0 - Away 0").should("be.visible");
+      cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Goal").click();
-      cy.get("[data-test-form-field=side]").contains("Away").click();
+      cy.get("[data-test-form-field=side]").contains("York").click();
       cy.get("[data-cy=performAction]").click();
 
       cy.visit("/events");
