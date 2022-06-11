@@ -174,7 +174,7 @@ export const schema: Yup.SchemaOf<State> = Yup.object().shape({
   }),
   quarters: Yup.array().of(quarterSchema).default([]),
   ruleset: Yup.mixed<keyof typeof RULESETS>()
-    .oneOf(["_default", "tenMinuteQuarters"])
+    .oneOf(["_default", "tenMinuteQuarters", "eightMinuteQuarters"])
     .required()
     .default("_default"),
 });
