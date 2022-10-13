@@ -8,7 +8,7 @@ This repo houses (hopefully) everything related to doing graphics overlays for Y
 
 ## Developing
 
-You will need [Node.js](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/getting-started/install). If you want to work on the API backend, you will also need a [Couchbase Server](https://docs.couchbase.com/server/current/install/install-intro.html) (7.0 or later) - you can also use [Docker](https://docs.couchbase.com/server/current/install/getting-started-docker.html) for this. Note that if you have an ARM MacBook, there is currently no ARM build of Couchbase Server available. Finally, you will need [Redis](https://redis.io/docs/getting-started/).
+You will need [Node.js](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/getting-started/install). If you want to work on the API backend, you will also need a [Couchbase Server](https://docs.couchbase.com/server/current/install/install-intro.html) (7.1 or later) - you can also use [Docker](https://docs.couchbase.com/server/current/install/getting-started-docker.html) for this. Finally, you will need [Redis](https://redis.io/docs/getting-started/).
 
 There is a docker-compose.yml file that should set all this up if you run `docker compose up` - though it hasn't been updated in a while so might not fully work.
 
