@@ -76,6 +76,7 @@ export function CreateEventModal() {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               values={leagues.data?.map((l) => [l.slug!, l.name]) ?? []}
               rootAttrs={{ "data-cy": "selectLeague" }}
+              required
             />
             <DateField
               name="startTime"
