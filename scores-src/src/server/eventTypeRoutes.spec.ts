@@ -9,6 +9,7 @@ import {
   BaseEventStateType,
   EventMeta,
   EventTypeInfo,
+  League,
   TeamInfo,
 } from "../common/types";
 import { errorHandler } from "./httpUtils";
@@ -79,6 +80,13 @@ function runTests<
       await DB.collection("_default").insert("BootstrapState", {
         bootstrapped: true,
       });
+      const testLeague: League = {
+        name: "Test League",
+        slug: "test-league",
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
+      };
+      await DB.collection("_default").insert("League/test-league", testLeague);
 
       app = Express();
       app.use(jsonParser());
