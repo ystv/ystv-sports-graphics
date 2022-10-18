@@ -376,9 +376,14 @@ export function usePOSTEventDeclareWinner() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (type: string, id: string, winner: "home" | "away") => {
+  return async (
+    league: string,
+    type: string,
+    id: string,
+    winner: "home" | "away"
+  ) => {
     const result = (await fetcher(navigate)(
-      `/events/${type}/${id}/_declareWinner`,
+      `/events/${league}/${type}/${id}/_declareWinner`,
       {
         method: "post",
         headers: {
@@ -389,7 +394,7 @@ export function usePOSTEventDeclareWinner() {
       200
     )) as EventMeta;
     mutate("/events");
-    mutate(`/events/${type}/${result.id}`, result, false);
+    mutate(`/events/${league}/${type}/${result.id}`, result, false);
     return result;
   };
 }

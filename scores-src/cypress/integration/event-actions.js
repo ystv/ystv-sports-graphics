@@ -142,5 +142,24 @@ describe("Event Actions", () => {
       cy.get("[data-cy=submit]").click();
       cy.wait(["@putEvents"]);
     });
+
+    it("Declare Winner", function () {
+      cy.intercept({
+        method: "PUT",
+        path: "/api/events/**/_declareWinner",
+      }).as("declareWinner");
+      cy.login("admin", "password");
+      cy.visit(`/events/test-league/football/${this.eventID}`);
+
+      cy.contains("Declare Winner").click();
+
+      cy.get("[data-cy=declare-winner]").within(() => {
+        cy.contains("York").click();
+      });
+      cy.get("[data-cy=declare-winner-confirm]").click();
+
+      cy.visit("/events");
+      cy.contains("Winner: York").should("be.visible");
+    });
   });
 });

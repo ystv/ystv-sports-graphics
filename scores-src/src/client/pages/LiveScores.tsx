@@ -232,11 +232,12 @@ export function LiveScores() {
   const doDeclareWinner = usePOSTEventDeclareWinner();
 
   async function declareWinner() {
+    invariant(typeof league === "string", "no league");
     invariant(typeof type === "string", "no type");
     invariant(typeof id === "string", "no id");
     setWinnerSubmitting(true);
     try {
-      await doDeclareWinner(type, id, selectedWinner);
+      await doDeclareWinner(league, type, id, selectedWinner);
       setWinnerSubmitting(false);
       setDeclareWinnerOpen(false);
     } catch (e) {
@@ -394,8 +395,14 @@ export function LiveScores() {
               ]}
               value={selectedWinner}
               onChange={(v) => setSelectedWinner(v as "home" | "away")}
+              data-cy="declare-winner"
             />
-            <Button color="yellow" variant="filled" onClick={declareWinner}>
+            <Button
+              color="yellow"
+              variant="filled"
+              onClick={declareWinner}
+              data-cy="declare-winner-confirm"
+            >
               Declare Winner
             </Button>
           </Stack>
