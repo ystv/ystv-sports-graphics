@@ -18,6 +18,7 @@ import { InMemoryDB } from "./__mocks__/db";
 import { createEventTypesRouter } from "./eventTypeRoutes";
 import { EVENT_TYPES } from "../common/sports";
 import { wrapAction, Init, Undo } from "../common/eventStateHelpers";
+import { cloneDeep } from "lodash-es";
 
 jest.mock("./db");
 jest.mock("./redis");
@@ -222,7 +223,7 @@ function runTests<
       });
     });
 
-    describe("update", () => {
+    describe("update event", () => {
       it("works", async () => {
         const { DB, id } = await initEventDB();
 
@@ -429,6 +430,98 @@ function runTests<
           expect(persistedHistory.content).toHaveLength(testActions.length + 3);
         }
       );
+    });
+
+    describe("update action", () => {
+      it("update an earlier action", async () => {
+        const { DB, id } = await initEventDB();
+
+        for (const [type, payload] of testActions) {
+          const res = await request(app)
+            .post(`/api/events/test-league/${typeName}/${id}/${type}`)
+            .send(payload)
+            .auth("test", "password");
+          expect(res.statusCode).toBe(200);
+        }
+
+        const persistedHistory = await DB.collection("_default").get(
+          `EventHistory/test-league/${typeName}/${id}`
+        );
+        expect(persistedHistory.content).toHaveLength(testActions.length + 1);
+        const ts =
+          persistedHistory.content[persistedHistory.content.length - 1].meta.ts;
+        const newAction = cloneDeep(
+          persistedHistory.content[testActions.length - 1]
+        ).payload;
+
+        if (!("side" in newAction)) {
+          console.warn("SKIP - no side in testAction");
+          return;
+        }
+        let newSide;
+        if (newAction.side === "home") {
+          newAction.side = newSide = "away";
+        } else {
+          newAction.side = newSide = "home";
+        }
+
+        const res = await request(app)
+          .post(`/api/events/test-league/${typeName}/${id}/_update`)
+          .send({
+            ts,
+            ...newAction,
+          })
+          .auth("test", "password");
+        expect(res.statusCode).toBe(200);
+        (DB as unknown as InMemoryDB)._dump();
+
+        const historyRes = await request(app)
+          .get(`/api/events/test-league/${typeName}/${id}/_history`)
+          .auth("test", "password");
+        expect(historyRes.statusCode).toBe(200);
+        expect(historyRes.body).toHaveLength(testActions.length + 1);
+        expect(historyRes.body[testActions.length].payload.side).toBe(newSide);
+      });
+
+      it("change the ts of an earlier action", async () => {
+        const { DB, id } = await initEventDB();
+
+        for (const [type, payload] of testActions) {
+          const res = await request(app)
+            .post(`/api/events/test-league/${typeName}/${id}/${type}`)
+            .auth("test", "password")
+            .send(payload);
+          expect(res.statusCode).toBe(200);
+        }
+
+        const persistedHistory = await DB.collection("_default").get(
+          `EventHistory/test-league/${typeName}/${id}`
+        );
+        expect(persistedHistory.content).toHaveLength(testActions.length + 1);
+        const ts =
+          persistedHistory.content[persistedHistory.content.length - 1].meta.ts;
+        const newAction = cloneDeep(
+          persistedHistory.content[testActions.length - 1]
+        ).payload;
+        const newTs = ts + 50;
+
+        const res = await request(app)
+          .post(`/api/events/test-league/${typeName}/${id}/_update`)
+          .send({
+            ts,
+            newTs,
+            ...newAction,
+          })
+          .auth("test", "password");
+        expect(res.statusCode).toBe(200);
+
+        const historyRes = await request(app)
+          .get(`/api/events/test-league/${typeName}/${id}/_history`)
+          .auth("test", "password");
+        expect(historyRes.statusCode).toBe(200);
+        expect(historyRes.body).toHaveLength(testActions.length + 1);
+        expect(historyRes.body[testActions.length].meta.ts).toBe(newTs);
+      });
     });
   });
 }
