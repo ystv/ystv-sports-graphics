@@ -30,6 +30,7 @@ import { PermGate } from "../components/PermGate";
 import { IconTrophy, IconRefresh } from "@tabler/icons";
 
 function EventActionModal(props: {
+  eventLeague: string;
   eventType: keyof typeof EVENT_TYPES;
   eventId: string;
   actionType: string;
@@ -53,6 +54,7 @@ function EventActionModal(props: {
     setSubmitError(null);
     try {
       await doAction(
+        props.eventLeague,
         props.eventType,
         props.eventId,
         props.actionType,
@@ -104,7 +106,12 @@ function EventActionModal(props: {
   );
 }
 
-function Timeline(props: { type: string; eventId: string; history: Action[] }) {
+function Timeline(props: {
+  league: string;
+  type: string;
+  eventId: string;
+  history: Action[];
+}) {
   const [loading, setLoading] = useState<number | null>(null);
   const undo = usePOSTEventUndo();
   const redo = usePOSTEventRedo();
@@ -113,9 +120,9 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
     setLoading(ts);
     try {
       if (action === "undo") {
-        await undo(props.type, props.eventId, ts);
+        await undo(props.league, props.type, props.eventId, ts);
       } else {
-        await redo(props.type, props.eventId, ts);
+        await redo(props.league, props.type, props.eventId, ts);
       }
     } catch (e) {
       showNotification({
@@ -183,10 +190,13 @@ function Timeline(props: { type: string; eventId: string; history: Action[] }) {
 }
 
 export function LiveScores() {
-  const { type, id } = useParams();
+  const { league, type, id } = useParams();
+  invariant(typeof league === "string", "no league");
   invariant(typeof type === "string", "no type");
   invariant(typeof id === "string", "no id");
-  const [state, history, status, error] = useLiveData(`Event/${type}/${id}`);
+  const [state, history, status, error] = useLiveData(
+    `Event/${league}/${type}/${id}`
+  );
   const RenderScore = EVENT_COMPONENTS[type].RenderScore;
   const actionValidChecks = EVENT_TYPES[type].actionValidChecks;
   const actionPayloadValidators = EVENT_TYPES[type].actionPayloadValidators;
@@ -203,10 +213,11 @@ export function LiveScores() {
   >({});
 
   async function act(actionType: string, payload: Record<string, unknown>) {
+    invariant(typeof league === "string", "no league");
     invariant(typeof type === "string", "no type");
     invariant(typeof id === "string", "no id");
     try {
-      await doAction(type, id, actionType, payload);
+      await doAction(league, type, id, actionType, payload);
     } catch (e) {
       showNotification({
         message: "Failed to " + actionType + ": " + String(e),
@@ -347,7 +358,7 @@ export function LiveScores() {
         </PermGate>
 
         <Title order={2}>Timeline</Title>
-        <Timeline type={type} eventId={id} history={history} />
+        <Timeline league={league} type={type} eventId={id} history={history} />
         {error !== null && <Alert>{error}</Alert>}
         {status === "POSSIBLY_DISCONNECTED" && (
           <Alert>
@@ -358,6 +369,7 @@ export function LiveScores() {
         )}
         {activeAction !== null && (
           <EventActionModal
+            eventLeague={league}
             eventType={type}
             eventId={id}
             actionType={activeAction}

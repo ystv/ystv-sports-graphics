@@ -6,12 +6,12 @@ import { League, LeagueSchema } from "../common/types";
 import { v4 as uuidv4 } from "uuid";
 import slug from "slug";
 
+export function leagueKey(slug: string) {
+  return `League/${slug}`;
+}
+
 export default function createLeaguesRouter() {
   const router = Router();
-
-  function leagueKey(slug: string) {
-    return `League/${slug}`;
-  }
 
   router.get(
     "/",
@@ -26,7 +26,7 @@ export default function createLeaguesRouter() {
     })
   );
 
-  router.put(
+  router.post(
     "/",
     authenticate("write"),
     asyncHandler(async (req, res) => {
@@ -39,7 +39,7 @@ export default function createLeaguesRouter() {
       });
       data.slug = leagueSlug;
       await DB.collection("_default").insert(leagueKey(leagueSlug), data);
-      res.status(200).json(data);
+      res.status(201).json(data);
     })
   );
 

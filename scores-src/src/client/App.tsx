@@ -14,6 +14,7 @@ import { LoginScreen } from "./pages/Login";
 import { ListUsersScreen } from "./pages/ListUsers";
 import { PermGate } from "./components/PermGate";
 import { ListTeamsScreen } from "./pages/ListTeams";
+import { ListLeaguesScreen } from "./pages/ListLeagues";
 
 function AppRoutes() {
   return (
@@ -22,7 +23,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/" element={<Wrapper />}>
         <Route
-          path="events/:type/:id"
+          path="events/:league/:type/:id"
           element={
             <PermGate require="read">
               <LiveScores />
@@ -38,7 +39,7 @@ function AppRoutes() {
           }
         >
           <Route
-            path=":type/:id/edit"
+            path=":league/:type/:id/edit"
             element={
               <PermGate require="write">
                 <EditEventModal />
@@ -69,6 +70,15 @@ function AppRoutes() {
           element={
             <PermGate require="write">
               <ListTeamsScreen />
+            </PermGate>
+          }
+        />
+
+        <Route
+          path="leagues"
+          element={
+            <PermGate require="admin">
+              <ListLeaguesScreen />
             </PermGate>
           }
         />

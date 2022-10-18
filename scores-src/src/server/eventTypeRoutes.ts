@@ -3,7 +3,11 @@ import { v4 as uuidv4 } from "uuid";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { PreconditionFailed } from "http-errors";
-import { DocumentExistsError, MutateInSpec } from "couchbase";
+import {
+  DocumentExistsError,
+  DocumentNotFoundError,
+  MutateInSpec,
+} from "couchbase";
 import { dispatchChangeToEvent, resync } from "./updatesRepo";
 import {
   Edit,
@@ -28,6 +32,7 @@ import {
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
 import { identity, isEqual, pickBy } from "lodash-es";
+import { leagueKey } from "./leagueRoutes";
 
 export function makeEventAPIFor<
   TState extends BaseEventStateType,
@@ -95,6 +100,18 @@ export function makeEventAPIFor<
       const { league, id } = req.params;
       invariant(typeof league === "string", "no league from url");
       invariant(typeof id === "string", "no id from url");
+
+      // check the league exists
+      try {
+        await DB.collection("_default").get(leagueKey(league));
+      } catch (e) {
+        if (e instanceof DocumentNotFoundError) {
+          throw new BadRequest("league not found");
+        } else {
+          throw e;
+        }
+      }
+
       const meta = await DB.collection("_default").get(metaKey(league, id));
       const history = await DB.collection("_default").get(
         historyKey(league, id)

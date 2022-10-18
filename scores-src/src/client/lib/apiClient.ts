@@ -118,6 +118,55 @@ function useAPIRoute<TRes, TParams extends AnyObject | AnyObject[] = AnyObject>(
   };
 }
 
+export function useGETLeagues() {
+  const retval = useAPIRoute<League[]>("/leagues", {}, 200);
+  return retval;
+}
+
+export function usePOSTLeagues() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (data: Omit<League, "slug">) => {
+    const result = (await fetcher(navigate)(
+      "/leagues",
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+      201
+    )) as League;
+    mutate("/leagues");
+    mutate(`/events/${result.slug}`, result, false);
+    return result;
+  };
+}
+
+export function usePUTLeague() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (id: string, data: Omit<League, "slug">) => {
+    const result = (await fetcher(navigate)(
+      `/leagues/${id}`,
+      {
+        method: "put",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+      200
+    )) as League;
+    mutate("/leagues");
+    mutate(`/events/${result.slug}`, result, false);
+    return result;
+  };
+}
+
 export function useGETEvents(league: string, onlyCovered = false) {
   const retval = useAPIRoute<EventMeta[]>(
     "/events/" + league,
@@ -137,18 +186,13 @@ export function useGETEvent(league: string, type: string, id: string) {
   return retval;
 }
 
-export function useGETLeagues() {
-  const retval = useAPIRoute<League[]>("/leagues", {}, 200);
-  return retval;
-}
-
 export function usePOSTEvents() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (type: string, data: EventMeta) => {
+  return async (league: string, type: string, data: EventMeta) => {
     const result = (await fetcher(navigate)(
-      "/events/" + type,
+      `/events/${league}/${type}`,
       {
         method: "post",
         headers: {
@@ -159,7 +203,11 @@ export function usePOSTEvents() {
       201
     )) as EventMeta;
     mutate("/events");
-    mutate(`/events/${result.type}/${result.id}`, result, false);
+    mutate(
+      `/events/${result.league}/${result.type}/${result.id}`,
+      result,
+      false
+    );
     return result;
   };
 }
@@ -168,9 +216,9 @@ export function usePUTEvent() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (type: string, id: string, data: EventMeta) => {
+  return async (league: string, type: string, id: string, data: EventMeta) => {
     const result = (await fetcher(navigate)(
-      `/events/${type}/${id}`,
+      `/events/${league}/${type}/${id}`,
       {
         method: "put",
         headers: {
@@ -181,7 +229,7 @@ export function usePUTEvent() {
       200
     )) as EventMeta;
     mutate("/events");
-    mutate(`/events/${type}/${result.id}`, result, false);
+    mutate(`/events/${league}/${type}/${result.id}`, result, false);
     return result;
   };
 }
@@ -191,13 +239,14 @@ export function usePOSTEventAction() {
   const navigate = useNavigate();
 
   return async (
+    league: string,
     type: string,
     id: string,
     actionType: string,
     data: Record<string, unknown>
   ) => {
     const result = (await fetcher(navigate)(
-      `/events/${type}/${id}/${actionType}`,
+      `/events/${league}/${type}/${id}/${actionType}`,
       {
         method: "post",
         headers: {
@@ -208,7 +257,7 @@ export function usePOSTEventAction() {
       200
     )) as EventMeta;
     mutate("/events");
-    mutate(`/events/${type}/${result.id}`, result, false);
+    mutate(`/events/${league}/${type}/${result.id}`, result, false);
     return result;
   };
 }
@@ -283,9 +332,9 @@ export function usePOSTEventUndo() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (type: string, id: string, ts: number) => {
+  return async (league: string, type: string, id: string, ts: number) => {
     const result = (await fetcher(navigate)(
-      `/events/${type}/${id}/_undo`,
+      `/events/${league}/${type}/${id}/_undo`,
       {
         method: "post",
         headers: {
@@ -296,7 +345,7 @@ export function usePOSTEventUndo() {
       200
     )) as EventMeta;
     mutate("/events");
-    mutate(`/events/${type}/${result.id}`, result, false);
+    mutate(`/events/${league}/${type}/${result.id}`, result, false);
     return result;
   };
 }
@@ -305,9 +354,9 @@ export function usePOSTEventRedo() {
   const { mutate } = useSWRConfig();
   const navigate = useNavigate();
 
-  return async (type: string, id: string, ts: number) => {
+  return async (league: string, type: string, id: string, ts: number) => {
     const result = (await fetcher(navigate)(
-      `/events/${type}/${id}/_redo`,
+      `/events/${league}/${type}/${id}/_redo`,
       {
         method: "post",
         headers: {
@@ -318,7 +367,7 @@ export function usePOSTEventRedo() {
       200
     )) as EventMeta;
     mutate("/events");
-    mutate(`/events/${type}/${result.id}`, result, false);
+    mutate(`/events/${league}/${type}/${result.id}`, result, false);
     return result;
   };
 }

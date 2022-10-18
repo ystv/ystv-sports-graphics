@@ -19,6 +19,7 @@ import {
   IconUser,
   IconShieldLock,
   IconUsers,
+  IconTrophy,
 } from "@tabler/icons";
 import { setAuthToken } from "../lib/apiClient";
 import { Permission } from "../../common/types";
@@ -102,6 +103,13 @@ export function Wrapper() {
                 label: "Events",
                 link: "/events",
                 require: "read" as Permission,
+              },
+              {
+                icon: <IconTrophy size={16} />,
+                color: "cyan",
+                label: "Leagues",
+                link: "/leagues",
+                require: "admin" as Permission,
               },
               {
                 icon: <IconUsers size={16} />,
