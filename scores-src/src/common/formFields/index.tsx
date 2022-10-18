@@ -208,6 +208,7 @@ interface SelectFieldProps extends BaseFieldProps {
   initialValue?: string;
   helper?: string;
   rootAttrs?: Record<string, unknown>;
+  required?: boolean;
 }
 
 const nullSigil = "$NULL$";
@@ -228,6 +229,7 @@ export function SelectField(props: SelectFieldProps) {
       error={meta.touched && meta.error}
       description={props.helper}
       defaultValue={props.initialValue}
+      required={props.required}
       {...props.rootAttrs}
     />
   );
