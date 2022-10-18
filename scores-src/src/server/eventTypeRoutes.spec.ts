@@ -51,12 +51,13 @@ function runTests<
     };
     const initialState = info.stateSchema.cast({});
     await DB.collection("_default").insert(
-      `EventMeta/${typeName}/${id}`,
+      `EventMeta/test-league/${typeName}/${id}`,
       initialMeta
     );
-    await DB.collection("_default").insert(`EventHistory/${typeName}/${id}`, [
-      wrapAction(Init(initialState)),
-    ]);
+    await DB.collection("_default").insert(
+      `EventHistory/test-league/${typeName}/${id}`,
+      [wrapAction(Init(initialState))]
+    );
     await DB.collection("_default").insert("Team/test", testTeam);
     return { DB, id };
   }
@@ -105,7 +106,7 @@ function runTests<
         DB.query.mockResolvedValueOnce({ rows: [] });
 
         const response = await request(app)
-          .get(`/api/events/${typeName}`)
+          .get(`/api/events/test-league/${typeName}`)
           .auth("test", "password");
         expect(response.statusCode).toBe(200);
         expect(response.body).toHaveLength(0);
@@ -114,7 +115,8 @@ function runTests<
       test("one", async () => {
         const id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
         const testMeta: EventMeta = {
-          id: `EventMeta/football/${id}`,
+          id: `EventMeta/test-league/football/${id}`,
+          league: "test-league",
           type: "football",
           name: "Test Event",
           worthPoints: 4,
@@ -138,11 +140,11 @@ function runTests<
         };
         const DB = require("./db").DB as unknown as InMemoryDB;
         await DB.collection("_default").insert(
-          `EventMeta/football/${id}`,
+          `EventMeta/test-league/football/${id}`,
           testMeta
         );
         await DB.collection("_default").insert(
-          `EventHistory/football/${id}`,
+          `EventHistory/test-league/football/${id}`,
           []
         );
         DB.query.mockResolvedValueOnce({
@@ -150,7 +152,7 @@ function runTests<
         });
 
         const response = await request(app)
-          .get(`/api/events/${typeName}`)
+          .get(`/api/events/test-league/${typeName}`)
           .auth("test", "password");
         expect(response.statusCode).toBe(200);
         expect(response.body).toHaveLength(1);
@@ -162,7 +164,7 @@ function runTests<
         const DB = require("./db").DB as unknown as InMemoryDB;
         await DB.collection("_default").insert("Team/test", {});
         const createRes = await request(app)
-          .post(`/api/events/${typeName}`)
+          .post(`/api/events/test-league/${typeName}`)
           .send({
             name: "Test",
             worthPoints: 4,
@@ -180,7 +182,7 @@ function runTests<
         const DB = require("./db").DB as unknown as InMemoryDB;
         await DB.collection("_default").insert("Team/test", {});
         const createRes = await request(app)
-          .post(`/api/events/${typeName}`)
+          .post(`/api/events/test-league/${typeName}`)
           .send({
             name: "Test",
             worthPoints: 4,
@@ -194,7 +196,7 @@ function runTests<
         );
 
         const getRes = await request(app)
-          .get(`/api/events/${typeName}/${createRes.body.id}`)
+          .get(`/api/events/test-league/${typeName}/${createRes.body.id}`)
           .auth("test", "password");
         expect(getRes.statusCode).toBe(200);
         expect(getRes.body.id).toEqual(createRes.body.id);
@@ -203,7 +205,7 @@ function runTests<
       it("errors if any fields are missing", async () => {
         ignoreLogErrors = [/ValidationError/];
         const createRes = await request(app)
-          .post(`/api/events/${typeName}`)
+          .post(`/api/events/test-league/${typeName}`)
           .send({
             name: "Test",
           })
@@ -226,14 +228,14 @@ function runTests<
         };
 
         const updateRes = await request(app)
-          .put(`/api/events/${typeName}/${id}`)
+          .put(`/api/events/test-league/${typeName}/${id}`)
           .send(newMeta)
           .auth("test", "password");
         expect(updateRes.statusCode).toBe(200);
         expect(updateRes.body.worthPoints).toBe(2);
 
         const persistedVal = await DB.collection("_default").get(
-          `EventMeta/${typeName}/${id}`
+          `EventMeta/test-league/${typeName}/${id}`
         );
         expect(persistedVal.content.worthPoints).toBe(2);
       });
@@ -244,14 +246,14 @@ function runTests<
         const { DB, id } = await initEventDB();
 
         const res = await request(app)
-          .post(`/api/events/${typeName}/${id}/_declareWinner`)
+          .post(`/api/events/test-league/${typeName}/${id}/_declareWinner`)
           .send({ winner: "away" })
           .auth("test", "password");
         expect(res.statusCode).toBe(200);
         expect(res.body.winner).toBe("away");
 
         const persistedVal = await DB.collection("_default").get(
-          `EventMeta/${typeName}/${id}`
+          `EventMeta/test-league/${typeName}/${id}`
         );
         expect(persistedVal.content.winner).toBe("away");
         expect(
@@ -262,21 +264,21 @@ function runTests<
         const { DB, id } = await initEventDB();
 
         const res1 = await request(app)
-          .post(`/api/events/${typeName}/${id}/_declareWinner`)
+          .post(`/api/events/test-league/${typeName}/${id}/_declareWinner`)
           .send({ winner: "away" })
           .auth("test", "password");
         expect(res1.statusCode).toBe(200);
         expect(res1.body.winner).toBe("away");
 
         const res2 = await request(app)
-          .post(`/api/events/${typeName}/${id}/_declareWinner`)
+          .post(`/api/events/test-league/${typeName}/${id}/_declareWinner`)
           .send({ winner: "home" })
           .auth("test", "password");
         expect(res2.statusCode).toBe(200);
         expect(res2.body.winner).toBe("home");
 
         const persistedVal = await DB.collection("_default").get(
-          `EventMeta/${typeName}/${id}`
+          `EventMeta/test-league/${typeName}/${id}`
         );
         expect(persistedVal.content.winner).toBe("home");
       });
@@ -288,14 +290,14 @@ function runTests<
 
         for (const [type, payload] of testActions) {
           const res = await request(app)
-            .post(`/api/events/${typeName}/${id}/${type}`)
+            .post(`/api/events/test-league/${typeName}/${id}/${type}`)
             .send(payload)
             .auth("test", "password");
           expect(res.statusCode).toBe(200);
         }
 
         const persistedHistory = await DB.collection("_default").get(
-          `EventHistory/${typeName}/${id}`
+          `EventHistory/test-league/${typeName}/${id}`
         );
         expect(persistedHistory.content).toHaveLength(testActions.length + 1);
       });
@@ -307,26 +309,26 @@ function runTests<
 
         for (const [type, payload] of testActions) {
           const res = await request(app)
-            .post(`/api/events/${typeName}/${id}/${type}`)
+            .post(`/api/events/test-league/${typeName}/${id}/${type}`)
             .send(payload)
             .auth("test", "password");
           expect(res.statusCode).toBe(200);
         }
 
         let persistedHistory = await DB.collection("_default").get(
-          `EventHistory/${typeName}/${id}`
+          `EventHistory/test-league/${typeName}/${id}`
         );
         expect(persistedHistory.content).toHaveLength(testActions.length + 1);
         const ts =
           persistedHistory.content[persistedHistory.content.length - 1].meta.ts;
 
         const res = await request(app)
-          .post(`/api/events/${typeName}/${id}/_undo`)
+          .post(`/api/events/test-league/${typeName}/${id}/_undo`)
           .send({ ts })
           .auth("test", "password");
         expect(res.statusCode).toBe(200);
         persistedHistory = await DB.collection("_default").get(
-          `EventHistory/${typeName}/${id}`
+          `EventHistory/test-league/${typeName}/${id}`
         );
         expect(persistedHistory.content).toHaveLength(testActions.length + 2);
         expect(
@@ -339,32 +341,32 @@ function runTests<
 
         for (const [type, payload] of testActions) {
           const res = await request(app)
-            .post(`/api/events/${typeName}/${id}/${type}`)
+            .post(`/api/events/test-league/${typeName}/${id}/${type}`)
             .send(payload)
             .auth("test", "password");
           expect(res.statusCode).toBe(200);
         }
 
         let persistedHistory = await DB.collection("_default").get(
-          `EventHistory/${typeName}/${id}`
+          `EventHistory/test-league/${typeName}/${id}`
         );
         expect(persistedHistory.content).toHaveLength(testActions.length + 1);
         const ts =
           persistedHistory.content[persistedHistory.content.length - 1].meta.ts;
 
         const undoRes = await request(app)
-          .post(`/api/events/${typeName}/${id}/_undo`)
+          .post(`/api/events/test-league/${typeName}/${id}/_undo`)
           .send({ ts })
           .auth("test", "password");
         expect(undoRes.statusCode).toBe(200);
         const redoRes = await request(app)
-          .post(`/api/events/${typeName}/${id}/_redo`)
+          .post(`/api/events/test-league/${typeName}/${id}/_redo`)
           .send({ ts })
           .auth("test", "password");
         expect(redoRes.statusCode).toBe(200);
 
         persistedHistory = await DB.collection("_default").get(
-          `EventHistory/${typeName}/${id}`
+          `EventHistory/test-league/${typeName}/${id}`
         );
         expect(persistedHistory.content).toHaveLength(testActions.length + 1);
       });
@@ -378,14 +380,14 @@ function runTests<
 
           for (const [type, payload] of testActions.slice(0, -1)) {
             const res = await request(app)
-              .post(`/api/events/${typeName}/${id}/${type}`)
+              .post(`/api/events/test-league/${typeName}/${id}/${type}`)
               .send(payload)
               .auth("test", "password");
             expect(res.statusCode).toBe(200);
           }
 
           let persistedHistory = await DB.collection("_default").get(
-            `EventHistory/${typeName}/${id}`
+            `EventHistory/test-league/${typeName}/${id}`
           );
           expect(persistedHistory.content).toHaveLength(
             testActions.length - 1 + 1
@@ -395,26 +397,26 @@ function runTests<
               .ts;
 
           const undoRes = await request(app)
-            .post(`/api/events/${typeName}/${id}/_undo`)
+            .post(`/api/events/test-league/${typeName}/${id}/_undo`)
             .send({ ts })
             .auth("test", "password");
           expect(undoRes.statusCode).toBe(200);
 
           const lastAction = testActions[testActions.length - 1];
           const lastRes = await request(app)
-            .post(`/api/events/${typeName}/${id}/${lastAction[0]}`)
+            .post(`/api/events/test-league/${typeName}/${id}/${lastAction[0]}`)
             .send(lastAction[1])
             .auth("test", "password");
           expect(lastRes.statusCode).toBe(200);
 
           const redoRes = await request(app)
-            .post(`/api/events/${typeName}/${id}/_redo`)
+            .post(`/api/events/test-league/${typeName}/${id}/_redo`)
             .send({ ts })
             .auth("test", "password");
           expect(redoRes.statusCode).toBe(200);
 
           persistedHistory = await DB.collection("_default").get(
-            `EventHistory/${typeName}/${id}`
+            `EventHistory/test-league/${typeName}/${id}`
           );
           expect(persistedHistory.content).toHaveLength(testActions.length + 3);
         }

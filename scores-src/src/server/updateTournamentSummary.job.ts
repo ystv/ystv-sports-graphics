@@ -8,7 +8,7 @@ import { identity } from "lodash-es";
 import { wrapReducer } from "../common/eventStateHelpers";
 import { EVENT_TYPES } from "../common/sports";
 
-export interface TournamentSummary {
+export interface LeagueSummary {
   totalPointsHome: number;
   totalPointsAway: number;
   latestResults: Array<{
@@ -32,8 +32,8 @@ export interface TournamentSummary {
 
 // const baseLogger = getLogger("updateTournamentSummary");
 
-export async function doUpdate(logger: Logger) {
-  const result: TournamentSummary = {
+export async function doUpdate(logger: Logger, league: string) {
+  const result: LeagueSummary = {
     latestResults: [],
     totalPointsAway: 0,
     totalPointsHome: 0,
@@ -43,9 +43,13 @@ export async function doUpdate(logger: Logger) {
     `SELECT e AS data, meta().id AS id
     FROM _default e
     WHERE meta(e).id LIKE 'EventMeta/%'
-    ORDER BY MILLIS(e.startTime)`
+    AND league = $1
+    ORDER BY MILLIS(e.startTime)`,
+    {
+      parameters: [league],
+    }
   );
-  logger.debug("Processsing", { len: allEventResult.rows.length });
+  logger.debug("Processsing", { league, len: allEventResult.rows.length });
   for (const row of allEventResult.rows) {
     const { id, data: meta } = row as { id: string; data: EventMeta };
     if (!meta.winner) {
@@ -71,7 +75,7 @@ export async function doUpdate(logger: Logger) {
       points: meta.worthPoints,
     });
   }
-  await DB.collection("_default").upsert("TournamentSummary", result);
+  await DB.collection("_default").upsert(`LeagueSummary/${league}`, result);
 }
 
 // updateTournamentSummaryQueue.process(async function (job) {

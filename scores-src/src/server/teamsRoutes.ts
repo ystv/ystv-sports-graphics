@@ -3,7 +3,6 @@ import asyncHandler from "express-async-handler";
 import slugify from "slug";
 import invariant from "tiny-invariant";
 import multer, { memoryStorage } from "multer";
-import { v4 as uuidv4 } from "uuid";
 import { BadRequest } from "http-errors";
 import { TeamInfo, TeamInfoSchema } from "../common/types";
 import { authenticate } from "./auth";

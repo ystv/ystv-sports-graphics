@@ -52,6 +52,7 @@ export class InMemoryDB {
       async get(key: string, options?: GetOptions) {
         const val = c.get(key);
         if (!val) {
+          console.warn("Document not found: ", key);
           throw new DocumentNotFoundError(new MemDBError(key));
         }
         return {

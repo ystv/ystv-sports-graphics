@@ -1,5 +1,5 @@
 import type { InferType } from "yup";
-import { EventMeta, TeamInfo, User } from "../../common/types";
+import { EventMeta, League, TeamInfo, User } from "../../common/types";
 import { stringify } from "qs";
 import useSWR, { useSWRConfig } from "swr";
 import { NavigateFunction, useNavigate } from "react-router-dom";
@@ -118,14 +118,27 @@ function useAPIRoute<TRes, TParams extends AnyObject | AnyObject[] = AnyObject>(
   };
 }
 
-export function useGETEvents(onlyCovered = false) {
-  const retval = useAPIRoute<EventMeta[]>("/events", { onlyCovered }, 200);
+export function useGETEvents(league: string, onlyCovered = false) {
+  const retval = useAPIRoute<EventMeta[]>(
+    "/events/" + league,
+    { onlyCovered },
+    200
+  );
   return retval;
 }
 
-export function useGETEvent(type: string, id: string) {
-  const retval = useAPIRoute<EventMeta>(`/events/${type}/${id}`, {}, 200);
+export function useGETEvent(league: string, type: string, id: string) {
+  const retval = useAPIRoute<EventMeta>(
+    `/events/${league}/${type}/${id}`,
+    {},
+    200
+  );
 
+  return retval;
+}
+
+export function useGETLeagues() {
+  const retval = useAPIRoute<League[]>("/leagues", {}, 200);
   return retval;
 }
 

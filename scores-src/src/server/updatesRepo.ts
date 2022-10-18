@@ -23,10 +23,14 @@ export type UpdatesMessage = EventUpdateMessage | SpecialMessage;
 
 const UPDATES_STREAM = "eventUpdates";
 
-export async function resync(typeName: string, eventId: string) {
+export async function resync(
+  league: string,
+  typeName: string,
+  eventId: string
+) {
   const msg: UpdatesMessage = {
     _special: "resync",
-    id: `Event/${typeName}/${eventId}`,
+    id: `Event/${league}/${typeName}/${eventId}`,
   };
   const result = await REDIS.xAdd(
     UPDATES_STREAM,
@@ -37,6 +41,8 @@ export async function resync(typeName: string, eventId: string) {
     "Dispatched resync of " +
       typeName +
       " " +
+      league +
+      " " +
       eventId +
       ", its MID is " +
       result
@@ -44,12 +50,13 @@ export async function resync(typeName: string, eventId: string) {
 }
 
 export async function dispatchChangeToEvent(
+  league: string,
   type: string,
   id: string,
   data: Action
 ) {
   const msg: UpdatesMessage = {
-    id: `Event/${type}/${id}`,
+    id: `Event/${league}/${type}/${id}`,
     type: data.type,
     payload: JSON.stringify(data.payload),
     meta: JSON.stringify(data.meta),

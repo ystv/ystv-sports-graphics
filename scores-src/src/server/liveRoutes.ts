@@ -128,8 +128,8 @@ export function createLiveRouter() {
       mid?: string
     ) {
       const idParts = fullyQualifiedId.split("/");
-      invariant(idParts.length === 3, "dCTSD: invalid FQID!");
-      const [_, eventType] = idParts;
+      invariant(idParts.length === 4, "dCTSD: invalid FQID!");
+      const [_, _2, eventType] = idParts;
       const history = historyCache.get(fullyQualifiedId);
       invariant(Array.isArray(history), "cASCS: no history");
       const state = resolveEventState(EVENT_TYPES[eventType].reducer, history);
@@ -148,6 +148,7 @@ export function createLiveRouter() {
           if (!subs.has(data.id)) {
             return;
           }
+          logger.debug("Processing resync", { id: data.id });
           const history = (
             await DB.collection("_default").get(
               data.id.replace("Event/", "EventHistory/")
@@ -163,7 +164,7 @@ export function createLiveRouter() {
               actions: history,
             });
           }
-          logger.info("Resync processed");
+          logger.info("Resync processed", { id: data.id });
           break;
         }
         default:
@@ -265,8 +266,8 @@ export function createLiveRouter() {
               "invalid 'to' type"
             );
             const idParts = payload.to.split("/");
-            ensure(idParts.length === 3, UserError, "invalid 'to' format");
-            const [_, eventType, eventId] = idParts;
+            ensure(idParts.length === 4, UserError, "invalid 'to' format");
+            const [_, league, eventType, eventId] = idParts;
             subs.add(payload.to);
             await REDIS.sAdd(`subscriptions:${sid.current}`, payload.to);
             await REDIS.expire(
@@ -278,10 +279,13 @@ export function createLiveRouter() {
             try {
               currentHistory = (
                 await DB.collection("_default").get(
-                  `EventHistory/${eventType}/${eventId}`
+                  `EventHistory/${league}/${eventType}/${eventId}`
                 )
               ).content;
             } catch (e) {
+              logger.warn("In SUBSCRIBE handler, failed to fetch history", {
+                err: e,
+              });
               if (e instanceof DocumentNotFoundError) {
                 currentHistory = [];
               } else {

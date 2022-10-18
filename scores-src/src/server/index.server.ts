@@ -32,6 +32,7 @@ import { errorHandler } from "./httpUtils";
 import { createTestRouter } from "./testRoutes";
 import { createTeamsRouter } from "./teamsRoutes";
 import { createAttachmentsRouter } from "./attachmentsRoutes";
+import createLeaguesRouter from "./leagueRoutes";
 
 (async () => {
   const indexlogger = logging.getLogger("index.server");
@@ -112,6 +113,7 @@ import { createAttachmentsRouter } from "./attachmentsRoutes";
 
   baseRouter.use("/bootstrap", createBootstrapRouter());
   baseRouter.use("/auth", createAuthRouter());
+  baseRouter.use("/leagues", createLeaguesRouter());
   baseRouter.use("/events", createEventTypesRouter());
   baseRouter.use("/events", createEventsRouter());
   baseRouter.use("/users", createUserManagementRouter());
