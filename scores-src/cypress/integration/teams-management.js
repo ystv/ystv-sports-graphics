@@ -1,6 +1,19 @@
 describe("Teams Management", () => {
   before(() => {
     cy.resetAndCreateTestUser("admin", "password");
+    cy.request({
+      url: "/api/leagues",
+      method: "POST",
+      body: {
+        name: "Test League",
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
+      },
+      auth: {
+        user: "admin",
+        pass: "password",
+      },
+    });
   });
 
   it("Create Team", () => {
@@ -54,12 +67,15 @@ describe("Teams Management", () => {
   it("New team can be used in events", function () {
     cy.intercept({
       method: "POST",
-      path: "/api/events/*",
+      path: "/api/events/test-league/*",
     }).as("postEvents");
     cy.login("admin", "password");
     cy.visit("/events");
     cy.get("[data-cy=createNew]").click();
     cy.contains("Create Event").should("be.visible");
+
+    cy.get("[data-cy=selectLeague]").click();
+    cy.get(".mantine-Select-item").contains("Test League").click();
 
     cy.get("[data-cy=homeTeam]").click();
     cy.get(".mantine-Select-item").contains("York").click();
@@ -89,7 +105,7 @@ describe("Teams Management", () => {
     });
 
     cy.request({
-      url: "/api/events/football",
+      url: "/api/events/test-league/football",
       method: "POST",
       body: {
         name: "Test Event",
@@ -107,11 +123,11 @@ describe("Teams Management", () => {
       const eventID = res.body.id;
 
       cy.login("admin", "password");
-      cy.visit(`/events/football/${eventID}`);
+      cy.visit(`/events/test-league/football/${eventID}`);
       cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.request({
-        url: `/api/events/football/${eventID}/startHalf`,
+        url: `/api/events/test-league/football/${eventID}/startHalf`,
         method: "POST",
         body: {},
         auth: {
@@ -120,7 +136,7 @@ describe("Teams Management", () => {
         },
       });
       cy.request({
-        url: `/api/events/football/${eventID}/goal`,
+        url: `/api/events/test-league/football/${eventID}/goal`,
         method: "POST",
         body: {
           side: "home",
@@ -145,7 +161,7 @@ describe("Teams Management", () => {
 
       cy.wait(["@putTeams"], { responseTimeout: 3000 });
 
-      cy.visit(`/events/football/${eventID}`);
+      cy.visit(`/events/test-league/football/${eventID}`);
       cy.contains("Anne Lister 1 - York 0").should("be.visible");
 
       cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
@@ -153,7 +169,7 @@ describe("Teams Management", () => {
 
       // Verify the team change is still in effect
       cy.request({
-        url: `/api/events/football/${eventID}`,
+        url: `/api/events/test-league/football/${eventID}`,
         method: "GET",
         auth: {
           user: "admin",

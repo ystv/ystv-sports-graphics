@@ -23,8 +23,9 @@ import invariant from "tiny-invariant";
 import { createSessionForUser } from "./auth";
 import { WebSocket } from "ws";
 import request from "superagent";
-import { TeamInfo } from "../common/types";
+import { League, TeamInfo } from "../common/types";
 import { createTeamsRouter } from "./teamsRoutes";
+import { DB } from "./db";
 
 jest.unmock("redis").unmock("./redis");
 jest.mock("./db");
@@ -208,6 +209,13 @@ describe("Updates Stream", () => {
     await DB.collection("_default").insert("BootstrapState", {
       bootstrapped: true,
     });
+    const testLeague: League = {
+      name: "Test League",
+      slug: "test-league",
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
+    };
+    await DB.collection("_default").insert("League/test-league", testLeague);
     const testTeam: TeamInfo = {
       name: "Test",
       abbreviation: "TEST",
@@ -263,23 +271,9 @@ describe("Updates Stream", () => {
     await ts.close();
   });
 
-  test("subscribes to a valid(ish) feed", async () => {
-    const ts = new TestSocket(
-      `ws://localhost:${testPort}/api/updates/stream/v2?token=${testToken}`
-    );
-    await ts.waitForOpen();
-    await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
-    await ts.send({ kind: "SUBSCRIBE", to: "Event/football/bar" });
-    await expect(ts.waitForMessage()).resolves.toHaveProperty(
-      "kind",
-      "SUBSCRIBE_OK"
-    );
-    await ts.close();
-  });
-
   test("receives event updates (state mode)", async () => {
     const testEventRes = await request
-      .post(`http://localhost:${testPort}/api/events/football`)
+      .post(`http://localhost:${testPort}/api/events/test-league/football`)
       .auth("test", "password")
       .send({
         name: "test",
@@ -295,7 +289,10 @@ describe("Updates Stream", () => {
     );
     await ts.waitForOpen();
     await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
-    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await ts.send({
+      kind: "SUBSCRIBE",
+      to: `Event/test-league/football/${testEvent.id}`,
+    });
     await expect(ts.waitForMessage()).resolves.toHaveProperty(
       "kind",
       "SUBSCRIBE_OK"
@@ -303,7 +300,7 @@ describe("Updates Stream", () => {
 
     const actionRes = await request
       .post(
-        `http://localhost:${testPort}/api/events/football/${testEvent.id}/startHalf`
+        `http://localhost:${testPort}/api/events/test-league/football/${testEvent.id}/startHalf`
       )
       .auth("test", "password")
       .send({});
@@ -356,6 +353,7 @@ describe("Updates Stream", () => {
             "slug": "test",
           },
           "id": Any<String>,
+          "league": "test-league",
           "name": "test",
           "notCovered": false,
           "players": Object {
@@ -380,7 +378,7 @@ describe("Updates Stream", () => {
 
   test("receives event updates (actions mode)", async () => {
     const testEventRes = await request
-      .post(`http://localhost:${testPort}/api/events/football`)
+      .post(`http://localhost:${testPort}/api/events/test-league/football`)
       .auth("test", "password")
       .send({
         name: "test",
@@ -396,7 +394,10 @@ describe("Updates Stream", () => {
     );
     await ts.waitForOpen();
     await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
-    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await ts.send({
+      kind: "SUBSCRIBE",
+      to: `Event/test-league/football/${testEvent.id}`,
+    });
     await expect(ts.waitForMessage()).resolves.toHaveProperty(
       "kind",
       "SUBSCRIBE_OK"
@@ -404,7 +405,7 @@ describe("Updates Stream", () => {
 
     const actionRes = await request
       .post(
-        `http://localhost:${testPort}/api/events/football/${testEvent.id}/startHalf`
+        `http://localhost:${testPort}/api/events/test-league/football/${testEvent.id}/startHalf`
       )
       .auth("test", "password")
       .send({});
@@ -439,7 +440,7 @@ describe("Updates Stream", () => {
 
   test("resync (state mode)", async () => {
     const testEventRes = await request
-      .post(`http://localhost:${testPort}/api/events/football`)
+      .post(`http://localhost:${testPort}/api/events/test-league/football`)
       .auth("test", "password")
       .send({
         name: "test",
@@ -455,7 +456,10 @@ describe("Updates Stream", () => {
     );
     await ts.waitForOpen();
     await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
-    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await ts.send({
+      kind: "SUBSCRIBE",
+      to: `Event/test-league/football/${testEvent.id}`,
+    });
     await expect(ts.waitForMessage()).resolves.toHaveProperty(
       "kind",
       "SUBSCRIBE_OK"
@@ -463,7 +467,7 @@ describe("Updates Stream", () => {
 
     const resyncRes = await request
       .post(
-        `http://localhost:${testPort}/api/events/football/${testEvent.id}/_resync`
+        `http://localhost:${testPort}/api/events/test-league/football/${testEvent.id}/_resync`
       )
       .auth("test", "password")
       .send({});
@@ -507,6 +511,7 @@ describe("Updates Stream", () => {
             "slug": "test",
           },
           "id": Any<String>,
+          "league": "test-league",
           "name": "test",
           "notCovered": false,
           "players": Object {
@@ -531,7 +536,7 @@ describe("Updates Stream", () => {
 
   test("resync (actions mode)", async () => {
     const testEventRes = await request
-      .post(`http://localhost:${testPort}/api/events/football`)
+      .post(`http://localhost:${testPort}/api/events/test-league/football`)
       .auth("test", "password")
       .send({
         name: "test",
@@ -547,7 +552,11 @@ describe("Updates Stream", () => {
     );
     await ts.waitForOpen();
     await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
-    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await ts.send({
+      kind: "SUBSCRIBE",
+      to: `Event/test-league/football/${testEvent.id}`,
+    });
+    (DB as unknown as InMemoryDB)._dump();
     await expect(ts.waitForMessage()).resolves.toHaveProperty(
       "kind",
       "SUBSCRIBE_OK"
@@ -555,7 +564,7 @@ describe("Updates Stream", () => {
 
     const resyncRes = await request
       .post(
-        `http://localhost:${testPort}/api/events/football/${testEvent.id}/_resync`
+        `http://localhost:${testPort}/api/events/test-league/football/${testEvent.id}/_resync`
       )
       .auth("test", "password")
       .send({});
@@ -610,6 +619,7 @@ describe("Updates Stream", () => {
                 "slug": "test",
               },
               "id": Any<String>,
+              "league": "test-league",
               "name": "test",
               "notCovered": false,
               "players": Object {
@@ -637,7 +647,7 @@ describe("Updates Stream", () => {
 
   test("edits to teams are reflected as changes (state mode)", async () => {
     const testEventRes = await request
-      .post(`http://localhost:${testPort}/api/events/football`)
+      .post(`http://localhost:${testPort}/api/events/test-league/football`)
       .auth("test", "password")
       .send({
         name: "test",
@@ -653,7 +663,7 @@ describe("Updates Stream", () => {
     DB.query
       // resyncTeamUpdates
       .mockResolvedValueOnce({
-        rows: [`EventMeta/football/${testEvent.id}`],
+        rows: [`EventMeta/test-league/football/${testEvent.id}`],
       })
       // cleanupOrphanedAttachments
       .mockResolvedValue({ rows: [] });
@@ -663,7 +673,10 @@ describe("Updates Stream", () => {
     );
     await ts.waitForOpen();
     await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
-    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await ts.send({
+      kind: "SUBSCRIBE",
+      to: `Event/test-league/football/${testEvent.id}`,
+    });
     await expect(ts.waitForMessage()).resolves.toHaveProperty(
       "kind",
       "SUBSCRIBE_OK"
@@ -720,6 +733,7 @@ describe("Updates Stream", () => {
             "slug": "updated-test",
           },
           "id": Any<String>,
+          "league": "test-league",
           "name": "test",
           "notCovered": false,
           "players": Object {
@@ -743,7 +757,7 @@ describe("Updates Stream", () => {
 
   test("edits to teams are reflected as changes (actions mode)", async () => {
     const testEventRes = await request
-      .post(`http://localhost:${testPort}/api/events/football`)
+      .post(`http://localhost:${testPort}/api/events/test-league/football`)
       .auth("test", "password")
       .send({
         name: "test",
@@ -759,7 +773,7 @@ describe("Updates Stream", () => {
     DB.query
       // resyncTeamUpdates
       .mockResolvedValueOnce({
-        rows: [`EventMeta/football/${testEvent.id}`],
+        rows: [`EventMeta/test-league/football/${testEvent.id}`],
       })
       // cleanupOrphanedAttachments
       .mockResolvedValueOnce({ rows: [] });
@@ -769,7 +783,10 @@ describe("Updates Stream", () => {
     );
     await ts.waitForOpen();
     await expect(ts.waitForMessage()).resolves.toHaveProperty("kind", "HELLO");
-    await ts.send({ kind: "SUBSCRIBE", to: `Event/football/${testEvent.id}` });
+    await ts.send({
+      kind: "SUBSCRIBE",
+      to: `Event/test-league/football/${testEvent.id}`,
+    });
     await expect(ts.waitForMessage()).resolves.toHaveProperty(
       "kind",
       "SUBSCRIBE_OK"
@@ -828,6 +845,7 @@ describe("Updates Stream", () => {
             "slug": "updated-test",
           },
           "id": Any<String>,
+          "league": "test-league",
           "name": "test",
           "notCovered": false,
           "startTime": "2022-05-29T00:00:00Z",

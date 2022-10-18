@@ -6,7 +6,7 @@ import { DB } from "./db";
 import { dispatchChangeToEvent } from "./updatesRepo";
 
 async function updateEvent(id: string, newInfo: TeamInfo, oldSlug: string) {
-  const [prefix, type, eventId] = id.split("/");
+  const [prefix, league, type, eventId] = id.split("/");
   invariant(
     prefix === "EventMeta",
     "updateEvent called with non-meta document"
@@ -23,10 +23,11 @@ async function updateEvent(id: string, newInfo: TeamInfo, oldSlug: string) {
 
   await DB.collection("_default").replace(id, meta, { cas: metaResult.cas });
   const editAction = wrapAction(Edit(meta));
-  await DB.collection("_default").mutateIn(`EventHistory/${type}/${eventId}`, [
-    MutateInSpec.arrayAppend("", editAction),
-  ]);
-  await dispatchChangeToEvent(type, eventId, editAction);
+  await DB.collection("_default").mutateIn(
+    `EventHistory/${league}/${type}/${eventId}`,
+    [MutateInSpec.arrayAppend("", editAction)]
+  );
+  await dispatchChangeToEvent(league, type, eventId, editAction);
 }
 
 export async function resyncTeamUpdates(newInfo: TeamInfo, oldSlug: string) {
@@ -38,5 +39,6 @@ export async function resyncTeamUpdates(newInfo: TeamInfo, oldSlug: string) {
       }
     )
   ).rows;
+  console.log(rows);
   await Promise.all(rows.map((id) => updateEvent(id, newInfo, oldSlug)));
 }

@@ -10,11 +10,12 @@ import { TeamSelectField } from "../components/TeamSelect";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
 
 export function EditEventForm() {
-  const { type, id } = useParams();
+  const { league, type, id } = useParams();
+  invariant(typeof league === "string", "league must be set");
   invariant(typeof type === "string", "no type given");
   invariant(typeof id === "string", "no id given");
   const EditForm = EVENT_COMPONENTS[type].EditForm;
-  const { loading, error, data } = useGETEvent(type, id);
+  const { loading, error, data } = useGETEvent(league, type, id);
   const update = usePUTEvent();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const nav = useNavigate();
@@ -28,7 +29,7 @@ export function EditEventForm() {
     setSubmitError(null);
     try {
       //@ts-expect-error no good way to type this
-      const result = await update(type, id, values);
+      const result = await update(league, type, id, values);
       nav("/events");
     } catch (e) {
       helpers.setSubmitting(false);
@@ -59,6 +60,7 @@ export function EditEventForm() {
                   title="Date/Time"
                   format="isoStr"
                   independent
+                  showTime
                 />
                 <TeamSelectField
                   name="homeTeam"
@@ -102,10 +104,11 @@ export function EditEventForm() {
 
 export function EditEventModal() {
   const nav = useNavigate();
-  const { type, id } = useParams();
+  const { league, type, id } = useParams();
+  invariant(typeof league === "string", "no league given");
   invariant(typeof type === "string", "no type given");
   invariant(typeof id === "string", "no id given");
-  const { loading, error, data } = useGETEvent(type, id);
+  const { loading, error, data } = useGETEvent(league, type, id);
   return (
     <Modal opened onClose={() => nav("/events")}>
       <Title>Editing {data?.name || id}</Title>

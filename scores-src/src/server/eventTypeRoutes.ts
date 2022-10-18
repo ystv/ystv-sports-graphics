@@ -1,10 +1,13 @@
-import * as Yup from "yup";
 import { DB } from "./db";
 import { v4 as uuidv4 } from "uuid";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { PreconditionFailed } from "http-errors";
-import { DocumentExistsError, MutateInSpec } from "couchbase";
+import {
+  DocumentExistsError,
+  DocumentNotFoundError,
+  MutateInSpec,
+} from "couchbase";
 import { dispatchChangeToEvent, resync } from "./updatesRepo";
 import {
   Edit,
@@ -29,6 +32,7 @@ import {
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
 import { identity, isEqual, pickBy } from "lodash-es";
+import { leagueKey } from "./leagueRoutes";
 
 export function makeEventAPIFor<
   TState extends BaseEventStateType,
@@ -38,10 +42,12 @@ export function makeEventAPIFor<
   const logger = getLogger("eventTypeAPI").child({
     type: typeName,
   });
-  const router = Router();
+  const router = Router({ mergeParams: true });
 
-  const metaKey = (id: string) => `EventMeta/${typeName}/${id}`;
-  const historyKey = (id: string) => `EventHistory/${typeName}/${id}`;
+  const metaKey = (league: string, id: string) =>
+    `EventMeta/${league}/${typeName}/${id}`;
+  const historyKey = (league: string, id: string) =>
+    `EventHistory/${league}/${typeName}/${id}`;
   const {
     reducer,
     actionCreators,
@@ -54,14 +60,17 @@ export function makeEventAPIFor<
     "/",
     authenticate("read"),
     asyncHandler(async (req, res) => {
+      const league = req.params.league;
+      invariant(typeof league === "string", "no league from url");
       const result = await DB.query(
         `SELECT RAW e
         FROM _default e
         WHERE meta(e).id LIKE 'EventMeta/%'
-        AND e.type = $1
+        AND e.league = $1;
+        AND e.type = $2
         ORDER BY MILLIS(e.startTime)`,
         {
-          parameters: [typeName],
+          parameters: [league, typeName],
         }
       );
       const events = await Promise.all(
@@ -88,9 +97,25 @@ export function makeEventAPIFor<
     "/:id",
     authenticate("read"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
-      const meta = await DB.collection("_default").get(metaKey(id));
-      const history = await DB.collection("_default").get(historyKey(id));
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
+
+      // check the league exists
+      try {
+        await DB.collection("_default").get(leagueKey(league));
+      } catch (e) {
+        if (e instanceof DocumentNotFoundError) {
+          throw new BadRequest("league not found");
+        } else {
+          throw e;
+        }
+      }
+
+      const meta = await DB.collection("_default").get(metaKey(league, id));
+      const history = await DB.collection("_default").get(
+        historyKey(league, id)
+      );
       const state = resolveEventState(reducer, history.content);
       res.json({
         ...meta.content,
@@ -104,8 +129,10 @@ export function makeEventAPIFor<
     "/:id/_history",
     authenticate("read"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
-      const data = await DB.collection("_default").get(historyKey(id));
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
+      const data = await DB.collection("_default").get(historyKey(league, id));
       res.json(data.content);
     })
   );
@@ -114,10 +141,13 @@ export function makeEventAPIFor<
     "/",
     authenticate("write"),
     asyncHandler(async (req, res) => {
+      const league = req.params.league;
+      invariant(typeof league === "string", "no league from url");
       const meta: EventMeta = await EventCreateEditSchema.validate(req.body, {
         abortEarly: false,
         stripUnknown: true,
       });
+      meta.league = league;
       meta.type = typeName;
       // The input contains the slugs for the teams, replace them with the actual data.
       meta.homeTeam = (
@@ -141,7 +171,7 @@ export function makeEventAPIFor<
         try {
           id = uuidv4();
           meta.id = id;
-          await DB.collection("_default").insert(metaKey(id), meta);
+          await DB.collection("_default").insert(metaKey(league, id), meta);
           break;
         } catch (e) {
           if (e instanceof DocumentExistsError) {
@@ -157,14 +187,16 @@ export function makeEventAPIFor<
           ...initialState,
         })
       );
-      await DB.collection("_default").insert(historyKey(id), [initAction]);
+      await DB.collection("_default").insert(historyKey(league, id), [
+        initAction,
+      ]);
 
       const finalState = {
         ...meta,
         ...initialState,
       };
       initAction.payload = finalState;
-      await dispatchChangeToEvent(typeName, id, initAction);
+      await dispatchChangeToEvent(league, typeName, id, initAction);
       res.statusCode = 201;
       res.json(finalState);
     })
@@ -174,10 +206,13 @@ export function makeEventAPIFor<
     "/:id",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
       const cas = req.params["cas"] ?? undefined;
-      const meta = await DB.collection("_default").get(metaKey(id));
-      const history = await DB.collection("_default").get(historyKey(id));
+      const history = await DB.collection("_default").get(
+        historyKey(league, id)
+      );
       const currentActions = history.content as Action[];
       const currentState = resolveEventState(reducer, currentActions);
 
@@ -218,9 +253,9 @@ export function makeEventAPIFor<
           ...stateDelta,
         })
       );
-      await DB.collection("_default").replace(metaKey(id), newMeta);
+      await DB.collection("_default").replace(metaKey(league, id), newMeta);
       await DB.collection("_default").mutateIn(
-        historyKey(id),
+        historyKey(league, id),
         [MutateInSpec.arrayAppend("", editAction)],
         {
           cas: cas ?? history.cas,
@@ -232,7 +267,7 @@ export function makeEventAPIFor<
         ...resolveEventState(reducer, currentActions.concat(editAction)),
       };
       editAction.payload = finalState;
-      await dispatchChangeToEvent(typeName, id, editAction);
+      await dispatchChangeToEvent(league, typeName, id, editAction);
       res.status(200).json(finalState);
     })
   );
@@ -241,13 +276,14 @@ export function makeEventAPIFor<
     "/:id/_undo",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
-      invariant(typeof id === "string", "route didn't give us a string id");
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
       const ts = req.body.ts;
       ensure(typeof ts === "number", BadRequest, "no ts given");
 
       const currentActionsResult = await DB.collection("_default").get(
-        historyKey(id)
+        historyKey(league, id)
       );
       const currentActions = currentActionsResult.content as Action[];
       const undoneIndex = currentActions.findIndex((x) => x.meta.ts === ts);
@@ -274,13 +310,13 @@ export function makeEventAPIFor<
       }
 
       await DB.collection("_default").mutateIn(
-        historyKey(id),
+        historyKey(league, id),
         [MutateInSpec.arrayAppend("", undoAction)],
         {
           cas: currentActionsResult.cas,
         }
       );
-      await dispatchChangeToEvent(typeName, id, undoAction);
+      await dispatchChangeToEvent(league, typeName, id, undoAction);
       res.status(200).json(resolveEventState(reducer, currentActions));
     })
   );
@@ -289,13 +325,14 @@ export function makeEventAPIFor<
     "/:id/_redo",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
-      invariant(typeof id === "string", "route didn't give us a string id");
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
       const ts = req.body.ts;
       ensure(typeof ts === "number", BadRequest, "no ts given");
 
       const currentActionsResult = await DB.collection("_default").get(
-        historyKey(id)
+        historyKey(league, id)
       );
       const currentActions = currentActionsResult.content as Action[];
       const redoneIndex = currentActions.findIndex((x) => x.meta.ts === ts);
@@ -337,10 +374,10 @@ export function makeEventAPIFor<
         );
       }
 
-      await DB.collection("_default").mutateIn(historyKey(id), spec, {
+      await DB.collection("_default").mutateIn(historyKey(league, id), spec, {
         cas: currentActionsResult.cas,
       });
-      await dispatchChangeToEvent(typeName, id, redoAction);
+      await dispatchChangeToEvent(league, typeName, id, redoAction);
       res.status(200).json(resolveEventState(reducer, currentActions));
     })
   );
@@ -349,8 +386,9 @@ export function makeEventAPIFor<
     "/:id/_declareWinner",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
-      invariant(typeof id === "string", "route didn't give us a string id");
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
       const winner: "home" | "away" = req.body.winner;
       ensure(
         typeof winner === "string" && (winner === "home" || winner === "away"),
@@ -358,13 +396,17 @@ export function makeEventAPIFor<
         "invalid or no winner"
       );
 
-      const metaResult = await DB.collection("_default").get(metaKey(id));
-      const historyResult = await DB.collection("_default").get(historyKey(id));
+      const metaResult = await DB.collection("_default").get(
+        metaKey(league, id)
+      );
+      const historyResult = await DB.collection("_default").get(
+        historyKey(league, id)
+      );
       const meta = metaResult.content as EventMeta;
 
       meta.winner = winner;
 
-      await DB.collection("_default").replace(metaKey(id), meta, {
+      await DB.collection("_default").replace(metaKey(league, id), meta, {
         cas: metaResult.cas,
       });
       const finalState = {
@@ -372,8 +414,16 @@ export function makeEventAPIFor<
         ...resolveEventState(reducer, historyResult.content),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
-      await dispatchChangeToEvent(typeName, id, wrapAction(Edit(finalState)));
-      await updateTournamentSummary(logger.child({ _name: "tsWorker" }));
+      await dispatchChangeToEvent(
+        league,
+        typeName,
+        id,
+        wrapAction(Edit(finalState))
+      );
+      await updateTournamentSummary(
+        logger.child({ _name: "tsWorker" }),
+        league
+      );
       res.status(200).json(finalState);
     })
   );
@@ -382,9 +432,11 @@ export function makeEventAPIFor<
     "/:id/_resync",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
-      invariant(typeof id === "string", "route didn't give us a string id");
-      await resync(typeName, id);
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
+      logger.debug("resyncing", { league, typeName, id });
+      await resync(league, typeName, id);
       res.status(200).json({ ok: true });
     })
   );
@@ -394,18 +446,21 @@ export function makeEventAPIFor<
       `/:id/${actionType}`,
       authenticate("write"),
       asyncHandler(async (req, res) => {
-        const id = req.params.id;
-        invariant(typeof id === "string", "route didn't give us a string id");
+        const { league, id } = req.params;
+        invariant(typeof league === "string", "no league from url");
+        invariant(typeof id === "string", "no id from url");
         const payload: ReturnType<TActions[typeof actionType]> =
           await actionPayloadValidators[actionType].validate(req.body, {
             abortEarly: false,
             stripUnknown: true,
           });
 
-        const metaResult = await DB.collection("_default").get(metaKey(id));
+        const metaResult = await DB.collection("_default").get(
+          metaKey(league, id)
+        );
         logger.debug("got meta", { meta: metaResult.content });
         const currentActionsResult = await DB.collection("_default").get(
-          historyKey(id)
+          historyKey(league, id)
         );
         logger.debug("got history", { history: currentActionsResult.content });
         const currentActions = currentActionsResult.content as Action[];
@@ -424,13 +479,13 @@ export function makeEventAPIFor<
         );
 
         await DB.collection("_default").mutateIn(
-          historyKey(id),
+          historyKey(league, id),
           [MutateInSpec.arrayAppend("", actionData)],
           {
             cas: currentActionsResult.cas,
           }
         );
-        await dispatchChangeToEvent(typeName, id, actionData);
+        await dispatchChangeToEvent(league, typeName, id, actionData);
         res.status(200).json({
           ...metaResult.content,
           ...resolveEventState(reducer, currentActions.concat(actionData)),
@@ -445,7 +500,7 @@ export function makeEventAPIFor<
 export function createEventTypesRouter() {
   const router = Router();
   for (const [typeName, info] of Object.entries(EVENT_TYPES)) {
-    router.use(`/${typeName}`, makeEventAPIFor(typeName, info));
+    router.use(`/:league/${typeName}`, makeEventAPIFor(typeName, info));
   }
   return router;
 }

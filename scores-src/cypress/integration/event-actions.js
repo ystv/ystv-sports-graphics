@@ -15,10 +15,24 @@ describe("Event Actions", () => {
         secondaryColour: "#000000",
       });
       cy.request({
-        url: "/api/events/football",
+        url: "/api/leagues",
+        method: "POST",
+        body: {
+          name: "Test League",
+          startDate: new Date().toISOString(),
+          endDate: new Date().toISOString(),
+        },
+        auth: {
+          user: "admin",
+          pass: "password",
+        },
+      });
+      cy.request({
+        url: "/api/events/test-league/football",
         method: "POST",
         body: {
           name: "Test Event",
+          league: "test-league",
           worthPoints: 4,
           notCovered: false,
           startTime: "2023-01-02T00:00:00.000Z",
@@ -36,7 +50,7 @@ describe("Event Actions", () => {
 
     it("Start a half", function () {
       cy.login("admin", "password");
-      cy.visit(`/events/football/${this.eventID}`);
+      cy.visit(`/events/test-league/football/${this.eventID}`);
       cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Start Half").click();
@@ -46,7 +60,7 @@ describe("Event Actions", () => {
 
     it("Goal", function () {
       cy.login("admin", "password");
-      cy.visit(`/events/football/${this.eventID}`);
+      cy.visit(`/events/test-league/football/${this.eventID}`);
       cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Goal").click();
@@ -65,7 +79,7 @@ describe("Event Actions", () => {
 
     it("Undo/Redo last goal", function () {
       cy.login("admin", "password");
-      cy.visit(`/events/football/${this.eventID}`);
+      cy.visit(`/events/test-league/football/${this.eventID}`);
       cy.contains("Lancaster 0 - York 1").should("be.visible");
 
       cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
@@ -82,11 +96,11 @@ describe("Event Actions", () => {
     it("Action, then edit, then undo that action", function () {
       cy.intercept({
         method: "PUT",
-        path: "/api/events/football/*",
+        path: "/api/events/test-league/football/*",
       }).as("putEvents");
 
       cy.login("admin", "password");
-      cy.visit(`/events/football/${this.eventID}`);
+      cy.visit(`/events/test-league/football/${this.eventID}`);
       cy.contains("Lancaster 0 - York 1").should("be.visible");
 
       cy.visit("/events");
@@ -99,7 +113,7 @@ describe("Event Actions", () => {
       cy.get("[data-cy=submit]").click();
       cy.wait(["@putEvents"]);
 
-      cy.visit(`/events/football/${this.eventID}`);
+      cy.visit(`/events/test-league/football/${this.eventID}`);
       cy.get("[data-cy=timeline] > *").first().contains("Undo").click();
       cy.contains("Lancaster 0 - York 0").should("be.visible");
     });
@@ -107,11 +121,11 @@ describe("Event Actions", () => {
     it("GRAPHICS-226 - goal with no player, then edit", function () {
       cy.intercept({
         method: "PUT",
-        path: "/api/events/football/*",
+        path: "/api/events/test-league/football/*",
       }).as("putEvents");
 
       cy.login("admin", "password");
-      cy.visit(`/events/football/${this.eventID}`);
+      cy.visit(`/events/test-league/football/${this.eventID}`);
       cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Goal").click();
@@ -127,6 +141,25 @@ describe("Event Actions", () => {
       cy.get("[name=worthPoints]").clear().type("0");
       cy.get("[data-cy=submit]").click();
       cy.wait(["@putEvents"]);
+    });
+
+    it("Declare Winner", function () {
+      cy.intercept({
+        method: "PUT",
+        path: "/api/events/**/_declareWinner",
+      }).as("declareWinner");
+      cy.login("admin", "password");
+      cy.visit(`/events/test-league/football/${this.eventID}`);
+
+      cy.contains("Declare Winner").click();
+
+      cy.get("[data-cy=declare-winner]").within(() => {
+        cy.contains("York").click();
+      });
+      cy.get("[data-cy=declare-winner-confirm]").click();
+
+      cy.visit("/events");
+      cy.contains("Winner: York").should("be.visible");
     });
   });
 });

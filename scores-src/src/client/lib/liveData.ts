@@ -34,7 +34,7 @@ const historyReducer = (
 };
 
 export function useLiveData(eventId: string) {
-  const [_, type] = eventId.split("/");
+  const [_, _2, type] = eventId.split("/");
   invariant(type, "eventId must be of the form 'Event/<type>/<id>'");
   const wsRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState<LiveDataStatus>("NOT_CONNECTED");

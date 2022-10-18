@@ -25,6 +25,7 @@ export const TeamInfoSchema: Yup.SchemaOf<TeamInfo> = Yup.object({
 // @ts-expect-error can't type index signature
 export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
   id: Yup.string().uuid().required(),
+  league: Yup.string().required(),
   type: Yup.string().required(),
   startTime: Yup.string()
     .required()
@@ -39,10 +40,10 @@ export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
 });
 
 /**
- * Identical to EventMetaSchema except omitting type and id, and replacing the team info objects with slugs.
+ * Identical to EventMetaSchema except omitting league, type, and id, and replacing the team info objects with slugs.
  */
 export const EventCreateEditSchema: Yup.SchemaOf<EventMeta> =
-  EventMetaSchema.omit(["type", "id"]).shape({
+  EventMetaSchema.omit(["league", "type", "id"]).shape({
     homeTeam: Yup.string()
       .required()
       .transform((val, original, context) => {
@@ -69,6 +70,7 @@ export const EventCreateEditSchema: Yup.SchemaOf<EventMeta> =
 
 export interface EventMeta {
   id: string;
+  league: string; // league slug
   type: string;
   name: string;
   startTime: string;
@@ -83,6 +85,20 @@ export interface EventMeta {
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type BaseEventStateType = {};
+
+export interface League {
+  slug?: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+}
+
+export const LeagueSchema: Yup.SchemaOf<League> = Yup.object({
+  slug: Yup.string().optional(),
+  name: Yup.string().required(),
+  startDate: Yup.string().required(),
+  endDate: Yup.string().required(),
+});
 
 export interface ActionMeta {
   ts: number;

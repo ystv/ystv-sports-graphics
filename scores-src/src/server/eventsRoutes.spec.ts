@@ -10,6 +10,7 @@ import { InMemoryDB } from "./__mocks__/db";
 import { getLogger } from "./loggingSetup";
 import { Init, wrapAction } from "../common/eventStateHelpers";
 import { errorHandler } from "./httpUtils";
+import { League } from "../common/types";
 
 jest.mock("./db");
 
@@ -27,6 +28,13 @@ describe("eventsRoutes", () => {
     await DB.collection("_default").insert("BootstrapState", {
       bootstrapped: true,
     });
+    const testLeague: League = {
+      name: "Test League",
+      slug: "test-league",
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
+    };
+    await DB.collection("_default").insert("League/test-league", testLeague);
 
     app = Express();
     app.use(jsonParser());
@@ -52,7 +60,7 @@ describe("eventsRoutes", () => {
       DB.query.mockResolvedValueOnce({ rows: [] });
 
       const response = await request(app)
-        .get("/api/events")
+        .get("/api/events/test-league")
         .auth("test", "password");
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveLength(0);
@@ -61,13 +69,13 @@ describe("eventsRoutes", () => {
     test("one", async () => {
       const DB = require("./db").DB as unknown as InMemoryDB;
       DB.collection("_default").insert(
-        "EventHistory/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "EventHistory/test-league/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
         []
       );
       DB.query.mockResolvedValueOnce({
         rows: [
           {
-            id: "EventMeta/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            id: "EventMeta/test-league/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
             data: {
               type: "football",
               id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
@@ -79,7 +87,7 @@ describe("eventsRoutes", () => {
       });
 
       const response = await request(app)
-        .get("/api/events")
+        .get("/api/events/test-league")
         .auth("test", "password");
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveLength(1);
@@ -89,17 +97,17 @@ describe("eventsRoutes", () => {
     test("onlyCovered", async () => {
       const DB = require("./db").DB as unknown as InMemoryDB;
       DB.collection("_default").insert(
-        "EventHistory/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "EventHistory/test-league/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
         []
       );
       DB.collection("_default").insert(
-        "EventHistory/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "EventHistory/test-league/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
         []
       );
       DB.query.mockResolvedValueOnce({
         rows: [
           {
-            id: "EventMeta/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            id: "EventMeta/test-league/football/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
             data: {
               type: "football",
               id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
@@ -109,7 +117,7 @@ describe("eventsRoutes", () => {
             },
           },
           {
-            id: "EventMeta/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            id: "EventMeta/test-league/netball/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
             data: {
               type: "netball",
               id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
@@ -121,7 +129,7 @@ describe("eventsRoutes", () => {
       });
 
       const response = await request(app)
-        .get("/api/events?onlyCovered=true")
+        .get("/api/events/test-league?onlyCovered=true")
         .auth("test", "password");
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveLength(1);

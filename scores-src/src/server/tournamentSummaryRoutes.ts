@@ -2,10 +2,11 @@ import { DocumentNotFoundError } from "couchbase";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { startCase } from "lodash-es";
+import invariant from "tiny-invariant";
 import { authenticate } from "./auth";
 import { DB } from "./db";
 import { getLogger } from "./loggingSetup";
-import { TournamentSummary } from "./updateTournamentSummary.job";
+import { LeagueSummary } from "./updateTournamentSummary.job";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
 
 const logger = getLogger("tournamentSummaryRoutes");
@@ -14,13 +15,18 @@ export function createTournamentSummaryRouter() {
   const router = Router();
 
   router.get(
-    "/",
+    "/:league",
     // authenticate("read"), // vmix no like
     asyncHandler(async (req, res) => {
-      let data: TournamentSummary;
+      const league = req.params.league;
+      invariant(typeof league === "string", "no league from url");
+      let data: LeagueSummary;
       try {
-        data = (await DB.collection("_default").get("TournamentSummary"))
-          .content;
+        data = (
+          await DB.collection("_default").get(
+            "TournaLeagueSummarymentSummary/" + league
+          )
+        ).content;
       } catch (e) {
         if (e instanceof DocumentNotFoundError) {
           data = {
@@ -55,12 +61,14 @@ export function createTournamentSummaryRouter() {
   );
 
   router.post(
-    "/recompute",
+    "/:league/recompute",
     authenticate("admin"),
     asyncHandler(async (req, res) => {
-      await updateTournamentSummary(logger);
-      const data: TournamentSummary = (
-        await DB.collection("_default").get("TournamentSummary")
+      const league = req.params.league;
+      invariant(typeof league === "string", "no league from url");
+      await updateTournamentSummary(logger, league);
+      const data: LeagueSummary = (
+        await DB.collection("_default").get("LeagueSummary/" + league)
       ).content;
       res.status(200).json(data);
     })

@@ -91,6 +91,7 @@ export function Field(props: FieldProps) {
 
 interface DateFieldProps extends BaseFieldProps {
   format: "tsMs" | "isoStr";
+  showTime?: boolean;
   independent?: boolean;
 }
 
@@ -151,11 +152,13 @@ export function DateField(props: DateFieldProps) {
           error={meta.touched && meta.error}
           data-cy="datePicker"
         />
-        <TimeInput
-          value={value}
-          onChange={(d) => onChange(d, "time")}
-          data-cy="timePicker"
-        />
+        {props.showTime && (
+          <TimeInput
+            value={value}
+            onChange={(d) => onChange(d, "time")}
+            data-cy="timePicker"
+          />
+        )}
       </Group>
     </InputWrapper>
   );
@@ -204,6 +207,7 @@ interface SelectFieldProps extends BaseFieldProps {
   values: [string | null, string][];
   initialValue?: string;
   helper?: string;
+  rootAttrs?: Record<string, unknown>;
 }
 
 const nullSigil = "$NULL$";
@@ -224,6 +228,7 @@ export function SelectField(props: SelectFieldProps) {
       error={meta.touched && meta.error}
       description={props.helper}
       defaultValue={props.initialValue}
+      {...props.rootAttrs}
     />
   );
 }

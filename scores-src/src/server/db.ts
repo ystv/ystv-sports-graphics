@@ -16,7 +16,7 @@ export let DB: Scope = null as unknown as Scope;
 
 const INDEXES = [
   "CREATE PRIMARY INDEX ON `%bucket`",
-  "CREATE INDEX idx_events_byType ON `%bucket` (type, MILLIS(startTime)) WHERE meta().id LIKE 'EventMeta/%' OR meta().id LIKE 'EventHistory/%'",
+  "CREATE INDEX idx_events_byLeagueType ON `%bucket` (league, type, MILLIS(startTime)) WHERE meta().id LIKE 'EventMeta/%' OR meta().id LIKE 'EventHistory/%'",
   "CREATE INDEX idx_events_byHomeTeam ON `%bucket` (homeTeam.slug, homeTeam.crestAttachmentID) WHERE meta().id LIKE 'EventMeta/%'",
   "CREATE INDEX idx_events_byAwayTeam ON `%bucket` (awayTeam.slug, awayTeam.crestAttachmentID) WHERE meta().id LIKE 'EventMeta/%'",
   "CREATE INDEX idx_attachments ON `%bucket` (meta().xattrs.mimeType) WHERE meta().id LIKE 'Attachment/%'",

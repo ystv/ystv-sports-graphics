@@ -19,14 +19,19 @@ export function createEventsRouter() {
   const logger = getLogger("events");
 
   router.get(
-    "/",
+    "/:league",
     authenticate("read"),
     asyncHandler(async (req, res) => {
+      const league = req.params.league;
+      invariant(typeof league === "string", "no league from url");
       const result = await DB.query(
         `SELECT e AS data, meta().id AS id
         FROM _default e
-        WHERE meta(e).id LIKE 'EventMeta/%'
-        ORDER BY MILLIS(e.startTime)`
+        WHERE meta(e).id LIKE 'EventMeta/' || $1 || '/%'
+        ORDER BY MILLIS(e.startTime)`,
+        {
+          parameters: [league],
+        }
       );
       const onlyCovered = req.query.onlyCovered === "true";
       let events = await Promise.all(
@@ -54,16 +59,20 @@ export function createEventsRouter() {
 
   // This handles events coming from RosesLive that we don't have code for.
 
-  const metaKey = (type: string, id: string) => `EventMeta/${type}/${id}`;
+  const metaKey = (league: string, type: string, id: string) =>
+    `EventMeta/${league}/${type}/${id}`;
 
   router.get(
-    "/_extra/:type/:id",
+    "/_extra/:league/:type/:id",
     authenticate("read"),
     asyncHandler(async (req, res) => {
-      const { type, id } = req.params;
+      const { league, type, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
       invariant(typeof type === "string", "no type from url");
       invariant(typeof id === "string", "no id from url");
-      const data = await DB.collection("_default").get(metaKey(type, id));
+      const data = await DB.collection("_default").get(
+        metaKey(league, type, id)
+      );
       res.json({
         ...data.content,
         _cas: data.cas,
@@ -72,15 +81,18 @@ export function createEventsRouter() {
   );
 
   router.post(
-    "/_extra/:type",
+    "/_extra/:league/:type",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const type = req.params.type;
+      const { league, type } = req.params;
+      invariant(typeof league === "string", "no league from url");
       invariant(typeof type === "string", "no type param from URL");
       const val: EventMeta = await EventMetaSchema.omit([
         "id",
         "type",
+        "league",
       ]).validate(req.body, { abortEarly: false });
+      val.league = league;
       val.type = type;
 
       let id: string;
@@ -89,7 +101,10 @@ export function createEventsRouter() {
         try {
           id = uuidv4();
           val.id = id;
-          await DB.collection("_default").insert(metaKey(type, id), val);
+          await DB.collection("_default").insert(
+            metaKey(league, type, id),
+            val
+          );
           break;
         } catch (e) {
           if (e instanceof DocumentExistsError) {
@@ -104,10 +119,11 @@ export function createEventsRouter() {
   );
 
   router.put(
-    "/_extra/:type/:id",
+    "/_extra/:league/:type/:id",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const { type, id } = req.params;
+      const { league, type, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
       invariant(typeof type === "string", "no type param from URL");
       invariant(typeof id === "string", "no id param from URL");
       const cas = req.params["cas"] ?? undefined;
@@ -115,8 +131,9 @@ export function createEventsRouter() {
       const val: EventMeta = await EventMetaSchema.omit([
         "id",
         "type",
+        "league",
       ]).validate(inputData, { abortEarly: false, stripUnknown: true });
-      await DB.collection("_default").replace(metaKey(type, id), val, {
+      await DB.collection("_default").replace(metaKey(league, type, id), val, {
         cas: cas,
       });
       res.status(200).json(val);
@@ -124,10 +141,11 @@ export function createEventsRouter() {
   );
 
   router.post(
-    "/_extra/:type/:id/_declareWinner",
+    "/_extra/:league/:type/:id/_declareWinner",
     authenticate("write"),
     asyncHandler(async (req, res) => {
-      const { type, id } = req.params;
+      const { league, type, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
       invariant(typeof type === "string", "no type param from URL");
       invariant(typeof id === "string", "no id param from URL");
 
@@ -139,16 +157,19 @@ export function createEventsRouter() {
       );
 
       const currentMetaResult = await DB.collection("_default").get(
-        metaKey(type, id)
+        metaKey(league, type, id)
       );
       const val = currentMetaResult.content as EventMeta;
 
       val.winner = winner;
 
-      await DB.collection("_default").replace(metaKey(type, id), val, {
+      await DB.collection("_default").replace(metaKey(league, type, id), val, {
         cas: currentMetaResult.cas,
       });
-      await updateTournamentSummary(logger.child({ _name: "tsWorker" }));
+      await updateTournamentSummary(
+        logger.child({ _name: "tsWorker" }),
+        league
+      );
       res.status(200).json(val);
     })
   );

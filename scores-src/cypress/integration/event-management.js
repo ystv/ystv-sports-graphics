@@ -1,12 +1,25 @@
 describe("Event Management", () => {
   before(() => {
     cy.resetAndCreateTestUser("admin", "password");
+    cy.request({
+      url: "/api/leagues",
+      method: "POST",
+      body: {
+        name: "Test League",
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
+      },
+      auth: {
+        user: "admin",
+        pass: "password",
+      },
+    });
   });
 
   it("Create Event", () => {
     cy.intercept({
       method: "POST",
-      path: "/api/events/*",
+      path: "/api/events/test-league/*",
     }).as("postEvents");
     cy.intercept({
       method: "POST",
@@ -19,6 +32,9 @@ describe("Event Management", () => {
 
     cy.get("[data-cy=selectType]").click();
     cy.get(".mantine-Select-item").contains("Football").click();
+
+    cy.get("[data-cy=selectLeague]").click();
+    cy.get(".mantine-Select-item").contains("Test League").click();
 
     cy.get("[name=name]").type("Test Football");
     cy.get("[name=worthPoints]").type("4");
@@ -63,7 +79,7 @@ describe("Event Management", () => {
   it("Edit", () => {
     cy.intercept({
       method: "PUT",
-      path: "/api/events/football/*",
+      path: "/api/events/test-league/football/*",
     }).as("putEvents");
 
     cy.login("admin", "password");

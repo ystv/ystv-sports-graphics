@@ -1,5 +1,9 @@
 import { Link, Outlet } from "react-router-dom";
-import { useGETEvents, usePOSTEventResync } from "../lib/apiClient";
+import {
+  useGETEvents,
+  useGETLeagues,
+  usePOSTEventResync,
+} from "../lib/apiClient";
 import {
   Table,
   Card,
@@ -10,21 +14,22 @@ import {
   Stack,
   TypographyStylesProvider,
   ActionIcon,
+  Select,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import { PermGate } from "../components/PermGate";
 import { IconRefresh } from "@tabler/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { showNotification } from "@mantine/notifications";
 import { EVENT_TYPES } from "../../common/sports";
 
-export function ListEvents() {
-  const { data: events, loading, error } = useGETEvents(true);
+function EventsList(props: { league: string }) {
+  const { data: events, loading, error } = useGETEvents(props.league, true);
 
   const doResync = usePOSTEventResync();
   const [resyncing, setResyncing] = useState<string | null>(null);
-  async function resync(type: string, id: string) {
-    setResyncing(`Event/${type}/${id}`);
+  async function resync(league: string, type: string, id: string) {
+    setResyncing(`Event/${league}/${type}/${id}`);
     try {
       await doResync(type, id);
       showNotification({
@@ -46,6 +51,78 @@ export function ListEvents() {
       setResyncing(null);
     }
   }
+
+  return (
+    <>
+      {error && <b>Error! {error}</b>}
+      {loading && <b>Loading, please wait...</b>}
+      {events?.map((evt) => (
+        <Card withBorder radius="md" key={evt.id} data-cy="eventRoot">
+          <Text size="lg" weight={500}>
+            {evt.name}
+          </Text>
+          <Text size="xs" color="dimmed" mt={3} transform="capitalize">
+            {evt.type}
+          </Text>
+          {evt.winner && (
+            <Text size="xs" weight="bold">
+              Winner:{" "}
+              {evt.winner === "home" ? evt.homeTeam.name : evt.awayTeam.name}
+            </Text>
+          )}
+          <Text size="xs" color="dimmed" mb="xl">
+            {dayjs(evt.startTime).format("dddd DD MMM, HH:mm")}
+          </Text>
+          <Group>
+            <PermGate require="write" fallback={<></>}>
+              <Button
+                component={Link}
+                to={`${evt.league}/${evt.type}/${evt.id}/edit`}
+                color={"orange"}
+                variant="outline"
+                disabled={!(evt.type in EVENT_TYPES)}
+                data-cy="editEvent"
+              >
+                Edit Event
+              </Button>
+            </PermGate>
+            <Button
+              component={Link}
+              to={`${evt.league}/${evt.type}/${evt.id}`}
+              variant="filled"
+              disabled={!(evt.type in EVENT_TYPES)}
+            >
+              Input Scores
+            </Button>
+            <Button disabled>View Timeline</Button>
+            <PermGate require="admin" fallback={<></>}>
+              <ActionIcon
+                onClick={() => resync(evt.league, evt.type, evt.id)}
+                loading={
+                  resyncing === `Event/${evt.league}/${evt.type}/${evt.id}`
+                }
+                disabled={resyncing !== null}
+              >
+                <IconRefresh size={24} />
+              </ActionIcon>
+            </PermGate>
+          </Group>
+        </Card>
+      ))}
+    </>
+  );
+}
+
+export function ListEvents() {
+  const { data: leagues, loading, error } = useGETLeagues();
+  const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (leagues?.length > 0 && selectedLeague === null) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedLeague(leagues[0].slug!);
+    }
+  }, [selectedLeague, leagues]);
 
   if (loading) {
     return (
@@ -100,57 +177,16 @@ export function ListEvents() {
         Create New
       </Button>
       <Stack>
-        {events.map((evt) => (
-          <Card withBorder radius="md" key={evt.id} data-cy="eventRoot">
-            <Text size="lg" weight={500}>
-              {evt.name}
-            </Text>
-            <Text size="xs" color="dimmed" mt={3} transform="capitalize">
-              {evt.type}
-            </Text>
-            {evt.winner && (
-              <Text size="xs" weight="bold">
-                Winner:{" "}
-                {evt.winner === "home" ? evt.homeTeam.name : evt.awayTeam.name}
-              </Text>
-            )}
-            <Text size="xs" color="dimmed" mb="xl">
-              {dayjs(evt.startTime).format("dddd DD MMM, HH:mm")}
-            </Text>
-            <Group>
-              <PermGate require="write" fallback={<></>}>
-                <Button
-                  component={Link}
-                  to={`${evt.type}/${evt.id}/edit`}
-                  color={"orange"}
-                  variant="outline"
-                  disabled={!(evt.type in EVENT_TYPES)}
-                  data-cy="editEvent"
-                >
-                  Edit Event
-                </Button>
-              </PermGate>
-              <Button
-                component={Link}
-                to={`${evt.type}/${evt.id}`}
-                variant="filled"
-                disabled={!(evt.type in EVENT_TYPES)}
-              >
-                Input Scores
-              </Button>
-              <Button disabled>View Timeline</Button>
-              <PermGate require="admin" fallback={<></>}>
-                <ActionIcon
-                  onClick={() => resync(evt.type, evt.id)}
-                  loading={resyncing === `Event/${evt.type}/${evt.id}`}
-                  disabled={resyncing !== null}
-                >
-                  <IconRefresh size={24} />
-                </ActionIcon>
-              </PermGate>
-            </Group>
-          </Card>
-        ))}
+        <Select
+          value={selectedLeague}
+          onChange={(v) => setSelectedLeague(v)}
+          data={leagues.map((l) => ({
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            value: l.slug!,
+            label: l.name,
+          }))}
+        />
+        {selectedLeague !== null && <EventsList league={selectedLeague} />}
       </Stack>
       <Outlet />
     </>
