@@ -187,11 +187,11 @@ describe("Event Actions", () => {
         });
 
       const oneMinuteAgo = new Date();
-      if (oneMinuteAgo.getMinutes() === 0) {
+      if (oneMinuteAgo.getMinutes() < 5) {
         oneMinuteAgo.setHours(oneMinuteAgo.getHours() - 1);
-        oneMinuteAgo.setMinutes(59);
+        oneMinuteAgo.setMinutes(60 - (5 - oneMinuteAgo.getMinutes()));
       } else {
-        oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
+        oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 5);
       }
       cy.get("[data-cy=changeTimeField] [data-cy=timePicker] input")
         .eq(1)
@@ -203,7 +203,7 @@ describe("Event Actions", () => {
       cy.get("[data-cy=timeline]")
         .children()
         .first()
-        .should("contain", "1 minute");
+        .should("contain", "5 minutes");
     });
 
     it("Declare Winner", function () {
