@@ -473,7 +473,6 @@ function runTests<
           })
           .auth("test", "password");
         expect(res.statusCode).toBe(200);
-        (DB as unknown as InMemoryDB)._dump();
 
         const historyRes = await request(app)
           .get(`/api/events/test-league/${typeName}/${id}/_history`)

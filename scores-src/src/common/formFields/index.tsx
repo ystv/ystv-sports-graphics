@@ -93,6 +93,7 @@ interface DateFieldProps extends BaseFieldProps {
   format: "tsMs" | "isoStr";
   showTime?: boolean;
   independent?: boolean;
+  wrapperProps?: Record<string, unknown>;
 }
 
 export function DateField(props: DateFieldProps) {
@@ -144,6 +145,7 @@ export function DateField(props: DateFieldProps) {
       label={props.title}
       description={props.helper}
       error={meta.touched && meta.error}
+      {...props.wrapperProps}
     >
       <Group>
         <DatePicker

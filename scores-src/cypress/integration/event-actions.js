@@ -143,6 +143,69 @@ describe("Event Actions", () => {
       cy.wait(["@putEvents"]);
     });
 
+    it("Edit Action", function () {
+      cy.intercept({
+        method: "POST",
+        path: "/api/events/**/_update",
+      }).as("update");
+      cy.login("admin", "password");
+      cy.visit(`/events/test-league/football/${this.eventID}`);
+
+      cy.get("[data-cy=timeline]")
+        .contains("York at")
+        .parent()
+        .within(function () {
+          cy.get("[data-cy=editButton]").click();
+        });
+
+      cy.get("[data-test-form-field=side]").contains("Lancaster").click();
+      cy.get("label")
+        .contains("Player")
+        .parent()
+        .get("[role=combobox]")
+        .click();
+      cy.get(".mantine-Select-item").contains("Unknown").click();
+      cy.get("[data-cy=performAction]").click();
+      cy.wait("@update");
+
+      cy.contains("Lancaster 1 - York 0").should("be.visible");
+    });
+
+    it("Change Action Time", function () {
+      cy.intercept({
+        method: "POST",
+        path: "/api/events/**/_update",
+      }).as("update");
+      cy.login("admin", "password");
+      cy.visit(`/events/test-league/football/${this.eventID}`);
+
+      cy.get("[data-cy=timeline]")
+        .contains("Started next half")
+        .parent()
+        .within(function () {
+          cy.get("[data-cy=editButton]").click();
+        });
+
+      const oneMinuteAgo = new Date();
+      if (oneMinuteAgo.getMinutes() === 0) {
+        oneMinuteAgo.setHours(oneMinuteAgo.getHours() - 1);
+        oneMinuteAgo.setMinutes(59);
+      } else {
+        oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
+      }
+      cy.get("[data-cy=changeTimeField] [data-cy=timePicker] input")
+        .eq(1)
+        .click()
+        .type(oneMinuteAgo.getMinutes().toString(10));
+      cy.get("[data-cy=performAction]").click();
+
+      cy.wait("@update");
+      cy.get("[data-cy=timeline]")
+        .children()
+        .first()
+        .should("contain", "1 minute");
+    });
+
     it("Declare Winner", function () {
       cy.intercept({
         method: "PUT",

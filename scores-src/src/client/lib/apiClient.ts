@@ -262,6 +262,39 @@ export function usePOSTEventAction() {
   };
 }
 
+export function usePOSTEventUpdateAction() {
+  const { mutate } = useSWRConfig();
+  const navigate = useNavigate();
+
+  return async (
+    league: string,
+    type: string,
+    id: string,
+    ts: number,
+    data: Record<string, unknown>,
+    newTs?: number
+  ) => {
+    const result = (await fetcher(navigate)(
+      `/events/${league}/${type}/${id}/_update`,
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          ts,
+          newTs,
+        }),
+      },
+      200
+    )) as EventMeta;
+    mutate("/events");
+    mutate(`/events/${league}/${type}/${result.id}`, result, false);
+    return result;
+  };
+}
+
 export function useGETBootstrapReady() {
   const retval = useAPIRoute<{ ok: true; ready: boolean | "waiting" }>(
     "/bootstrap/ready",
