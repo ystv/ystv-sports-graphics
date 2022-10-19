@@ -31,7 +31,7 @@ import {
   EventTypeInfo,
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
-import { identity, isEqual, pickBy } from "lodash-es";
+import { cloneDeep, identity, isEqual, pickBy } from "lodash-es";
 import { leagueKey } from "./leagueRoutes";
 
 export function makeEventAPIFor<
@@ -378,6 +378,68 @@ export function makeEventAPIFor<
         cas: currentActionsResult.cas,
       });
       await dispatchChangeToEvent(league, typeName, id, redoAction);
+      res.status(200).json(resolveEventState(reducer, currentActions));
+    })
+  );
+
+  router.post(
+    "/:id/_update",
+    authenticate("write"),
+    asyncHandler(async (req, res) => {
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
+      const { ts, newTs, ...rest } = req.body;
+      ensure(typeof ts === "number", BadRequest, "no ts given");
+
+      const currentActionsResult = await DB.collection("_default").get(
+        historyKey(league, id)
+      );
+      const currentActions = currentActionsResult.content as Action[];
+      const updatedIndex = currentActions.findIndex((x) => x.meta.ts === ts);
+      ensure(updatedIndex > -1, BadRequest, "no action with that ts");
+
+      const actionType = currentActions[updatedIndex].type.replace(
+        typeName + "/",
+        ""
+      );
+      const newPayload = await actionPayloadValidators[actionType].validate(
+        rest,
+        {
+          stripUnknown: true,
+          abortEarly: false,
+        }
+      );
+
+      const newAction = wrapAction(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        actionCreators[actionType](newPayload) as any
+      );
+
+      // Test-resolve to check if it's valid
+      const newHistory = cloneDeep(currentActions);
+      newHistory[updatedIndex] = newAction;
+      try {
+        resolveEventState(reducer, currentActions);
+      } catch (e) {
+        throw new PreconditionFailed("edit invalid");
+      }
+
+      const spec: MutateInSpec[] = [];
+      if (typeof newTs === "number") {
+        newAction.meta.ts = newTs;
+        // bit of a nightmare, this one
+        spec.push(MutateInSpec.arrayInsert(`[${updatedIndex}]`, newAction));
+        spec.push(MutateInSpec.remove(`[${updatedIndex + 1}]`));
+      } else {
+        newAction.meta.ts = ts;
+        spec.push(MutateInSpec.replace(`[${updatedIndex}]`, newAction));
+      }
+
+      await DB.collection("_default").mutateIn(historyKey(league, id), spec, {
+        cas: currentActionsResult.cas,
+      });
+      await resync(league, typeName, id);
       res.status(200).json(resolveEventState(reducer, currentActions));
     })
   );

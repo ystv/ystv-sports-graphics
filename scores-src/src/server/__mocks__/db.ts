@@ -143,6 +143,46 @@ export class InMemoryDB {
                 );
               }
               break;
+            case binding.LCBX_SDCMD_ARRAY_INSERT:
+              if (op._path[op._path.length - 1] == "]") {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const [_, arrayPath, index] = /(.*?)\[([0-9-]+)\]$/.exec(
+                  op._path
+                )!;
+                let arra: unknown[];
+                if (arrayPath.length === 0) {
+                  arra = val;
+                } else {
+                  arra = get(val, arrayPath);
+                }
+                arra.splice(parseInt(index), 0, JSON.parse(op._data));
+                set(val, arrayPath, arra);
+              } else {
+                throw new Error(
+                  "Unhandled non-array subdoc case (this is a test bug)"
+                );
+              }
+              break;
+            case binding.LCBX_SDCMD_REPLACE:
+              if (op._path[op._path.length - 1] == "]") {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const [_, arrayPath, index] = /(.*?)\[([0-9-]+)\]$/.exec(
+                  op._path
+                )!;
+                let arra: unknown[];
+                if (arrayPath.length === 0) {
+                  arra = val;
+                } else {
+                  arra = get(val, arrayPath);
+                }
+                arra[parseInt(index)] = JSON.parse(op._data);
+                set(val, arrayPath, arra);
+              } else {
+                throw new Error(
+                  "Unhandled non-array subdoc case (this is a test bug)"
+                );
+              }
+              break;
             default:
               throw new Error(
                 `Unsupported subdoc operation ${op._op} (this is a test bug)`

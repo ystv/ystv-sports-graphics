@@ -9,6 +9,7 @@ import {
   usePOSTEventResync,
   usePOSTEventUndo,
   usePOSTEventDeclareWinner,
+  usePOSTEventUpdateAction,
 } from "../lib/apiClient";
 import { capitalize, startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
@@ -28,6 +29,8 @@ import { Action } from "../../common/types";
 import { showNotification } from "@mantine/notifications";
 import { PermGate } from "../components/PermGate";
 import { IconTrophy, IconRefresh } from "@tabler/icons";
+import * as Yup from "yup";
+import { DateField } from "../../common/formFields";
 
 function EventActionModal(props: {
   eventLeague: string;
@@ -39,8 +42,8 @@ function EventActionModal(props: {
   currentState: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialActionState: any;
+  editingTs?: number;
 }) {
-  console.log("goalform currentState", props.currentState);
   const actionSchema =
     EVENT_TYPES[props.eventType].actionPayloadValidators[props.actionType];
   const ActionForm =
@@ -48,19 +51,32 @@ function EventActionModal(props: {
     (() => <></>);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const doAction = usePOSTEventAction();
+  const doUpdate = usePOSTEventUpdateAction();
 
   async function submit<T>(values: T, helpers: FormikHelpers<T>) {
     helpers.setSubmitting(true);
     setSubmitError(null);
     try {
-      await doAction(
-        props.eventLeague,
-        props.eventType,
-        props.eventId,
-        props.actionType,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        values as any
-      );
+      if (props.editingTs) {
+        await doUpdate(
+          props.eventLeague,
+          props.eventType,
+          props.eventId,
+          props.editingTs,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          values as any,
+          (values as { newTS?: number }).newTS
+        );
+      } else {
+        await doAction(
+          props.eventLeague,
+          props.eventType,
+          props.eventId,
+          props.actionType,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          values as any
+        );
+      }
       helpers.setSubmitting(false);
       props.onClose();
     } catch (e) {
@@ -75,7 +91,9 @@ function EventActionModal(props: {
       <Formik
         initialValues={props.initialActionState ?? {}}
         onSubmit={submit}
-        validationSchema={actionSchema}
+        validationSchema={(actionSchema as Yup.AnyObjectSchema).shape({
+          newTS: Yup.number().optional(),
+        })}
       >
         {({ handleReset, handleSubmit, isSubmitting, isValid }) => (
           <>
@@ -84,6 +102,13 @@ function EventActionModal(props: {
                 <ActionForm
                   currentState={props.currentState}
                   meta={props.currentState}
+                />
+                <DateField
+                  name="newTS"
+                  format="tsMs"
+                  title="Change Time"
+                  showTime
+                  wrapperProps={{ "data-cy": "changeTimeField" }}
                 />
                 <Button
                   type="submit"
@@ -111,6 +136,7 @@ function Timeline(props: {
   type: string;
   eventId: string;
   history: Action[];
+  eventState: unknown;
 }) {
   const [loading, setLoading] = useState<number | null>(null);
   const undo = usePOSTEventUndo();
@@ -133,6 +159,8 @@ function Timeline(props: {
       setLoading(null);
     }
   }
+
+  const [editing, setEditing] = useState<number | null>(null);
 
   const result: JSX.Element[] = [];
   let state = {};
@@ -166,17 +194,28 @@ function Timeline(props: {
             />
             {/* eslint-enable @typescript-eslint/no-explicit-any */}
             <PermGate require="write" fallback={<></>}>
-              <Button
-                compact
-                variant={undone ? "default" : "subtle"}
-                loading={loading === action.meta.ts}
-                disabled={loading !== null}
-                onClick={() =>
-                  perform(undone ? "redo" : "undo", action.meta.ts)
-                }
-              >
-                {undone ? "Redo" : "Undo"}
-              </Button>
+              <>
+                <Button
+                  compact
+                  variant={undone ? "default" : "subtle"}
+                  loading={loading === action.meta.ts}
+                  disabled={loading !== null}
+                  onClick={() =>
+                    perform(undone ? "redo" : "undo", action.meta.ts)
+                  }
+                >
+                  {undone ? "Redo" : "Undo"}
+                </Button>
+                <Button
+                  compact
+                  variant="subtle"
+                  disabled={loading !== null}
+                  onClick={() => setEditing(action.meta.ts)}
+                  data-cy="editButton"
+                >
+                  Edit
+                </Button>
+              </>
             </PermGate>
           </>
         </Wrapper>
@@ -186,7 +225,33 @@ function Timeline(props: {
   result.reverse();
 
   // TODO make this a table rather than a UL
-  return <ul data-cy="timeline">{result}</ul>;
+  return (
+    <>
+      <ul data-cy="timeline">{result}</ul>
+      <Modal opened={editing !== null} onClose={() => setEditing(null)}>
+        {editing &&
+          /* the some check is needed because just before the modal closes the ts of the action may change */
+          props.history.some((x) => x.meta.ts === editing) && (
+            <EventActionModal
+              eventLeague={props.league}
+              eventType={props.type}
+              eventId={props.eventId}
+              editingTs={editing}
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              actionType={props.history
+                .find((x) => x.meta.ts === editing)!
+                .type.replace(props.type + "/", "")}
+              currentState={props.eventState}
+              initialActionState={
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                props.history.find((x) => x.meta.ts === editing)!.payload
+              }
+              onClose={() => setEditing(null)}
+            />
+          )}
+      </Modal>
+    </>
+  );
 }
 
 export function LiveScores() {
@@ -359,7 +424,13 @@ export function LiveScores() {
         </PermGate>
 
         <Title order={2}>Timeline</Title>
-        <Timeline league={league} type={type} eventId={id} history={history} />
+        <Timeline
+          league={league}
+          type={type}
+          eventId={id}
+          history={history}
+          eventState={state}
+        />
         {error !== null && <Alert>{error}</Alert>}
         {status === "POSSIBLY_DISCONNECTED" && (
           <Alert>
