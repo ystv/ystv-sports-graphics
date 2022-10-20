@@ -94,6 +94,8 @@ interface DateFieldProps extends BaseFieldProps {
   showTime?: boolean;
   independent?: boolean;
   wrapperProps?: Record<string, unknown>;
+  showSeconds?: boolean;
+  disabled?: boolean;
 }
 
 export function DateField(props: DateFieldProps) {
@@ -123,7 +125,7 @@ export function DateField(props: DateFieldProps) {
         val = val
           .set("h", newVal.getHours())
           .set("m", newVal.getMinutes())
-          .set("s", 0)
+          .set("s", props.showSeconds ? newVal.getSeconds() : 0)
           .set("ms", 0);
       }
       console.log("DateTimeField: value now", val.toISOString());
@@ -152,12 +154,15 @@ export function DateField(props: DateFieldProps) {
           value={value}
           onChange={(d) => onChange(d ?? new Date(), "date")}
           error={meta.touched && meta.error}
+          disabled={props.disabled}
           data-cy="datePicker"
         />
         {props.showTime && (
           <TimeInput
             value={value}
             onChange={(d) => onChange(d, "time")}
+            withSeconds={props.showSeconds}
+            disabled={props.disabled}
             data-cy="timePicker"
           />
         )}

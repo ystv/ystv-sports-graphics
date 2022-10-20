@@ -54,6 +54,7 @@ describe("Event Actions", () => {
       cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Start Half").click();
+      cy.get("input[name=shouldChangeTime]").should("not.exist");
       cy.get("[data-cy=performAction]").click();
       cy.get("[data-cy=timeline] > *").should("have.length", 1);
     });
@@ -64,6 +65,7 @@ describe("Event Actions", () => {
       cy.contains("Lancaster 0 - York 0").should("be.visible");
 
       cy.contains("Goal").click();
+      cy.get("input[name=shouldChangeTime]").should("not.exist");
       cy.get("[data-test-form-field=side]").contains("York").click();
       cy.get("label")
         .contains("Player")
@@ -186,24 +188,35 @@ describe("Event Actions", () => {
           cy.get("[data-cy=editButton]").click();
         });
 
+      cy.get("input[name=shouldChangeTime]").check();
+
       const oneMinuteAgo = new Date();
       if (oneMinuteAgo.getMinutes() < 5) {
         oneMinuteAgo.setHours(oneMinuteAgo.getHours() - 1);
         oneMinuteAgo.setMinutes(60 - (5 - oneMinuteAgo.getMinutes()));
+        cy.get("[data-cy=changeTimeField] [data-cy=timePicker] input")
+          .eq(0)
+          .click()
+          .type(oneMinuteAgo.getHours().toString(10));
+        cy.get("[data-cy=changeTimeField] [data-cy=timePicker] input")
+          .eq(1)
+          .click()
+          .type(oneMinuteAgo.getMinutes().toString(10));
       } else {
         oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 5);
+        cy.get("[data-cy=changeTimeField] [data-cy=timePicker] input")
+          .eq(1)
+          .click()
+          .type(oneMinuteAgo.getMinutes().toString(10));
       }
-      cy.get("[data-cy=changeTimeField] [data-cy=timePicker] input")
-        .eq(1)
-        .click()
-        .type(oneMinuteAgo.getMinutes().toString(10));
       cy.get("[data-cy=performAction]").click();
 
       cy.wait("@update");
       cy.get("[data-cy=timeline]")
         .children()
         .first()
-        .should("contain", "5 minutes");
+        .should("not.contain", "0 minutes")
+        .should("not.contain", "1 minute");
     });
 
     it("Declare Winner", function () {
