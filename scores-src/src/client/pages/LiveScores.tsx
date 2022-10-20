@@ -30,7 +30,7 @@ import { showNotification } from "@mantine/notifications";
 import { PermGate } from "../components/PermGate";
 import { IconTrophy, IconRefresh } from "@tabler/icons";
 import * as Yup from "yup";
-import { DateField } from "../../common/formFields";
+import { DateField, Checkbox } from "../../common/formFields";
 
 function EventActionModal(props: {
   eventLeague: string;
@@ -58,6 +58,10 @@ function EventActionModal(props: {
     setSubmitError(null);
     try {
       if (props.editingTs) {
+        const vals = values as T & {
+          newTS?: number;
+          shouldChangeTime: boolean;
+        };
         await doUpdate(
           props.eventLeague,
           props.eventType,
@@ -65,7 +69,7 @@ function EventActionModal(props: {
           props.editingTs,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           values as any,
-          (values as { newTS?: number }).newTS
+          vals.shouldChangeTime ? vals.newTS : undefined
         );
       } else {
         await doAction(
@@ -89,13 +93,21 @@ function EventActionModal(props: {
     <Modal opened onClose={() => props.onClose()}>
       <Title>{startCase(props.actionType)}</Title>
       <Formik
-        initialValues={props.initialActionState ?? {}}
+        initialValues={
+          props.initialActionState
+            ? {
+                ...props.initialActionState,
+                newTS: props.editingTs,
+              }
+            : {}
+        }
         onSubmit={submit}
         validationSchema={(actionSchema as Yup.AnyObjectSchema).shape({
           newTS: Yup.number().optional(),
+          shouldChangeTime: Yup.boolean().default(false),
         })}
       >
-        {({ handleReset, handleSubmit, isSubmitting, isValid }) => (
+        {({ handleReset, handleSubmit, isSubmitting, isValid, values }) => (
           <>
             <Form onReset={handleReset} onSubmit={handleSubmit}>
               <Stack>
@@ -103,13 +115,25 @@ function EventActionModal(props: {
                   currentState={props.currentState}
                   meta={props.currentState}
                 />
-                <DateField
-                  name="newTS"
-                  format="tsMs"
-                  title="Change Time"
-                  showTime
-                  wrapperProps={{ "data-cy": "changeTimeField" }}
-                />
+                {props.editingTs && (
+                  <>
+                    <Checkbox
+                      title="Change Time?"
+                      name="shouldChangeTime"
+                      independent
+                      data-cy="shouldChangeTime"
+                    />
+                    <DateField
+                      name="newTS"
+                      format="tsMs"
+                      title="New Time"
+                      showTime
+                      showSeconds
+                      disabled={!values.shouldChangeTime}
+                      wrapperProps={{ "data-cy": "changeTimeField" }}
+                    />
+                  </>
+                )}
                 <Button
                   type="submit"
                   disabled={isSubmitting || !isValid}
