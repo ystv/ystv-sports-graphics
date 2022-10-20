@@ -72,18 +72,34 @@ export = async (nodecg: NodeCG) => {
     },
   });
 
-  nodecg.listenFor("list-events", async (_, cb_) => {
-    nodecg.log.info("list-events");
+  nodecg.listenFor("list-leagues", async (_, cb_) => {
+    nodecg.log.info("list-leagues");
     const cb = cb_ as UnhandledListenForCb;
     try {
-      const result = await apiClient.get("/events");
-      nodecg.log.trace("LE response", result.data);
+      const result = await apiClient.get("/leagues");
+      nodecg.log.trace("LL response", result.data);
       cb(null, result.data);
     } catch (e) {
-      nodecg.log.error("LE error", e);
+      nodecg.log.error("LL error", e);
       cb(e);
     }
   });
+
+  nodecg.listenFor(
+    "list-events",
+    async ({ league }: { league: string }, cb_) => {
+      nodecg.log.info("list-events");
+      const cb = cb_ as UnhandledListenForCb;
+      try {
+        const result = await apiClient.get("/events/" + league);
+        nodecg.log.trace("LE response", result.data);
+        cb(null, result.data);
+      } catch (e) {
+        nodecg.log.error("LE error", e);
+        cb(e);
+      }
+    }
+  );
 
   nodecg.log.debug("Authenticating...");
   const authResponse = await apiClient.post("/auth/login/local", {
