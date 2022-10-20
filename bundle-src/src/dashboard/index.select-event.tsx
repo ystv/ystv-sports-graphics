@@ -14,18 +14,39 @@ import {
   Stack,
   Title,
 } from "@mantine/core";
-import type { EventMeta } from "@ystv/scores/src/common/types";
+import { EventMeta, League } from "@ystv/scores/src/common/types";
 import { EventID } from "common/types/eventID";
 import invariant from "tiny-invariant";
+import { Select } from "@mantine/core";
+import { Alert } from "@mantine/core";
 
 function Dashboard() {
+  const [leagues, setLeagues] = useState<League[] | null>(null);
+  const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
   const [events, setEvents] = useState<EventMeta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     async function get() {
       setError(null);
       try {
-        const result = await nodecg.sendMessage("list-events");
+        const result = await nodecg.sendMessage("list-leagues");
+        setLeagues(result);
+      } catch (e) {
+        console.error("list-leagues ERROR", e);
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError(JSON.stringify(e));
+        }
+      }
+    }
+    get();
+  }, []);
+  useEffect(() => {
+    async function getEvents(league: string) {
+      setError(null);
+      try {
+        const result = await nodecg.sendMessage("list-events", { league });
         setEvents(result);
       } catch (e) {
         console.error("list-events ERROR", e);
@@ -36,14 +57,18 @@ function Dashboard() {
         }
       }
     }
-    get();
-  }, []);
+    if (selectedLeague !== null) {
+      getEvents(selectedLeague);
+    }
+  }, [selectedLeague]);
 
   const [selected, setSelected] = useState<string | null>(null);
   useEffect(() => {
     nodecg.readReplicant<EventID>("eventID", (val) => {
       if (selected === null && val !== null) {
-        setSelected(val.replace(/Event\/.*\/(.+)$/, "$1"));
+        const [_, league, _type, uuid] = val.split("/");
+        setSelectedLeague(league);
+        setSelected(uuid);
       }
     });
   }, []);
@@ -55,9 +80,12 @@ function Dashboard() {
       console.log("Confirmed!", selected);
       // The API expects the ID to be in the form `Event/<type>/<id>`
       invariant(events, "got dialog-confirm before events were loaded");
+      invariant(selectedLeague, "selected event with no league");
       const selectedEvt = events.find((x) => x.id === selected);
       invariant(selectedEvt, "did not find event for selection");
-      setRepValue(`Event/${selectedEvt.type}/${selectedEvt.id}`);
+      setRepValue(
+        `Event/${selectedLeague}/${selectedEvt.type}/${selectedEvt.id}`
+      );
     };
     document.addEventListener("dialog-confirmed", listener);
     return () => document.removeEventListener("dialog-confirmed", listener);
@@ -69,13 +97,22 @@ function Dashboard() {
         <Stack>
           <Title order={1}>Select Event</Title>
 
-          {events === null ? (
-            <Center>
-              <span>
-                Loading... <Loader />
-              </span>
-            </Center>
-          ) : (
+          {error && <Alert>{error}</Alert>}
+
+          <Select
+            data={
+              leagues?.map((league) => ({
+                label: league.name,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                value: league.slug!,
+              })) ?? []
+            }
+            value={selectedLeague}
+            onChange={setSelectedLeague}
+            placeholder="Select League"
+          />
+
+          {events && (
             <Stack>
               {events.map((evt) => (
                 <Box

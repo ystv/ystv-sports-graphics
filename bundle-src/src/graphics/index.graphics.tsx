@@ -48,7 +48,7 @@ function AllGraphics() {
     return null;
   }
 
-  const [_, type] = id.split("/");
+  const [_, _league, type] = id.split("/");
 
   const Graphic = SportGraphics[type];
   if (!Graphic) {

@@ -68,7 +68,7 @@ function Dashboard() {
   );
   let type = "";
   if (eventID) {
-    const [_, typeVal] = eventID.split("/");
+    const [_, _league, typeVal] = eventID.split("/");
     type = typeVal;
   }
 
