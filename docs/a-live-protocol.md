@@ -5,11 +5,11 @@ The Sports Graphics live data protocol uses JSON over WebSockets. Every object s
 The API can operate in two modes:
 
 - in "state mode", whenever an event changes, the client is sent the complete state of the event right now
-- in "actions mode", whenever an event changes, the client is sent an object describing the change
+- in "actions mode", whenever an event changes, the client is sent an object describing the change (per the [data model](./02-data-model.md))
 
 ## Connecting
 
-The client should open a WebSocket connection to `https://<SERVER>/api/updates/stream/v2?token=<token>&mode=<mode>`, where `<token>` is a valid session ID and `mode` is either `state` or `actions` (discussed below). Optionally it can supply the `sid` and `last_mid` query parameters, discussed later.
+The client should open a WebSocket connection to `https://<SERVER>/api/updates/stream/v2?token=<token>&mode=<mode>`, where `<token>` is a valid session ID and `mode` is either `state` or `actions` (discussed below). If no mode is specified, `state` will be used. Optionally it can supply the `sid` and `last_mid` query parameters, discussed later.
 
 If the user is valid, the server will send a `HELLO` message:
 
