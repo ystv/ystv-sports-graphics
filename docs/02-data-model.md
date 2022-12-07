@@ -10,7 +10,7 @@ The contents of a document can be anything, but most documents are JSON - though
 
 Couchbase Server does also allow us to query the contents of the documents using a language called [SQL++](https://docs.couchbase.com/server/current/getting-started/try-a-query.html), which should be familiar if you've used SQL.
 
-[^1] Couchbase does allow us to further segment the data into scopes and collections, though at the time of writing we only use the default collection.
+[^1]: Couchbase does allow us to further segment the data into scopes and collections, though at the time of writing we only use the default collection.
 
 ## Sports Scores data
 
