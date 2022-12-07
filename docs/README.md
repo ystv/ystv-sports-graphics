@@ -11,6 +11,8 @@ These documents are meant to be read in a roughy chronological order, though you
 - [Workflow](./04-workflow.md) - how to get the code from your laptop into the main codebase
 - [Deployment](./05-deployment.md) - the process of that code getting into users' hands
 
+There's also a rundown of the [data sync protocol](./a-live-protocol.md) - this isn't required reading but may be useful.
+
 ## Assumed Knowledge
 
 We will assume that you know at least the basics of JavaScript and React.js. If you don't, there's plenty of resources online that teach it far better than we ever could - for React specifically, the [beta documentation](https://beta.reactjs.org/) provides a great introduction to the key concepts.
