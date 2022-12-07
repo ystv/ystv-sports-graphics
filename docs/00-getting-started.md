@@ -26,7 +26,7 @@ Follow the [Yarn installation instructions](https://yarnpkg.com/getting-started/
 
 ## Couchbase Server
 
-Couchbase is the database that we use for storing event data. For this example we'll install it using Docker, though you can install it [directly](https://www.couchbase.com/downloads) (except on a M1 MacBook where Docker is the only way currently).
+Couchbase Server is the database that we use for storing event data. For this example we'll install it using Docker, though you can install it [directly](https://www.couchbase.com/downloads) (except on a M1 MacBook where Docker is the only way currently).
 
 First, create a volume to keep the data around between restarts:
 
@@ -37,10 +37,8 @@ $ docker volume create cbdata
 Then launch the container:
 
 ```sh
-$ docker run -d -v cbdata:/opt/couchbase/var/lib/couchbase --restart=always -p 8091-8096:8091-8096 -p 11207-11211:11207-11211 -p 18091-18096:18091-18096 --name cb couchbase/server:community-7.1.0
+$ docker run -d -v cbdata:/opt/couchbase/var/lib/couchbase --restart=always -p 8091-8096:8091-8096 -p 11207-11211:11207-11211 -p 18091-18096:18091-18096 --name cb couchbase/server:community-7.1.1
 ```
-
-(if you're on a M1 MacBook substitute the last part for `couchbase/server:community-7.1.0-aarch64`)
 
 Then go to http://localhost:8091 (refresh a few times if you get nothing). Select "Setup New Cluster" and walk through the setup steps until you get to the Configure screen. Change the Data memory quota to 512MB, and leave everything else at the defaults.
 
