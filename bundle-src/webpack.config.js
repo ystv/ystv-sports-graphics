@@ -87,10 +87,11 @@ function makeConfig(kind, name) {
   return merge(baseConfig, {
     name: name,
     entry: [
-      require.resolve("webpack-dev-server/client") +
-        `?http://0.0.0.0:${wsPort}`,
+      isDevelopment &&
+        require.resolve("webpack-dev-server/client") +
+          `?http://0.0.0.0:${wsPort}`,
       `./src/${kind}/index.${name}.tsx`,
-    ],
+    ].filter(Boolean),
     output: {
       path: path.resolve(__dirname, "..", kind),
       filename: `${name}.bundle.js`,
@@ -103,9 +104,9 @@ function makeConfig(kind, name) {
       }),
     ],
     devServer: {
-      hot: true,
-      writeToDisk: true,
-      injectHot: true,
+      hot: isDevelopment,
+      writeToDisk: isDevelopment,
+      injectHot: isDevelopment,
       sockPort: wsPort,
       public: `localhost:${wsPort}`,
       inline: true,

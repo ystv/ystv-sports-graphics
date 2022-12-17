@@ -58,7 +58,7 @@ describe("Football Graphics", () => {
 
   it("Shows scoreboard", function () {
     cy.visit("/bundles/ystv-sports-graphics/graphics/graphics.html");
-    cy.awaitReplicants("control-football")
+    cy.awaitReplicants("control-football", "eventState")
       .controlBundle("football", {
         scoreboard: { visible: true, showTime: false },
       })
