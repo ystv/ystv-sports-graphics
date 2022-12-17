@@ -2,6 +2,12 @@ import "cypress-file-upload";
 
 import type { TeamInfo } from "../../scores-src/src/common/types";
 
+import type {
+  NodeCGBrowser,
+  NodeCGStaticBrowser,
+  ReplicantBrowser,
+} from "../../../../types/browser";
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
@@ -18,6 +24,7 @@ declare global {
         eventType: string,
         data: Record<string, unknown>
       ): Chainable<unknown>;
+      awaitReplicants(...reps: string[]): Chainable<void>;
     }
   }
 }
@@ -106,3 +113,11 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("awaitReplicants", (...reps: string[]) => {
+  return cy.window().then((win) => {
+    return cy.wrap(
+      win.NodeCG.waitForReplicants(...reps.map((r) => win.nodecg.Replicant(r)))
+    );
+  });
+});
