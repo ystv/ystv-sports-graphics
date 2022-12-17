@@ -62,7 +62,7 @@ jobs:
           NODE_ENV: test
           DB_CONNECTION_STRING: couchbase://localhost
           REDIS_CONNECTION_STRING: redis://localhost
-        run: yarn prod &
+        run: yarn prod | tee scores-app.log 2>&1 &
 
       - name: Build bundle
         if: matrix.component == 'bundle'
@@ -101,3 +101,10 @@ jobs:
         with:
           name: E2E test video
           path: ./nodecg/bundles/ystv-sports-graphics/cypress/videos
+
+      - name: Upload logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: Server logs
+          path: ./nodecg/bundles/ystv-sports-graphics/scores-src/scores-app.log
