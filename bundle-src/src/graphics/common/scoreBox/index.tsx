@@ -7,17 +7,20 @@ export interface Props {
   sheen?: boolean;
 }
 
-export function Component({
-  score,
-  primaryColor,
-  secondaryColor,
-  sheen: sheenProp,
-}: Props) {
+export function Component(props: Props & React.HTMLAttributes<HTMLDivElement>) {
+  const {
+    score,
+    primaryColor,
+    secondaryColor,
+    sheen: sheenProp,
+    ...rest
+  } = props;
   const sheen = typeof sheenProp === "boolean" ? sheenProp : true;
   return (
     <div
       className={styles.Background + " " + (sheen ? styles.Sheen : "")}
       style={{ backgroundColor: primaryColor }}
+      {...rest}
     >
       <h5 className={styles.Score} style={{ color: secondaryColor }}>
         {score}

@@ -45,16 +45,19 @@ export function Scoreboard({
         primaryColor={homePrimaryColor}
         secondaryColor={homeSecondaryColor}
         crestAttachmentID={homeCrestAttachmentID}
+        data-cy="home-team-name"
       />
       <ScoreBox
         score={homeScore}
         primaryColor={homePrimaryColor}
         secondaryColor={homeSecondaryColor}
+        data-cy="home-team-score"
       />
       <ScoreBox
         score={awayScore}
         primaryColor={awayPrimaryColor}
         secondaryColor={awaySecondaryColor}
+        data-cy="away-team-score"
       />
       <NameBox
         name={awayName}
@@ -62,6 +65,7 @@ export function Scoreboard({
         secondaryColor={awaySecondaryColor}
         crestAttachmentID={awayCrestAttachmentID}
         away
+        data-cy="away-team-name"
       />
       {timeVisible && <TimeBox time={time} />}
     </motion.div>

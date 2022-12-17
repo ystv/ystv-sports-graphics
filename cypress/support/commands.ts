@@ -12,7 +12,12 @@ declare global {
         password: string
       ): Chainable<void>;
       fetch(url: string, init: RequestInit): Promise<unknown>;
-      createTeam(teamData: Record<string, string>): Promise<TeamInfo>;
+      createTeam(teamData: Record<string, string>): Chainable<TeamInfo>;
+      selectBundleEvent(id: string): Chainable<unknown>;
+      controlBundle(
+        eventType: string,
+        data: Record<string, unknown>
+      ): Chainable<unknown>;
     }
   }
 }
@@ -64,12 +69,40 @@ Cypress.Commands.add("createTeam", (data: Record<string, string>) => {
       form.append(key, data[key]);
     }
     form.append("crest", Cypress.Blob.binaryStringToBlob(crest));
-    return cy.fetch("/api/teams/", {
-      headers: {
-        Authorization: "Basic " + btoa("admin:password"),
-      },
-      body: form,
-      method: "POST",
-    });
+    return cy
+      .request({
+        url: "/api/teams/",
+        body: form,
+        method: "POST",
+        auth: {
+          user: "admin",
+          pass: "password",
+        },
+      })
+      .then((r) => r.body);
   });
 });
+
+Cypress.Commands.add("selectBundleEvent", (id: string) => {
+  return cy.request({
+    url: "/ystv-sports-graphics/_test/selectEvent",
+    method: "POST",
+    body: {
+      eventID: id,
+    },
+  });
+});
+
+Cypress.Commands.add(
+  "controlBundle",
+  (eventType: string, data: Record<string, unknown>) => {
+    return cy.request({
+      url: "/ystv-sports-graphics/_test/updateControl?eventType=" + eventType,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  }
+);

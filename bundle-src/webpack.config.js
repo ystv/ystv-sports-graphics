@@ -9,6 +9,7 @@ const webpack = require("webpack");
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
+/** @type { import('webpack').Configuration } */
 const baseConfig = {
   mode: isDevelopment ? "development" : "production",
   context: __dirname,
@@ -130,7 +131,7 @@ const graphics = fs
 const config = [
   ...dashboards,
   ...graphics,
-  {
+  /** @type { import('webpack').Configuration } */ {
     name: "extension",
     mode: "development",
     entry: "./src/extension/index.extension.ts",
@@ -143,12 +144,15 @@ const config = [
         {
           test: /\.tsx?/,
           loader: "ts-loader",
-          exclude: /node-modules/,
+          exclude: [/node-modules/, /cypress/],
         },
       ],
     },
     externalsPresets: {
       node: true,
+    },
+    optimization: {
+      nodeEnv: false, // extension doesn't need it (and needs to read the real NODE_ENV)
     },
     devtool: false,
     output: {

@@ -13,6 +13,7 @@ import axios from "axios";
 import { UnhandledListenForCb } from "../../../../../types/lib/nodecg-instance";
 import { Request, Response } from "express-serve-static-core";
 import * as metrics from "./metrics";
+import mountTestRoutes from "./testRoutes";
 
 export = async (nodecg: NodeCG) => {
   const config: Configschema = nodecg.bundleConfig;
@@ -53,6 +54,9 @@ export = async (nodecg: NodeCG) => {
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   router.get("/metrics", metrics.handler as any);
+  if (process.env.NODE_ENV === "test") {
+    mountTestRoutes(nodecg, router);
+  }
   nodecg.mount("/ystv-sports-graphics", router);
 
   let sid = "";
