@@ -1,0 +1,8 @@
+{
+  "include": [
+    "bundle-src/**/*.{ts,tsx}",
+    "scores-src/src/**/*.{ts,tsx}",
+    "cypress/**/*.ts",
+    "scores-src/cypress/**/*.ts"
+  ]
+}

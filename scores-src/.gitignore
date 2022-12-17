@@ -1,7 +1,6 @@
 dist/
 node_modules/
 addon-build/
-cypress/screenshots/
 
 !.env
 .rosesLiveSync.*
