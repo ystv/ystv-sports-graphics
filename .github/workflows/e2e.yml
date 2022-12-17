@@ -71,7 +71,8 @@ jobs:
 
       - name: Install NodeCG dependencies
         if: matrix.component == 'bundle'
-        run: npm install
+        working-directory: ./nodecg
+        run: npm ci
 
       - name: Run NodeCG
         if: matrix.component == 'bundle'
