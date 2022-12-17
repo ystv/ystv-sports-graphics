@@ -77,7 +77,9 @@ jobs:
       - name: Run NodeCG
         if: matrix.component == 'bundle'
         working-directory: ./nodecg/bundles/ystv-sports-graphics
-        run: yarn nodecg &
+        run: |
+          echo '{"scoresService": { "apiURL": "http://localhost:3000/api", "username": "admin", "password": "password", "publicAttachmentsURLBase": "http://localhost:3000/api/attachments" }}' > ./nodecg/cfg/ystv-sports-graphics.json
+          yarn nodecg &
 
       - name: Run Cypress
         uses: cypress-io/github-action@v5
