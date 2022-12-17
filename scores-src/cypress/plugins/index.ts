@@ -7,7 +7,7 @@ const del = require("del");
  * @type {Cypress.PluginConfig}
  */
 // eslint-disable-next-line no-unused-vars
-module.exports = (on, config) => {
+export default (on, config) => {
   // Delete videos for successful tests after the run
   on("after:spec", (spec, results) => {
     if (results && results.video) {
