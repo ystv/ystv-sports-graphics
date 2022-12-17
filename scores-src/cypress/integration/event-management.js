@@ -31,7 +31,9 @@ describe("Event Management", () => {
     cy.contains("Create Event").should("be.visible");
 
     cy.get("[data-cy=selectType]").click();
-    cy.get(".mantine-Select-item").contains("Football").click();
+    cy.get(".mantine-Select-item")
+      .contains(/^Football$/)
+      .click();
 
     cy.get("[data-cy=selectLeague]").click();
     cy.get(".mantine-Select-item").contains("Test League").click();
