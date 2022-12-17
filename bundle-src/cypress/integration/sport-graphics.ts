@@ -58,25 +58,26 @@ describe("Football Graphics", () => {
 
   it("Shows scoreboard", function () {
     cy.visit("/bundles/ystv-sports-graphics/graphics/graphics.html");
-    cy.controlBundle("football", {
-      scoreboard: { visible: true, showTime: false },
-    });
-    cy.get("[data-cy=football-scoreboard]").should("exist");
-    cy.get("[data-cy=football-scoreboard] [data-cy=home-team-name]").should(
-      "contain",
-      "LANC"
-    );
-    cy.get("[data-cy=football-scoreboard] [data-cy=away-team-name]").should(
-      "contain",
-      "YORK"
-    );
-    cy.get("[data-cy=football-scoreboard] [data-cy=home-team-score]").should(
-      "contain",
-      "0"
-    );
-    cy.get("[data-cy=football-scoreboard] [data-cy=away-team-score]").should(
-      "contain",
-      "0"
-    );
+    cy.awaitReplicants("control-football")
+      .controlBundle("football", {
+        scoreboard: { visible: true, showTime: false },
+      })
+      .then(() => {
+        cy.get("[data-cy=football-scoreboard]").should("exist");
+        cy.get("[data-cy=football-scoreboard] [data-cy=home-team-name]").should(
+          "contain",
+          "LANC"
+        );
+        cy.get("[data-cy=football-scoreboard] [data-cy=away-team-name]").should(
+          "contain",
+          "YORK"
+        );
+        cy.get(
+          "[data-cy=football-scoreboard] [data-cy=home-team-score]"
+        ).should("contain", "0");
+        cy.get(
+          "[data-cy=football-scoreboard] [data-cy=away-team-score]"
+        ).should("contain", "0");
+      });
   });
 });
