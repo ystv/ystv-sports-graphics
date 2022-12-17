@@ -38,7 +38,6 @@ jobs:
 
       - uses: actions/cache@v3
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        working-directory: ./nodecg/bundles/ystv-sports-graphics
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
@@ -80,6 +79,7 @@ jobs:
           browser: chrome
           record: true
           spec: ${{ matrix.component }}-src/**
+          working-directory: ./nodecg/bundles/ystv-sports-graphics
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,7 +87,6 @@ jobs:
       - name: Upload videos of failures
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
-        working-directory: ./nodecg/bundles/ystv-sports-graphics
         with:
           name: E2E test video
-          path: ./cypress/videos
+          path: ./nodecg/bundles/ystv-sports-graphics/cypress/videos
