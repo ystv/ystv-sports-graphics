@@ -18,7 +18,10 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       return plugin(on, config);
     },
-    specPattern: ["scores-src/cypress/integration/**/*.{js,jsx,ts,tsx}"],
+    specPattern: [
+      "scores-src/cypress/integration/**/*.{js,jsx,ts,tsx}",
+      "bundle-src/cypress/integration/**/*.{js,jsx,ts,tsx}",
+    ],
     supportFile: "cypress/support/index.ts",
     baseUrl: "http://localhost:3000",
   },
