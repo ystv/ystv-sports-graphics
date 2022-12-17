@@ -33,10 +33,12 @@ jobs:
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
 
       - uses: actions/cache@v3
         id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
