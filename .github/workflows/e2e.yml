@@ -77,6 +77,8 @@ jobs:
       - name: Run NodeCG
         if: matrix.component == 'bundle'
         working-directory: ./nodecg
+        env:
+          NODE_ENV: test
         run: |
           mkdir -p cfg
           echo '{"scoresService": { "apiURL": "http://localhost:3000/api", "username": "admin", "password": "password", "publicAttachmentsURLBase": "http://localhost:3000/api/attachments" }}' > cfg/ystv-sports-graphics.json
