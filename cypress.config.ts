@@ -1,12 +1,13 @@
 import { defineConfig } from "cypress";
 
-import plugin from "./scores-src/cypress/plugins";
+import plugin from "./cypress/plugins";
 
+// NB: all the paths here must be relative to the root, because that's where Cypress is run from.
 export default defineConfig({
   projectId: "rxz5ib",
-  downloadsFolder: "scores-src/cypress/downloads",
-  fixturesFolder: "scores-src/cypress/fixtures",
-  screenshotsFolder: "scores-src/cypress/screenshots",
+  downloadsFolder: "cypress/downloads",
+  fixturesFolder: "cypress/fixtures",
+  screenshotsFolder: "cypress/screenshots",
   retries: {
     runMode: 2,
     openMode: 0,
@@ -17,8 +18,8 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       return plugin(on, config);
     },
-    specPattern: "scores-src/cypress/integration/**/*.{js,jsx,ts,tsx}",
-    supportFile: "scores-src/cypress/support/index.js",
+    specPattern: ["scores-src/cypress/integration/**/*.{js,jsx,ts,tsx}"],
+    supportFile: "cypress/support/index.ts",
     baseUrl: "http://localhost:3000",
   },
 });

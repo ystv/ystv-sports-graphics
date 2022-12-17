@@ -3,7 +3,7 @@ version: '3.9'
 services:
 
   couchbase:
-    image: ${COUCHBASE_SERVER_IMAGE:-couchbase/server:community-7.1.0}
+    image: ${COUCHBASE_SERVER_IMAGE:-couchbase/server:community-7.1.1}
     volumes:
       - cbdata:/cbdata
       - ./scripts/couchbase-entrypoint.sh:/entrypoint.sh:ro
@@ -24,6 +24,8 @@ services:
   
   redis:
     image: redis:6-alpine
+    ports:
+      - "6379:6379"
   
   server:
     build:
