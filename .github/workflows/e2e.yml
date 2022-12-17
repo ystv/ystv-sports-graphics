@@ -69,6 +69,10 @@ jobs:
         working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
         run: yarn bundle:build
 
+      - name: Install NodeCG dependencies
+        if: matrix.component == 'bundle'
+        run: npm ci
+
       - name: Run NodeCG
         if: matrix.component == 'bundle'
         working-directory: ./nodecg/bundles/ystv-sports-graphics
