@@ -41,7 +41,9 @@ export async function connect() {
   let created = 0;
   for (const index of INDEXES) {
     try {
-      await cluster.query(index.replace("%bucket", bucket.name));
+      await cluster.query(
+        index.replace("%bucket", bucket.name) + ` WITH {"defer_build": true}`
+      );
       created++;
     } catch (e) {
       if (e instanceof IndexExistsError) {
