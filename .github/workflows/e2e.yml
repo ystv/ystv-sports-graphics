@@ -7,10 +7,23 @@ on:
 
 jobs:
   cypress:
+    strategy:
+      matrix:
+        component: [bundle, scores]
+
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout NodeCG
+        uses: actions/checkout@v3
+        with:
+          repository: ystv/nodecg
+          ref: ystv
+          path: ./nodecg
+
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          path: ./nodecg/bundles/ystv-sports-graphics
 
       - name: Start database
         run: |
@@ -32,27 +45,39 @@ jobs:
 
       - name: Install Dependencies
         run: yarn --immutable --inline-builds
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
 
       - name: Build app
-        working-directory: ./scores-src
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src
         run: |
           yarn build
           mkdir -p build/Release/
           cp ../node_modules/couchbase/build/Release/couchbase_impl.node build/Release/couchbase_impl.node
 
       - name: Run App
-        working-directory: ./scores-src
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src
         env:
           NODE_ENV: test
           DB_CONNECTION_STRING: couchbase://localhost
           REDIS_CONNECTION_STRING: redis://localhost
         run: yarn prod &
 
+      - name: Build bundle
+        if: component == 'bundle'
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
+        run: yarn bundle:build
+
+      - name: Run NodeCG
+        if: component == 'bundle'
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: yarn nodecg &
+
       - name: Run Cypress
         uses: cypress-io/github-action@v5
         with:
           browser: chrome
           record: true
+          spec: ${{ matrix.component }}-src/**
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,6 +85,7 @@ jobs:
       - name: Upload videos of failures
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
         with:
           name: E2E test video
           path: ./cypress/videos
