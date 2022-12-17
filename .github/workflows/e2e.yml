@@ -51,6 +51,8 @@ jobs:
 
       - name: Build app
         working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src
+        env:
+          NODE_ENV: test
         run: |
           yarn build
           mkdir -p build/Release/
@@ -67,6 +69,8 @@ jobs:
       - name: Build bundle
         if: matrix.component == 'bundle'
         working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
+        env:
+          NODE_ENV: test
         run: yarn bundle:build
 
       - name: Install NodeCG dependencies
