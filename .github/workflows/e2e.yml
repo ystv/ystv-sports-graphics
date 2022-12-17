@@ -64,12 +64,12 @@ jobs:
         run: yarn prod &
 
       - name: Build bundle
-        if: component == 'bundle'
+        if: matrix.component == 'bundle'
         working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
         run: yarn bundle:build
 
       - name: Run NodeCG
-        if: component == 'bundle'
+        if: matrix.component == 'bundle'
         working-directory: ./nodecg/bundles/ystv-sports-graphics
         run: yarn nodecg &
 
