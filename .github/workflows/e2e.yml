@@ -98,6 +98,7 @@ jobs:
           record: true
           spec: ${{ matrix.component }}-src/**
           working-directory: ./nodecg/bundles/ystv-sports-graphics
+          group: ${{ matrix.component }}
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
