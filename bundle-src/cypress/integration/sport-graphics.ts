@@ -57,32 +57,33 @@ describe("Football Graphics", () => {
   });
 
   it("Shows scoreboard", function () {
+    const eID = `Event/test-league/football/${this.eventID}`;
     cy.visit("/bundles/ystv-sports-graphics/graphics/graphics.html");
-    cy.awaitReplicants("control-football", "eventState")
-      .controlBundle("football", {
-        scoreboard: { visible: true, showTime: false },
-      })
-      .then(() => {
-        cy.replicantValue("control-football").should(
-          "have.nested.property",
-          "scoreboard.visible",
-          true
-        );
-        cy.get("[data-cy=football-scoreboard]").should("exist");
-        cy.get("[data-cy=football-scoreboard] [data-cy=home-team-name]").should(
-          "contain",
-          "LANC"
-        );
-        cy.get("[data-cy=football-scoreboard] [data-cy=away-team-name]").should(
-          "contain",
-          "YORK"
-        );
-        cy.get(
-          "[data-cy=football-scoreboard] [data-cy=home-team-score]"
-        ).should("contain", "0");
-        cy.get(
-          "[data-cy=football-scoreboard] [data-cy=away-team-score]"
-        ).should("contain", "0");
-      });
+    cy.selectBundleEvent(eID).controlBundle("football", {
+      scoreboard: { visible: true, showTime: false },
+    });
+    cy.replicantValue("eventID").should("equal", eID);
+    cy.replicantValue("control-football").should(
+      "have.nested.property",
+      "scoreboard.visible",
+      true
+    );
+    cy.get("[data-cy=football-scoreboard]").should("exist");
+    cy.get("[data-cy=football-scoreboard] [data-cy=home-team-name]").should(
+      "contain",
+      "LANC"
+    );
+    cy.get("[data-cy=football-scoreboard] [data-cy=away-team-name]").should(
+      "contain",
+      "YORK"
+    );
+    cy.get("[data-cy=football-scoreboard] [data-cy=home-team-score]").should(
+      "contain",
+      "0"
+    );
+    cy.get("[data-cy=football-scoreboard] [data-cy=away-team-score]").should(
+      "contain",
+      "0"
+    );
   });
 });
