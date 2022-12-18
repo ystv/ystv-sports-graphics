@@ -86,7 +86,8 @@ jobs:
         run: |
           mkdir -p cfg
           echo '{"scoresService": { "apiURL": "http://localhost:8000/api", "username": "admin", "password": "password", "publicAttachmentsURLBase": "http://localhost:8000/api/attachments" }}' > cfg/ystv-sports-graphics.json
-          node ./index.js &
+          echo '{"logging": { "console": { "enabled": true, "timestamps": true, "level": "debug" } }}' > cfg/nodecg.json
+          node ./index.js | tee nodecg.log 2>&1  &
 
       - name: Run Cypress
         uses: cypress-io/github-action@v5
@@ -111,4 +112,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Server logs
-          path: ./nodecg/bundles/ystv-sports-graphics/scores-src/scores-app.log
+          path: |
+            ./nodecg/bundles/ystv-sports-graphics/scores-src/scores-app.log
+            ./nodecg/nodecg.log
