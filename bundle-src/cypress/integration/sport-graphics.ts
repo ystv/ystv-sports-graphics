@@ -58,18 +58,11 @@ describe("Football Graphics", () => {
   });
 
   it("Shows scoreboard", function () {
-    cy.login("admin", "password");
-    const eID = `Event/test-league/football/${this.eventID}`;
     cy.visit("/bundles/ystv-sports-graphics/graphics/graphics.html");
-    cy.selectBundleEvent(eID).controlBundle("football", {
+    cy.controlBundle("football", {
       scoreboard: { visible: true, showTime: false },
     });
-    cy.replicantValue("eventID").should("equal", eID);
-    cy.replicantValue("control-football").should(
-      "have.nested.property",
-      "scoreboard.visible",
-      true
-    );
+
     cy.get("[data-cy=football-scoreboard]").should("exist");
     cy.get("[data-cy=football-scoreboard] [data-cy=home-team-name]").should(
       "contain",
