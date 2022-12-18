@@ -63,6 +63,11 @@ describe("Football Graphics", () => {
         scoreboard: { visible: true, showTime: false },
       })
       .then(() => {
+        cy.replicantValue("control-football").should(
+          "have.nested.property",
+          "scoreboard.visible",
+          true
+        );
         cy.get("[data-cy=football-scoreboard]").should("exist");
         cy.get("[data-cy=football-scoreboard] [data-cy=home-team-name]").should(
           "contain",
