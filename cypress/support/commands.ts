@@ -92,6 +92,7 @@ Cypress.Commands.add("createTeam", (data: Record<string, string>) => {
 });
 
 Cypress.Commands.add("selectBundleEvent", (id: string) => {
+  cy.log("Selecting event " + id);
   return cy.request({
     url: "/ystv-sports-graphics/_test/selectEvent",
     method: "POST",
