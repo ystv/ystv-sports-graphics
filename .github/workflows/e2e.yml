@@ -85,7 +85,7 @@ jobs:
           NODE_ENV: test
         run: |
           mkdir -p cfg
-          echo '{"scoresService": { "apiURL": "http://localhost:3000/api", "username": "admin", "password": "password", "publicAttachmentsURLBase": "http://localhost:3000/api/attachments" }}' > cfg/ystv-sports-graphics.json
+          echo '{"scoresService": { "apiURL": "http://localhost:8000/api", "username": "admin", "password": "password", "publicAttachmentsURLBase": "http://localhost:8000/api/attachments" }}' > cfg/ystv-sports-graphics.json
           node ./index.js &
 
       - name: Run Cypress
