@@ -85,6 +85,8 @@ jobs:
           NODE_ENV: test
         run: |
           mkdir -p cfg
+          curl -X POST -f http://localhost:8000/api/_test/resetDB
+          curl -X POST -f http://localhost:8000/api/_test/createTestUser -d '{ "username": "admin", "password": "password" }'
           echo '{"scoresService": { "apiURL": "http://localhost:8000/api", "username": "admin", "password": "password", "publicAttachmentsURLBase": "http://localhost:8000/api/attachments" }}' > cfg/ystv-sports-graphics.json
           echo '{"logging": { "console": { "enabled": true, "timestamps": true, "level": "debug" } }}' > cfg/nodecg.json
           node ./index.js | tee nodecg.log 2>&1  &
