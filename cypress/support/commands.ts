@@ -21,8 +21,6 @@ declare global {
         eventType: string,
         data: Record<string, unknown>
       ): Chainable<unknown>;
-      awaitReplicants(...reps: string[]): Chainable<void>;
-      replicantValue<T>(name: string): Chainable<T>;
     }
   }
 }
@@ -125,21 +123,3 @@ Cypress.Commands.add(
     });
   }
 );
-
-Cypress.Commands.add("awaitReplicants", (...reps: string[]) => {
-  return cy.window().then((win) => {
-    return cy.wrap(
-      win.NodeCG.waitForReplicants(...reps.map((r) => win.nodecg.Replicant(r)))
-    );
-  });
-});
-
-Cypress.Commands.add("replicantValue", (name: string) => {
-  return cy.window().then((win) => {
-    return cy.wrap(
-      new Promise((resolve) =>
-        win.nodecg.readReplicant(name, "ystv-sports-graphics", resolve)
-      )
-    );
-  });
-});
