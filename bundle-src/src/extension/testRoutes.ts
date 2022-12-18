@@ -2,6 +2,7 @@ import { EventID } from "common/types/eventID";
 import { Router } from "express";
 import invariant from "tiny-invariant";
 import { NodeCG } from "../../../../../types/server";
+import { apiClient, authenticate } from "./scoresAPI";
 
 export default function mountTestRoutes(nodecg: NodeCG, router: Router) {
   invariant(process.env.NODE_ENV === "test", "Not in test mode");
@@ -27,5 +28,26 @@ export default function mountTestRoutes(nodecg: NodeCG, router: Router) {
       controlRep.value[key] = value;
     }
     res.send("OK");
+  });
+
+  router.post("/_test/reauthenticate", (req, res) => {
+    authenticate(nodecg, req.body.username, req.body.password)
+      .then(() => {
+        res.send("OK");
+      })
+      .catch((err) => {
+        res.status(500).send(err.message);
+      });
+  });
+
+  router.get("/_test/checkAuth", (req, res) => {
+    apiClient
+      .get("/auth/me")
+      .then((aR) => {
+        res.status(200).json(aR.data);
+      })
+      .catch((err) => {
+        res.status(500).send(err.message);
+      });
   });
 }

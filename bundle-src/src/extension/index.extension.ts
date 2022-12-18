@@ -14,6 +14,7 @@ import { UnhandledListenForCb } from "../../../../../types/lib/nodecg-instance";
 import { Request, Response } from "express-serve-static-core";
 import * as metrics from "./metrics";
 import mountTestRoutes from "./testRoutes";
+import { apiClient, authenticate, init, token } from "./scoresAPI";
 
 export = async (nodecg: NodeCG) => {
   const config: Configschema = nodecg.bundleConfig;
@@ -21,6 +22,8 @@ export = async (nodecg: NodeCG) => {
     nodecg.log.warn("Scores service not configured!");
     return;
   }
+
+  init(nodecg);
 
   const stateRep = nodecg.Replicant<ScoresServiceConnectionState>(
     "scoresServiceConnectionState",
@@ -61,20 +64,8 @@ export = async (nodecg: NodeCG) => {
 
   let sid = "";
   let lastMID = "";
-  let token = "";
 
-  const apiClient = axios.create({
-    baseURL: config.scoresService.apiURL,
-    withCredentials: true,
-    auth: {
-      username: config.scoresService.username,
-      password: config.scoresService.password,
-    },
-    validateStatus(status) {
-      metrics.counterHttpResponses.labels(status.toString()).inc();
-      return status >= 200 && status < 300;
-    },
-  });
+  await authenticate(nodecg);
 
   nodecg.listenFor("list-leagues", async (_, cb_) => {
     nodecg.log.info("list-leagues");
@@ -104,14 +95,6 @@ export = async (nodecg: NodeCG) => {
       }
     }
   );
-
-  nodecg.log.debug("Authenticating...");
-  const authResponse = await apiClient.post("/auth/login/local", {
-    username: config.scoresService.username,
-    password: config.scoresService.password,
-  });
-  token = authResponse.data.token;
-  nodecg.log.debug("Authenticated successfully.");
 
   let ws: WebSocket | null = null;
   let subscribedId: string | null = null;

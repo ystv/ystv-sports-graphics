@@ -2,11 +2,8 @@ import "cypress-file-upload";
 
 import type { TeamInfo } from "../../scores-src/src/common/types";
 
-import type {
-  NodeCGBrowser,
-  NodeCGStaticBrowser,
-  ReplicantBrowser,
-} from "../../../../types/browser";
+// force NodeCG's types to be loaded
+import type {} from "../../../../types/browser";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -34,24 +31,37 @@ Cypress.Commands.add("login", (username, password) => {
   cy.session(
     [username, password],
     () => {
-      // TODO: replace this with a cy.request()
-      cy.visit("/login");
-      cy.get("input[name=username").type("admin");
-      cy.get("input[name=password").type("password");
-      cy.get("form").contains("Sign In").click();
-      cy.url().should("contain", "/events");
+      if (Cypress.config("baseUrl").includes(":9090")) {
+        cy.request("POST", "/ystv-sports-graphics/_test/reauthenticate", {
+          username,
+          password,
+        });
+      } else {
+        // TODO: replace this with a cy.request()
+        cy.visit("/login");
+        cy.get("input[name=username").type("admin");
+        cy.get("input[name=password").type("password");
+        cy.get("form").contains("Sign In").click();
+        cy.url().should("contain", "/events");
+      }
     },
     {
       validate: () => {
-        cy.request({
-          url: "/api/auth/me",
-          headers: {
-            Authorization:
-              "Bearer " +
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              JSON.parse(sessionStorage.getItem("SportsScoresToken")!),
-          },
-        });
+        if (Cypress.config("baseUrl").includes(":9090")) {
+          cy.request("/ystv-sports-graphics/_test/checkAuth").then((r) => {
+            return r.body.valid;
+          });
+        } else {
+          cy.request({
+            url: "/api/auth/me",
+            headers: {
+              Authorization:
+                "Bearer " +
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                JSON.parse(sessionStorage.getItem("SportsScoresToken")!),
+            },
+          });
+        }
       },
     }
   );

@@ -51,12 +51,14 @@ describe("Football Graphics", () => {
   });
 
   it("Renders nothing on first load", function () {
+    cy.login("admin", "password");
     cy.selectBundleEvent(`Event/test-league/football/${this.eventID}`);
     cy.visit("/bundles/ystv-sports-graphics/graphics/graphics.html");
     cy.get("[data-cy=football-scoreboard]").should("not.exist");
   });
 
   it("Shows scoreboard", function () {
+    cy.login("admin", "password");
     const eID = `Event/test-league/football/${this.eventID}`;
     cy.visit("/bundles/ystv-sports-graphics/graphics/graphics.html");
     cy.selectBundleEvent(eID).controlBundle("football", {
