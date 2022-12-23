@@ -17,7 +17,8 @@
 import "./commands";
 
 import * as installLogsCollector from "cypress-terminal-report/src/installLogsCollector";
-installLogsCollector();
+import type {} from "cypress-image-snapshot";
+import { addMatchImageSnapshotCommand } from "@simonsmith/cypress-image-snapshot/command";
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+installLogsCollector();
+addMatchImageSnapshotCommand();

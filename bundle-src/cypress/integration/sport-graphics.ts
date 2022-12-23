@@ -55,6 +55,7 @@ describe("Football Graphics", () => {
     cy.selectBundleEvent(`Event/test-league/football/${this.eventID}`);
     cy.visit("/bundles/ystv-sports-graphics/graphics/graphics.html");
     cy.get("[data-cy=football-scoreboard]").should("not.exist");
+    cy.matchImageSnapshot();
   });
 
   it("Shows scoreboard", function () {
@@ -80,5 +81,13 @@ describe("Football Graphics", () => {
       "contain",
       "0"
     );
+
+    // Wait for animation
+    cy.get("[data-cy=football-scoreboard] > div").should(
+      "have.css",
+      "opacity",
+      "1"
+    );
+    cy.matchImageSnapshot();
   });
 });

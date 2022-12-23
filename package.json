@@ -56,7 +56,9 @@
   },
   "packageManager": "yarn@3.2.0",
   "devDependencies": {
+    "@simonsmith/cypress-image-snapshot": "^6.0.0",
     "@size-limit/preset-app": "^7.0.8",
+    "@types/cypress-image-snapshot": "^3.1.6",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "@ury1350/prettier-config": "^1.0.1",
