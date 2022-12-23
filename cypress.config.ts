@@ -1,6 +1,8 @@
 import { defineConfig } from "cypress";
 
 import plugin from "./cypress/plugins";
+import * as installLogsPrinter from "cypress-terminal-report/src/installLogsPrinter";
+import { addMatchImageSnapshotPlugin } from "@simonsmith/cypress-image-snapshot/plugin";
 
 // NB: all the paths here must be relative to the root, because that's where Cypress is run from.
 export default defineConfig({
@@ -16,9 +18,16 @@ export default defineConfig({
     // We've imported your old cypress plugins here.
     // You may want to clean this up later by importing these.
     setupNodeEvents(on, config) {
+      installLogsPrinter(on, {
+        printLogsToConsole: "onFail",
+      });
+      addMatchImageSnapshotPlugin(on, config);
       return plugin(on, config);
     },
-    specPattern: ["scores-src/cypress/integration/**/*.{js,jsx,ts,tsx}"],
+    specPattern: [
+      "scores-src/cypress/integration/**/*.{js,jsx,ts,tsx}",
+      "bundle-src/cypress/integration/**/*.{js,jsx,ts,tsx}",
+    ],
     supportFile: "cypress/support/index.ts",
     baseUrl: "http://localhost:3000",
   },
