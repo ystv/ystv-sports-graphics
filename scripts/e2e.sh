@@ -27,4 +27,6 @@ if [ "$#" -ge 1 ]; then
 fi
 
 wait "${NCG_PID}" "${BUNDLE_PID}" "${SCORES_PID}"
+echo "We've tried our best to clean everything up."
+echo "It might not have worked, so you may need to run a 'killall node'."
 exit "${CY_RETVAL:-0}"

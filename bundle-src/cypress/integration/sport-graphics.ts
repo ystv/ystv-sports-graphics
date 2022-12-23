@@ -50,6 +50,10 @@ describe("Football Graphics", () => {
       });
   });
 
+  beforeEach(() => {
+    cy.viewport(1280, 720);
+  });
+
   it("Renders nothing on first load", function () {
     cy.login("admin", "password");
     cy.selectBundleEvent(`Event/test-league/football/${this.eventID}`);
