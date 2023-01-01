@@ -58,8 +58,8 @@ jobs:
       - name: Run unit tests (scores-src client)
         id: jest_scores_client
         continue-on-error: true
-        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/client
-        run: exit 0
+        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src
+        run: yarn vitest run --coverage
 
       - name: Run unit tests (scores-src server)
         id: jest_scores_server
