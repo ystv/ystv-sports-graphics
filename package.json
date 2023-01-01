@@ -63,6 +63,7 @@
     "@ury1350/prettier-config": "^1.0.1",
     "cypress": "^12",
     "cypress-file-upload": "^5.0.8",
+    "cypress-terminal-report": "^5.0.0",
     "eslint": "latest",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-cypress": "^2.12.1",

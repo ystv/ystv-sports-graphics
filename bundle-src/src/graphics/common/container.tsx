@@ -1,19 +1,19 @@
 import { AnimatePresence } from "framer-motion";
-import { ReactNode } from "react";
+import { HTMLProps, ReactNode } from "react";
 
-export function GraphicContainer({
-  zIndex = 0,
-  children,
-}: {
-  zIndex?: number;
-  children: ReactNode;
-}) {
+export function GraphicContainer(
+  props: {
+    zIndex?: number;
+    children: ReactNode;
+  } & HTMLProps<HTMLDivElement>
+) {
+  const { zIndex, children, ...rest } = props;
   const styles: React.CSSProperties = {
     position: "absolute",
     zIndex: zIndex,
   };
   return (
-    <div style={styles} className="titleSafe">
+    <div style={styles} className="titleSafe" {...props}>
       <AnimatePresence>{children}</AnimatePresence>
     </div>
   );

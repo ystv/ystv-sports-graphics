@@ -9,6 +9,7 @@ const webpack = require("webpack");
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
+/** @type { import('webpack').Configuration } */
 const baseConfig = {
   mode: isDevelopment ? "development" : "production",
   context: __dirname,
@@ -86,10 +87,11 @@ function makeConfig(kind, name) {
   return merge(baseConfig, {
     name: name,
     entry: [
-      require.resolve("webpack-dev-server/client") +
-        `?http://0.0.0.0:${wsPort}`,
+      isDevelopment &&
+        require.resolve("webpack-dev-server/client") +
+          `?http://0.0.0.0:${wsPort}`,
       `./src/${kind}/index.${name}.tsx`,
-    ],
+    ].filter(Boolean),
     output: {
       path: path.resolve(__dirname, "..", kind),
       filename: `${name}.bundle.js`,
@@ -102,9 +104,9 @@ function makeConfig(kind, name) {
       }),
     ],
     devServer: {
-      hot: true,
-      writeToDisk: true,
-      injectHot: true,
+      hot: isDevelopment,
+      writeToDisk: isDevelopment,
+      injectHot: isDevelopment,
       sockPort: wsPort,
       public: `localhost:${wsPort}`,
       inline: true,
@@ -130,7 +132,7 @@ const graphics = fs
 const config = [
   ...dashboards,
   ...graphics,
-  {
+  /** @type { import('webpack').Configuration } */ {
     name: "extension",
     mode: "development",
     entry: "./src/extension/index.extension.ts",
@@ -143,12 +145,15 @@ const config = [
         {
           test: /\.tsx?/,
           loader: "ts-loader",
-          exclude: /node-modules/,
+          exclude: [/node-modules/, /cypress/],
         },
       ],
     },
     externalsPresets: {
       node: true,
+    },
+    optimization: {
+      nodeEnv: false, // extension doesn't need it (and needs to read the real NODE_ENV)
     },
     devtool: false,
     output: {

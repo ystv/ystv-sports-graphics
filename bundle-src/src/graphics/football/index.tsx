@@ -33,7 +33,7 @@ export function AllFootballGraphics() {
 
   return (
     <>
-      <GraphicContainer>
+      <GraphicContainer data-cy="football-scoreboard">
         {control.scoreboard.visible && (
           <Scoreboard
             homeName={state.homeTeam.abbreviation}
@@ -51,7 +51,7 @@ export function AllFootballGraphics() {
           />
         )}
       </GraphicContainer>
-      <GraphicContainer>
+      <GraphicContainer data-cy="football-matchstatuspopup">
         {control.matchStatusPopup.visible && (
           <MatchStatusPopup
             homeName={state.homeTeam.abbreviation}
