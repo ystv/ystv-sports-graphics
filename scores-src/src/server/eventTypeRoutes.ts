@@ -7,6 +7,7 @@ import {
   DocumentExistsError,
   DocumentNotFoundError,
   MutateInSpec,
+  QueryScanConsistency,
 } from "couchbase";
 import { dispatchChangeToEvent, resync } from "./updatesRepo";
 import {
@@ -62,15 +63,17 @@ export function makeEventAPIFor<
     asyncHandler(async (req, res) => {
       const league = req.params.league;
       invariant(typeof league === "string", "no league from url");
+      console.log([league, typeName]);
       const result = await DB.query(
         `SELECT RAW e
         FROM _default e
         WHERE meta(e).id LIKE 'EventMeta/%'
-        AND e.league = $1;
+        AND e.league = $1
         AND e.type = $2
         ORDER BY MILLIS(e.startTime)`,
         {
           parameters: [league, typeName],
+          scanConsistency: QueryScanConsistency.RequestPlus,
         }
       );
       const events = await Promise.all(

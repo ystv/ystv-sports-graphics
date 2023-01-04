@@ -5,6 +5,7 @@ import { DB } from "./db";
 import { ensure, invariant } from "./errs";
 import { BadRequest } from "http-errors";
 import { createLocalUser } from "./auth";
+import { QueryScanConsistency } from "couchbase";
 
 const logger = getLogger("testRoutes");
 
@@ -18,7 +19,9 @@ export function createTestRouter() {
   router.post(
     "/resetDB",
     asyncHandler(async (req, res) => {
-      await DB.query("DELETE FROM _default");
+      await DB.query("DELETE FROM _default", {
+        scanConsistency: QueryScanConsistency.RequestPlus,
+      });
       await DB.collection("_default").insert("BootstrapState", {
         bootstrapped: true,
       });

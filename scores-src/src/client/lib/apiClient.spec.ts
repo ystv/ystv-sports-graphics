@@ -2,7 +2,12 @@
 
 import { describe, expect, test, beforeAll, beforeEach, vi, it } from "vitest";
 import * as A from "./apiClient";
+import "isomorphic-fetch";
+import FormData from "form-data";
 import { renderHook, waitFor } from "@testing-library/react";
+import { createReadStream, readFileSync } from "fs";
+import { resolve } from "path";
+import invariant from "tiny-invariant";
 
 vi.mock("react-router-dom", () => ({
   useNavigate: vi.fn(),
@@ -14,6 +19,10 @@ function integration(...args: Parameters<typeof describe>) {
   } else {
     describe.skip(...args);
   }
+}
+
+function isFile(f: unknown): f is { path: string; type: string } {
+  return typeof f === "object" && f !== null && "path" in f && "type" in f;
 }
 
 integration("apiClient", () => {
@@ -30,30 +39,61 @@ integration("apiClient", () => {
   async function setupReq(
     endpoint: string,
     method: string,
-    body: Record<string, unknown> = {},
+    status: number,
+    bodyIn: Record<
+      string,
+      string | number | { path: string; type: string }
+    > = {},
     token: string | boolean = false
   ): Promise<unknown> {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+    const multipart = Object.values(bodyIn).some((x) => isFile(x));
+    const headers = {} as Record<string, string>;
+    if (!multipart) {
+      headers["Content-Type"] = "application/json";
     }
-    return await fetch(API_BASE + endpoint, {
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    let body;
+    if (method !== "get") {
+      if (multipart) {
+        body = new FormData();
+        for (const [key, value] of Object.entries(bodyIn)) {
+          if (isFile(value)) {
+            body.append(key, createReadStream(value.path));
+          } else {
+            invariant(
+              typeof value === "string",
+              "body fields can only be strings or Files"
+            );
+            body.append(key, value);
+          }
+        }
+      } else {
+        body = JSON.stringify(bodyIn);
+      }
+    }
+    const res = await fetch(API_BASE + endpoint, {
       method,
       headers,
-      body: JSON.stringify(body),
-    }).then((r) => r.json());
+      // @ts-expect-error isomorphic-fetch typing doesn't accept FormData in node for some reason
+      body,
+    });
+    if (res.status !== status) {
+      throw new Error(await res.text());
+    }
+    return await res.json();
   }
+  let testEventID: string;
   beforeEach(async () => {
     await fetch(API_BASE + "/_test/resetDB", {
       method: "post",
     });
-    await setupReq("/_test/createTestUser", "post", {
+    await setupReq("/_test/createTestUser", "post", 200, {
       username: "admin",
       password: "password",
     });
-    const res = (await setupReq("/auth/login/local", "post", {
+    const res = (await setupReq("/auth/login/local", "post", 200, {
       username: "admin",
       password: "password",
     })) as { token: string; ok: true };
@@ -63,6 +103,7 @@ integration("apiClient", () => {
     await setupReq(
       "/leagues",
       "post",
+      201,
       {
         name: "Test League",
         startDate: "2020-01-01",
@@ -70,6 +111,51 @@ integration("apiClient", () => {
       },
       res.token
     );
+
+    await setupReq(
+      "/teams",
+      "post",
+      201,
+      {
+        name: "Test",
+        abbreviation: "TEST",
+        primaryColour: "#000000",
+        secondaryColour: "#ffffff",
+        crest: {
+          path: resolve(__dirname, "__fixtures__", "testCrest.svg"),
+          type: "image/svg+xml",
+        },
+      },
+      res.token
+    );
+
+    const createRes = await setupReq(
+      "/events/test-league/football",
+      "post",
+      201,
+      {
+        name: "Test",
+        worthPoints: 4,
+        homeTeam: "test",
+        awayTeam: "test",
+      },
+      res.token
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    testEventID = (createRes as any).id;
+    // Wait for the server to catch up
+    for (;;) {
+      const events = (await setupReq(
+        "/events/test-league",
+        "get",
+        200,
+        undefined,
+        res.token
+      )) as unknown[];
+      if (events.length > 0) {
+        break;
+      }
+    }
   });
 
   test("useGETLeagues", async () => {
@@ -99,36 +185,73 @@ integration("apiClient", () => {
       })
     );
     const res = await result.current;
-    expect(res).toEqual({
-      name: "Test 2",
-      slug: "test-2",
-      startDate: "2022-01-01",
-      endDate: "2022-12-31",
-    });
+    expect(res).toMatchInlineSnapshot(`
+      {
+        "endDate": "2022-12-31",
+        "name": "Test 2",
+        "slug": "test-2",
+        "startDate": "2022-01-01",
+      }
+    `);
   });
 
-  it.todo("usePUTLeague");
-  it.todo("useGETEvents");
-  it.todo("useGETEvent");
-  it.todo("usePOSTEvents");
-  it.todo("usePUTEvent");
-  it.todo("usePOSTEventAction");
-  it.todo("usePOSTEventUpdateAction");
-  it.todo("useGETBootstrapReady");
-  it.todo("usePOSTBootstrapCheckToken");
-  it.todo("usePOSTBootstrap");
-  it.todo("usePOSTLogin");
-  it.todo("usePOSTEventUndo");
-  it.todo("usePOSTEventRedo");
-  it.todo("usePOSTEventDeclareWinner");
-  it.todo("usePOSTEventResync");
-  it.todo("useGETAuthMe");
-  it.todo("useGETUsers");
-  it.todo("usePOSTUsers");
-  it.todo("usePUTUsersUsername");
-  it.todo("usePUTUsersUsernamePassword");
-  it.todo("useDELETEUsersUsername");
-  it.todo("useGETTeams");
-  it.todo("usePOSTTeams");
-  it.todo("usePUTTeams");
+  test.todo("usePUTLeague");
+  test("useGETEvents", async () => {
+    const { result } = renderHook(() => A.useGETEvents("test-league"));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data).toHaveLength(1);
+  });
+  test("useGETEvent", async () => {
+    const { result } = renderHook(() =>
+      A.useGETEvent("test-league", "football", testEventID)
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data).toMatchObject({
+      type: "football",
+    });
+  });
+  test.todo("usePOSTEvents");
+  test.todo("usePUTEvent");
+  test.todo("usePOSTEventAction");
+  test.todo("usePOSTEventUpdateAction");
+  test("useGETBootstrapReady", async () => {
+    const { result } = renderHook(() => A.useGETBootstrapReady());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data.ready).toBe(true);
+  });
+  test.todo("usePOSTBootstrapCheckToken");
+  test.todo("usePOSTBootstrap");
+  test.todo("usePOSTLogin");
+  test.todo("usePOSTEventUndo");
+  test.todo("usePOSTEventRedo");
+  test.todo("usePOSTEventDeclareWinner");
+  test.todo("usePOSTEventResync");
+  test("useGETAuthMe", async () => {
+    const { result } = renderHook(() => A.useGETAuthMe());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data).toMatchObject({
+      username: "admin",
+    });
+  });
+  test("useGETUsers", async () => {
+    const { result } = renderHook(() => A.useGETUsers());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data).toHaveLength(1);
+    expect(result.current.data[0]).toHaveProperty("username", "admin");
+  });
+  test.todo("usePOSTUsers");
+  test.todo("usePUTUsersUsername");
+  test.todo("usePUTUsersUsernamePassword");
+  test.todo("useDELETEUsersUsername");
+  test("useGETTeams", async () => {
+    const { result } = renderHook(() => A.useGETTeams());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data).toHaveLength(1);
+    expect(result.current.data[0]).toMatchObject({
+      name: "Test",
+      slug: "test",
+    });
+  });
+  test.todo("usePOSTTeams");
+  test.todo("usePUTTeams");
 });
