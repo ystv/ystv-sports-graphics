@@ -307,71 +307,18 @@ describe("Updates Stream", () => {
     expect(actionRes.statusCode).toBe(200);
 
     const message = await ts.waitForMessage();
-    expect(message).toMatchInlineSnapshot(
-      {
-        kind: "CHANGE",
-        changed: expect.any(String),
-        mid: expect.any(String),
-        data: {
-          clock: {
-            wallClockLastStarted: expect.any(Number),
-          },
+    expect(message).toMatchSnapshot({
+      kind: "CHANGE",
+      changed: expect.any(String),
+      mid: expect.any(String),
+      data: {
+        clock: {
+          wallClockLastStarted: expect.any(Number),
+        },
 
-          id: expect.any(String),
-        },
+        id: expect.any(String),
       },
-      `
-      Object {
-        "changed": Any<String>,
-        "data": Object {
-          "awayTeam": Object {
-            "abbreviation": "TEST",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "test",
-          },
-          "clock": Object {
-            "state": "running",
-            "timeLastStartedOrStopped": 0,
-            "type": "upward",
-            "wallClockLastStarted": Any<Number>,
-          },
-          "halves": Array [
-            Object {
-              "goals": Array [],
-              "stoppageTime": 0,
-            },
-          ],
-          "homeTeam": Object {
-            "abbreviation": "TEST",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "test",
-          },
-          "id": Any<String>,
-          "league": "test-league",
-          "name": "test",
-          "notCovered": false,
-          "players": Object {
-            "away": Array [],
-            "home": Array [],
-          },
-          "ruleset": "_default",
-          "scoreAway": 0,
-          "scoreHome": 0,
-          "startTime": "2022-05-29T00:00:00Z",
-          "type": "football",
-          "worthPoints": 0,
-        },
-        "kind": "CHANGE",
-        "mid": Any<String>,
-      }
-    `
-    );
+    });
 
     await ts.close();
   });
@@ -412,28 +359,14 @@ describe("Updates Stream", () => {
     expect(actionRes.statusCode).toBe(200);
 
     const message = await ts.waitForMessage();
-    expect(message).toMatchInlineSnapshot(
-      {
-        kind: "ACTION",
-        event: expect.any(String),
-        mid: expect.any(String),
-        meta: {
-          ts: expect.any(Number),
-        },
+    expect(message).toMatchSnapshot({
+      kind: "ACTION",
+      event: expect.any(String),
+      mid: expect.any(String),
+      meta: {
+        ts: expect.any(Number),
       },
-      `
-      Object {
-        "event": Any<String>,
-        "kind": "ACTION",
-        "meta": Object {
-          "ts": Any<Number>,
-        },
-        "mid": Any<String>,
-        "payload": Object {},
-        "type": "football/startHalf",
-      }
-    `
-    );
+    });
 
     await ts.close();
   });
@@ -474,62 +407,14 @@ describe("Updates Stream", () => {
     expect(resyncRes.statusCode).toBe(200);
 
     const message = await ts.waitForMessage();
-    expect(message).toMatchInlineSnapshot(
-      {
-        kind: "CHANGE",
-        mid: expect.any(String),
-        changed: expect.any(String),
-        data: {
-          id: expect.any(String),
-        },
+    expect(message).toMatchSnapshot({
+      kind: "CHANGE",
+      mid: expect.any(String),
+      changed: expect.any(String),
+      data: {
+        id: expect.any(String),
       },
-      `
-      Object {
-        "changed": Any<String>,
-        "data": Object {
-          "awayTeam": Object {
-            "abbreviation": "TEST",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "test",
-          },
-          "clock": Object {
-            "state": "stopped",
-            "timeLastStartedOrStopped": 0,
-            "type": "upward",
-            "wallClockLastStarted": 0,
-          },
-          "halves": Array [],
-          "homeTeam": Object {
-            "abbreviation": "TEST",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "test",
-          },
-          "id": Any<String>,
-          "league": "test-league",
-          "name": "test",
-          "notCovered": false,
-          "players": Object {
-            "away": Array [],
-            "home": Array [],
-          },
-          "ruleset": "_default",
-          "scoreAway": 0,
-          "scoreHome": 0,
-          "startTime": "2022-05-29T00:00:00Z",
-          "type": "football",
-          "worthPoints": 0,
-        },
-        "kind": "CHANGE",
-        "mid": Any<String>,
-      }
-    `
-    );
+    });
 
     await ts.close();
   });
@@ -572,75 +457,20 @@ describe("Updates Stream", () => {
 
     const message = await ts.waitForMessage();
     expect(message.actions).toHaveLength(1);
-    expect(message).toMatchInlineSnapshot(
-      {
-        event: expect.any(String),
-        actions: [
-          {
-            meta: {
-              ts: expect.any(Number),
-            },
+    expect(message).toMatchSnapshot({
+      event: expect.any(String),
+      actions: [
+        {
+          meta: {
+            ts: expect.any(Number),
+          },
 
-            payload: {
-              id: expect.any(String),
-            },
+          payload: {
+            id: expect.any(String),
           },
-        ],
-      },
-      `
-      Object {
-        "actions": Array [
-          Object {
-            "meta": Object {
-              "ts": Any<Number>,
-            },
-            "payload": Object {
-              "awayTeam": Object {
-                "abbreviation": "TEST",
-                "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-                "name": "Test",
-                "primaryColour": "#000000",
-                "secondaryColour": "#fafafa",
-                "slug": "test",
-              },
-              "clock": Object {
-                "state": "stopped",
-                "timeLastStartedOrStopped": 0,
-                "type": "upward",
-                "wallClockLastStarted": 0,
-              },
-              "halves": Array [],
-              "homeTeam": Object {
-                "abbreviation": "TEST",
-                "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-                "name": "Test",
-                "primaryColour": "#000000",
-                "secondaryColour": "#fafafa",
-                "slug": "test",
-              },
-              "id": Any<String>,
-              "league": "test-league",
-              "name": "test",
-              "notCovered": false,
-              "players": Object {
-                "away": Array [],
-                "home": Array [],
-              },
-              "ruleset": "_default",
-              "scoreAway": 0,
-              "scoreHome": 0,
-              "startTime": "2022-05-29T00:00:00Z",
-              "type": "football",
-              "worthPoints": 0,
-            },
-            "type": "@@init",
-          },
-        ],
-        "event": Any<String>,
-        "kind": "BULK_ACTIONS",
-      }
-    `
-    );
+        },
+      ],
+    });
 
     await ts.close();
   });
@@ -696,62 +526,14 @@ describe("Updates Stream", () => {
     ).resolves.toHaveProperty("status", 200);
 
     const message = await ts.waitForMessage(50, true);
-    expect(message).toMatchInlineSnapshot(
-      {
-        kind: "CHANGE",
-        mid: expect.any(String),
-        changed: expect.any(String),
-        data: {
-          id: expect.any(String),
-        },
+    expect(message).toMatchSnapshot({
+      kind: "CHANGE",
+      mid: expect.any(String),
+      changed: expect.any(String),
+      data: {
+        id: expect.any(String),
       },
-      `
-      Object {
-        "changed": Any<String>,
-        "data": Object {
-          "awayTeam": Object {
-            "abbreviation": "FOO",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Updated Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "updated-test",
-          },
-          "clock": Object {
-            "state": "stopped",
-            "timeLastStartedOrStopped": 0,
-            "type": "upward",
-            "wallClockLastStarted": 0,
-          },
-          "halves": Array [],
-          "homeTeam": Object {
-            "abbreviation": "FOO",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Updated Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "updated-test",
-          },
-          "id": Any<String>,
-          "league": "test-league",
-          "name": "test",
-          "notCovered": false,
-          "players": Object {
-            "away": Array [],
-            "home": Array [],
-          },
-          "ruleset": "_default",
-          "scoreAway": 0,
-          "scoreHome": 0,
-          "startTime": "2022-05-29T00:00:00Z",
-          "type": "football",
-          "worthPoints": 0,
-        },
-        "kind": "CHANGE",
-        "mid": Any<String>,
-      }
-    `
-    );
+    });
     await ts.close();
   });
 
@@ -806,56 +588,18 @@ describe("Updates Stream", () => {
     ).resolves.toHaveProperty("status", 200);
 
     const message = await ts.waitForMessage(50, true);
-    expect(message).toMatchInlineSnapshot(
-      {
-        kind: "ACTION",
-        event: expect.any(String),
-        mid: expect.any(String),
-        meta: {
-          ts: expect.any(Number),
-        },
-
-        payload: {
-          id: expect.any(String),
-        },
+    expect(message).toMatchSnapshot({
+      kind: "ACTION",
+      event: expect.any(String),
+      mid: expect.any(String),
+      meta: {
+        ts: expect.any(Number),
       },
-      `
-      Object {
-        "event": Any<String>,
-        "kind": "ACTION",
-        "meta": Object {
-          "ts": Any<Number>,
-        },
-        "mid": Any<String>,
-        "payload": Object {
-          "awayTeam": Object {
-            "abbreviation": "FOO",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Updated Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "updated-test",
-          },
-          "homeTeam": Object {
-            "abbreviation": "FOO",
-            "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "name": "Updated Test",
-            "primaryColour": "#000000",
-            "secondaryColour": "#fafafa",
-            "slug": "updated-test",
-          },
-          "id": Any<String>,
-          "league": "test-league",
-          "name": "test",
-          "notCovered": false,
-          "startTime": "2022-05-29T00:00:00Z",
-          "type": "football",
-          "worthPoints": 0,
-        },
-        "type": "@@edit",
-      }
-    `
-    );
+
+      payload: {
+        id: expect.any(String),
+      },
+    });
     await ts.close();
   });
 });
