@@ -41,7 +41,7 @@ jobs:
         run: yarn --immutable --inline-builds
 
       - name: Run unit tests
-        run: scripts/test-unit.sh
+        run: nodecg/bundles/ystv-sports-graphics/scripts/test-unit.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3.1.0
@@ -83,7 +83,7 @@ jobs:
         run: yarn --immutable --inline-builds
 
       - name: Run integration tests
-        run: scripts/test-integration.sh
+        run: nodecg/bundles/ystv-sports-graphics/scripts/test-integration.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3.1.0

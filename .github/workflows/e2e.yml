@@ -64,7 +64,7 @@ jobs:
         run: npm ci
 
       - name: Start everything!
-        run: scripts/test-e2e.sh --setup-only
+        run: nodecg/bundles/ystv-sports-graphics/scripts/test-e2e.sh --setup-only
 
       - name: Run Cypress
         uses: cypress-io/github-action@v5
