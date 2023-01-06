@@ -89,3 +89,11 @@ jobs:
           root_dir: ./nodecg/bundles/ystv-sports-graphics
           files: scores-src/src/common/coverage/clover.xml,scores-src/src/server/coverage/clover.xml,scores-src/src/client/coverage/clover.xml
           gcov_ignore: ./nodecg/bundles/ystv-sports-graphics/.yarn
+
+      - name: Upload logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: Server logs
+          path: |
+            ./nodecg/bundles/ystv-sports-graphics/test-server.log
