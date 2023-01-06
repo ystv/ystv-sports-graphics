@@ -80,8 +80,8 @@ jobs:
         working-directory: ./nodecg/bundles/ystv-sports-graphics
         run: |
           yarn --immutable --inline-builds
-          mkdir -p build/Release/
-          cp ../node_modules/couchbase/build/Release/couchbase_impl.node build/Release/couchbase_impl.node
+          mkdir -p scores-src/build/Release/
+          cp node_modules/couchbase/build/Release/couchbase_impl.node scores-src/build/Release/couchbase_impl.node
 
       - name: Run integration tests
         run: nodecg/bundles/ystv-sports-graphics/scripts/test-integration.sh
