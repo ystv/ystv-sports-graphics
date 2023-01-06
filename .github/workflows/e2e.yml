@@ -25,13 +25,6 @@ jobs:
         with:
           path: ./nodecg/bundles/ystv-sports-graphics
 
-      - name: Start database
-        working-directory: ./nodecg/bundles/ystv-sports-graphics
-        run: |
-          docker volume create cbdata
-          docker run --rm -d -p 8091-8096:8091-8096 -p 11207-11211:11207-11211 -p 18091-18096:18096-18096 -v cbdata:/cbdata -v $(pwd)/scripts/couchbase-entrypoint.sh:/entrypoint.sh:ro couchbase/server:community-7.1.1
-          docker run --rm -d -p 6379:6379 redis:6-alpine
-
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         working-directory: ./nodecg/bundles/ystv-sports-graphics

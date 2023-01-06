@@ -63,7 +63,6 @@ export function makeEventAPIFor<
     asyncHandler(async (req, res) => {
       const league = req.params.league;
       invariant(typeof league === "string", "no league from url");
-      console.log([league, typeName]);
       const result = await DB.query(
         `SELECT RAW e
         FROM _default e
