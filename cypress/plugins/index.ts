@@ -10,6 +10,9 @@ const del = require("del");
 export default (on, config) => {
   // Delete videos for successful tests after the run
   on("after:spec", (spec, results) => {
+    if (!config.trashAssetsBeforeRuns) {
+      return;
+    }
     if (results && results.video) {
       // Do we have failures for any retry attempts?
       const failures = results.tests.some((x) =>

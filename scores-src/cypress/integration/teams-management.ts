@@ -37,7 +37,7 @@ describe("Teams Management", () => {
     cy.wait(["@postTeams"], { responseTimeout: 3000 });
 
     cy.visit("/teams");
-    cy.reload(); // GRAPHICS-156
+    cy.reload(true); // GRAPHICS-156
     cy.contains("Lancaster").should("be.visible");
   });
 

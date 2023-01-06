@@ -62,7 +62,7 @@
     "@types/ws": "^8.5.3",
     "axios": "^0.26.1",
     "cross-fetch": "^3.1.4",
-    "framer-motion": "^4",
+    "framer-motion": "^8.2.4",
     "immer": "^9.0.12",
     "prom-client": "^14.0.1",
     "react": "^18.2.0",

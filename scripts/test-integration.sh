@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export NODE_ENV=test
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 # Start database
 docker-compose --project-directory "$SCRIPT_DIR/.." up -d couchbase redis
 # wait for it to be ready
-curl --retry 30 --retry-delay 0 --retry-all-errors http://localhost:8091/pools/default
+curl --retry 30 --retry-delay 0 --retry-all-errors -so /dev/null http://localhost:8091/pools/default
 
-pushd scores-src || exit 1
+pushd "$SCRIPT_DIR/../scores-src" || exit 1
 
-if ! curl -fs http://localhost:8000/healthz; then
-  # Build server
+if ! curl -fs -o /dev/null http://localhost:8000/healthz; then
+  echo "Building scores server..."
   yarn build
-  # Start it
-  NODE_ENV="test" yarn prod:server >"$SCRIPT_DIR/../test-server.log" 2>&1 &
+
+  echo "Starting scores server..."
+  yarn prod:server >"$SCRIPT_DIR/../test-server.log" 2>&1 &
 fi
 
 # Run tests

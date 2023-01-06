@@ -58,38 +58,13 @@ jobs:
           mkdir -p build/Release/
           cp ../node_modules/couchbase/build/Release/couchbase_impl.node build/Release/couchbase_impl.node
 
-      - name: Run App
-        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src
-        env:
-          NODE_ENV: test
-          DB_CONNECTION_STRING: couchbase://localhost
-          REDIS_CONNECTION_STRING: redis://localhost
-        run: yarn prod | tee scores-app.log 2>&1 &
-
-      - name: Build bundle
-        if: matrix.component == 'bundle'
-        working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
-        env:
-          NODE_ENV: test
-        run: yarn bundle:build
-
       - name: Install NodeCG dependencies
         if: matrix.component == 'bundle'
         working-directory: ./nodecg
         run: npm ci
 
-      - name: Run NodeCG
-        if: matrix.component == 'bundle'
-        working-directory: ./nodecg
-        env:
-          NODE_ENV: test
-        run: |
-          mkdir -p cfg
-          curl -X POST -f http://localhost:8000/api/_test/resetDB
-          curl -X POST -f http://localhost:8000/api/_test/createTestUser -H "Content-Type: application/json" -d '{ "username": "admin", "password": "password" }'
-          echo '{"scoresService": { "apiURL": "http://localhost:8000/api", "username": "admin", "password": "password", "publicAttachmentsURLBase": "http://localhost:8000/api/attachments" }}' > cfg/ystv-sports-graphics.json
-          echo '{"logging": { "console": { "enabled": true, "timestamps": true, "level": "debug" } }}' > cfg/nodecg.json
-          node ./index.js | tee nodecg.log 2>&1  &
+      - name: Start everything!
+        run: scripts/test-e2e.sh --setup-only
 
       - name: Run Cypress
         uses: cypress-io/github-action@v5
@@ -120,5 +95,5 @@ jobs:
         with:
           name: Server logs
           path: |
-            ./nodecg/bundles/ystv-sports-graphics/scores-src/scores-app.log
-            ./nodecg/nodecg.log
+            ./nodecg/bundles/ystv-sports-graphics/test-server.log
+            ./nodecg/bundles/ystv-sports-graphics/test-nodecg.log
