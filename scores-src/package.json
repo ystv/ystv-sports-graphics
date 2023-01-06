@@ -14,7 +14,13 @@
     "prod": "concurrently -k -n server,client npm:prod:server npm:prod:client",
     "prod:server": "node --enable-source-maps dist/index.server.js",
     "prod:client": "node serveBuiltClient.js",
-    "rls": "esbuild ./src/server/rosesLiveSync.ts --bundle --outfile=./dist/rosesLiveSync.js --platform=node --sourcemap && node --enable-source-maps dist/rosesLiveSync.js $@"
+    "rls": "esbuild ./src/server/rosesLiveSync.ts --bundle --outfile=./dist/rosesLiveSync.js --platform=node --sourcemap && node --enable-source-maps dist/rosesLiveSync.js $@",
+    "test:unit:client": "vitest --run --coverage",
+    "test:unit:common": "cd src/common && jest --coverage",
+    "test:unit:server": "cd src/server && jest --coverage",
+    "test": "run-s --continue-on-error 'test:unit:*'",
+    "test:integration:client": "NODE_ENV=test INTEGRATION=true PUBLIC_API_BASE=http://localhost:8000/api vitest --run --coverage",
+    "test:integration": "run-s --continue-on-error 'test:integration:*'"
   },
   "private": true,
   "devDependencies": {
@@ -36,6 +42,7 @@
     "isomorphic-fetch": "^3.0.0",
     "jest": "^27.5.1",
     "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5",
     "patch-package": "^6.4.7",
     "serve-handler": "^6.1.3",
     "ts-node": "^10.5.0",

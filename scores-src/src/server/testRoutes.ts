@@ -25,6 +25,13 @@ export function createTestRouter() {
       await DB.collection("_default").insert("BootstrapState", {
         bootstrapped: true,
       });
+      // Execute another dummy query to check that everything's caught up
+      await DB.query(
+        "SELECT * FROM _default WHERE meta().id = 'BootstrapState'",
+        {
+          scanConsistency: QueryScanConsistency.RequestPlus,
+        }
+      );
       res.status(200).json({ ok: true });
     })
   );

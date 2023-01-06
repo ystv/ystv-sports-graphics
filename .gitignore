@@ -19,7 +19,11 @@ dashboard/*
 !.yarn/versions
 *.local
 
+*.log
+
 cypress/screenshots/
 cypress/videos/
+
+**/coverage
 
 docker-compose.override.yml

@@ -195,7 +195,24 @@ integration("apiClient", () => {
     `);
   });
 
-  test.todo("usePUTLeague");
+  test("usePUTLeague", async () => {
+    const { result } = renderHook(() =>
+      A.usePUTLeague()("test-league", {
+        name: "Test 2",
+        startDate: "2022-01-01",
+        endDate: "2022-12-31",
+      })
+    );
+    const res = await result.current;
+    expect(res).toMatchInlineSnapshot(`
+      {
+        "endDate": "2022-12-31",
+        "name": "Test 2",
+        "slug": "test-league",
+        "startDate": "2022-01-01",
+      }
+    `);
+  });
   test("useGETEvents", async () => {
     const { result } = renderHook(() => A.useGETEvents("test-league"));
     await waitFor(() => expect(result.current.loading).toBe(false));

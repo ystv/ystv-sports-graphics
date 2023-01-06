@@ -72,12 +72,17 @@ import createLeaguesRouter from "./leagueRoutes";
       // No need to handle the err, as the error-handler middleware will transform it into
       // a response.
       const diff = process.hrtime(start);
-      httpLogger.info(req.method + " " + req.originalUrl, {
-        method: req.method,
-        url: req.originalUrl,
-        status: res.statusCode,
-        duration: diff[0] + "ms" + diff[1] + "ns",
-      });
+      (res.statusCode >= 400
+        ? httpLogger.warn.bind(httpLogger)
+        : httpLogger.info.bind(httpLogger))(
+        req.method + " " + req.originalUrl,
+        {
+          method: req.method,
+          url: req.originalUrl,
+          status: res.statusCode,
+          duration: diff[0] + "ms" + diff[1] + "ns",
+        }
+      );
       // Don't create metrics for 404s - DoS vector
       if (res.statusCode !== 404) {
         const path = new URL(req.originalUrl, `http://${req.hostname}`)
@@ -127,21 +132,6 @@ import createLeaguesRouter from "./leagueRoutes";
 
   app.use(config.pathPrefix, baseRouter);
   app.use(config.pathPrefix, createLiveRouter());
-
-  app.get("/metrics", metricsHandler);
-
-  app.get("/healthz", (_, res) => {
-    res.status(200).send(`{"ok": true}`);
-  });
-
-  app.get(
-    "/readyz",
-    asyncHandler(async (_, res) => {
-      await db.cluster.ping();
-      await redis.REDIS.ping();
-      res.status(200).send(`{"ok": true}`);
-    })
-  );
 
   app.get("/metrics", metricsHandler);
 
