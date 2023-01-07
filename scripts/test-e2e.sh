@@ -63,6 +63,10 @@ if ! curl -fs -o /dev/null http://localhost:9090 && [ "$no_bundle" -eq 0 ]; then
 EOF
   fi
 
+  echo "Resetting DB and creating test user"
+  curl -fsS -X POST http://localhost:8000/api/_test/resetDB
+  curl -fsS -X POST http://localhost:8000/api/_test/createTestUser -H "Content-Type: application/json" -d '{"username": "admin", "password": "password"}'
+
   echo "Starting NodeCG..."
   node "$SCRIPT_DIR/../../../index.js" >"$SCRIPT_DIR/../test-nodecg.log" 2>&1 &
   popd || exit 1

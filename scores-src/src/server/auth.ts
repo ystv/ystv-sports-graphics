@@ -1,6 +1,10 @@
 import { DB } from "./db";
 import { verify, hash } from "argon2";
-import { DocumentExistsError, DocumentNotFoundError } from "couchbase";
+import {
+  DocumentExistsError,
+  DocumentNotFoundError,
+  GetResult,
+} from "couchbase";
 import { NextFunction, Request, Router, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import invariant from "tiny-invariant";
@@ -214,7 +218,15 @@ export async function authenticateUser(
   username: string,
   password: string
 ): Promise<User> {
-  const userRes = await DB.collection("_default").get(`User/${username}`);
+  let userRes: GetResult;
+  try {
+    userRes = await DB.collection("_default").get(`User/${username}`);
+  } catch (e) {
+    if (e instanceof DocumentNotFoundError) {
+      throw new Unauthorized("User does not exist");
+    }
+    throw e;
+  }
   const user = userRes.content as User;
   const valid = await verify(user.passwordHash ?? "", password);
   if (!valid) {
