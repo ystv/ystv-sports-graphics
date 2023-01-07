@@ -48,6 +48,20 @@ if ! curl -fs -o /dev/null http://localhost:9090 && [ "$no_bundle" -eq 0 ]; then
   echo "Building bundle..."
   yarn bundle:build
 
+  if [ ! -f "$SCRIPT_DIR/../../../cfg/ystv-sports-graphics.json" ]; then
+    echo "Configuring bundle..."
+    cat >"$SCRIPT_DIR/../../../cfg/ystv-sports-graphics.json" <<EOF
+{
+  "scoresService": {
+    "apiURL": "http://localhost:8000/api",
+    "publicAttachmentsURLBase": "http://localhost:8000/api/attachments",
+    "username": "admin",
+    "password": "password"
+  }
+}
+EOF
+  fi
+
   echo "Starting NodeCG..."
   node "$SCRIPT_DIR/../../../index.js" >"$SCRIPT_DIR/../test-nodecg.log" 2>&1 &
   popd || exit 1
