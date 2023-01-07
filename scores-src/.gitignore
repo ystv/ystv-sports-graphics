@@ -4,3 +4,5 @@ addon-build/
 
 !.env
 .rosesLiveSync.*
+
+src/client/coverage/

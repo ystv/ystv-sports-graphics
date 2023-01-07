@@ -1,0 +1,251 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Updates Stream edits to teams are reflected as changes (actions mode) 1`] = `
+Object {
+  "event": Any<String>,
+  "kind": "ACTION",
+  "meta": Object {
+    "ts": Any<Number>,
+  },
+  "mid": Any<String>,
+  "payload": Object {
+    "awayTeam": Object {
+      "abbreviation": "FOO",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Updated Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "updated-test",
+    },
+    "homeTeam": Object {
+      "abbreviation": "FOO",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Updated Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "updated-test",
+    },
+    "id": Any<String>,
+    "league": "test-league",
+    "name": "test",
+    "notCovered": false,
+    "startTime": "2022-05-29T00:00:00Z",
+    "type": "football",
+    "worthPoints": 0,
+  },
+  "type": "@@edit",
+}
+`;
+
+exports[`Updates Stream edits to teams are reflected as changes (state mode) 1`] = `
+Object {
+  "changed": Any<String>,
+  "data": Object {
+    "awayTeam": Object {
+      "abbreviation": "FOO",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Updated Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "updated-test",
+    },
+    "clock": Object {
+      "state": "stopped",
+      "timeLastStartedOrStopped": 0,
+      "type": "upward",
+      "wallClockLastStarted": 0,
+    },
+    "halves": Array [],
+    "homeTeam": Object {
+      "abbreviation": "FOO",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Updated Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "updated-test",
+    },
+    "id": Any<String>,
+    "league": "test-league",
+    "name": "test",
+    "notCovered": false,
+    "players": Object {
+      "away": Array [],
+      "home": Array [],
+    },
+    "ruleset": "_default",
+    "scoreAway": 0,
+    "scoreHome": 0,
+    "startTime": "2022-05-29T00:00:00Z",
+    "type": "football",
+    "worthPoints": 0,
+  },
+  "kind": "CHANGE",
+  "mid": Any<String>,
+}
+`;
+
+exports[`Updates Stream receives event updates (actions mode) 1`] = `
+Object {
+  "event": Any<String>,
+  "kind": "ACTION",
+  "meta": Object {
+    "ts": Any<Number>,
+  },
+  "mid": Any<String>,
+  "payload": Object {},
+  "type": "football/startHalf",
+}
+`;
+
+exports[`Updates Stream receives event updates (state mode) 1`] = `
+Object {
+  "changed": Any<String>,
+  "data": Object {
+    "awayTeam": Object {
+      "abbreviation": "TEST",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "test",
+    },
+    "clock": Object {
+      "state": "running",
+      "timeLastStartedOrStopped": 0,
+      "type": "upward",
+      "wallClockLastStarted": Any<Number>,
+    },
+    "halves": Array [
+      Object {
+        "goals": Array [],
+        "stoppageTime": 0,
+      },
+    ],
+    "homeTeam": Object {
+      "abbreviation": "TEST",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "test",
+    },
+    "id": Any<String>,
+    "league": "test-league",
+    "name": "test",
+    "notCovered": false,
+    "players": Object {
+      "away": Array [],
+      "home": Array [],
+    },
+    "ruleset": "_default",
+    "scoreAway": 0,
+    "scoreHome": 0,
+    "startTime": "2022-05-29T00:00:00Z",
+    "type": "football",
+    "worthPoints": 0,
+  },
+  "kind": "CHANGE",
+  "mid": Any<String>,
+}
+`;
+
+exports[`Updates Stream resync (actions mode) 1`] = `
+Object {
+  "actions": Array [
+    Object {
+      "meta": Object {
+        "ts": Any<Number>,
+      },
+      "payload": Object {
+        "awayTeam": Object {
+          "abbreviation": "TEST",
+          "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+          "name": "Test",
+          "primaryColour": "#000000",
+          "secondaryColour": "#fafafa",
+          "slug": "test",
+        },
+        "clock": Object {
+          "state": "stopped",
+          "timeLastStartedOrStopped": 0,
+          "type": "upward",
+          "wallClockLastStarted": 0,
+        },
+        "halves": Array [],
+        "homeTeam": Object {
+          "abbreviation": "TEST",
+          "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+          "name": "Test",
+          "primaryColour": "#000000",
+          "secondaryColour": "#fafafa",
+          "slug": "test",
+        },
+        "id": Any<String>,
+        "league": "test-league",
+        "name": "test",
+        "notCovered": false,
+        "players": Object {
+          "away": Array [],
+          "home": Array [],
+        },
+        "ruleset": "_default",
+        "scoreAway": 0,
+        "scoreHome": 0,
+        "startTime": "2022-05-29T00:00:00Z",
+        "type": "football",
+        "worthPoints": 0,
+      },
+      "type": "@@init",
+    },
+  ],
+  "event": Any<String>,
+  "kind": "BULK_ACTIONS",
+}
+`;
+
+exports[`Updates Stream resync (state mode) 1`] = `
+Object {
+  "changed": Any<String>,
+  "data": Object {
+    "awayTeam": Object {
+      "abbreviation": "TEST",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "test",
+    },
+    "clock": Object {
+      "state": "stopped",
+      "timeLastStartedOrStopped": 0,
+      "type": "upward",
+      "wallClockLastStarted": 0,
+    },
+    "halves": Array [],
+    "homeTeam": Object {
+      "abbreviation": "TEST",
+      "crestAttachmentID": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Test",
+      "primaryColour": "#000000",
+      "secondaryColour": "#fafafa",
+      "slug": "test",
+    },
+    "id": Any<String>,
+    "league": "test-league",
+    "name": "test",
+    "notCovered": false,
+    "players": Object {
+      "away": Array [],
+      "home": Array [],
+    },
+    "ruleset": "_default",
+    "scoreAway": 0,
+    "scoreHome": 0,
+    "startTime": "2022-05-29T00:00:00Z",
+    "type": "football",
+    "worthPoints": 0,
+  },
+  "kind": "CHANGE",
+  "mid": Any<String>,
+}
+`;

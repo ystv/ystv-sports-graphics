@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Run unit tests
+name: Tests
 
 on:
   pull_request:
@@ -8,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  typescript:
+  unit:
     runs-on: ubuntu-latest
 
     steps:
@@ -40,40 +38,144 @@ jobs:
         working-directory: ./nodecg/bundles/ystv-sports-graphics
         run: yarn --immutable --inline-builds
 
-      - name: Start Redis
-        run: docker run --rm -d -p 6379:6379 redis:6-alpine
-
-      - name: Run unit tests (bundle-src)
-        id: jest_bundle
-        continue-on-error: true
-        working-directory: ./nodecg/bundles/ystv-sports-graphics/bundle-src
-        run: exit 0
-
-      - name: Run unit tests (scores-src common)
-        id: jest_scores_common
-        continue-on-error: true
-        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/common
-        run: yarn jest --coverage
-
-      - name: Run unit tests (scores-src client)
-        id: jest_scores_client
-        continue-on-error: true
-        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/client
-        run: exit 0
-
-      - name: Run unit tests (scores-src server)
-        id: jest_scores_server
-        continue-on-error: true
-        working-directory: ./nodecg/bundles/ystv-sports-graphics/scores-src/src/server
-        run: yarn jest --coverage
-
-      - name: Fail if any of the previous failed
-        if: steps.jest_bundle.outcome != 'success' || steps.jest_scores_common.outcome != 'success' || steps.jest_scores_client.outcome != 'success' || steps.jest_scores_server.outcome != 'success'
-        run: exit 1
+      - name: Run unit tests
+        run: nodecg/bundles/ystv-sports-graphics/scripts/test-unit.sh
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3.1.0
         with:
           root_dir: ./nodecg/bundles/ystv-sports-graphics
-          files: scores-src/src/common/coverage/clover.xml,scores-src/src/server/coverage/clover.xml
+          files: scores-src/src/common/coverage/clover.xml,scores-src/src/server/coverage/clover.xml,scores-src/src/client/coverage/clover.xml
           gcov_ignore: ./nodecg/bundles/ystv-sports-graphics/.yarn
+
+  integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout NodeCG
+        uses: actions/checkout@v3
+        with:
+          repository: ystv/nodecg
+          ref: ystv
+          path: ./nodecg
+
+      - uses: actions/checkout@v3
+        with:
+          path: ./nodecg/bundles/ystv-sports-graphics
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Dependencies
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: |
+          yarn --immutable --inline-builds
+          mkdir -p scores-src/build/Release/
+          cp node_modules/couchbase/build/Release/couchbase_impl.node scores-src/build/Release/couchbase_impl.node
+
+      - name: Run integration tests
+        run: nodecg/bundles/ystv-sports-graphics/scripts/test-integration.sh
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3.1.0
+        with:
+          root_dir: ./nodecg/bundles/ystv-sports-graphics
+          files: scores-src/src/common/coverage/clover.xml,scores-src/src/server/coverage/clover.xml,scores-src/src/client/coverage/clover.xml
+          gcov_ignore: ./nodecg/bundles/ystv-sports-graphics/.yarn
+
+      - name: Upload logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: Server logs (Integration)
+          path: |
+            ./nodecg/bundles/ystv-sports-graphics/test-server.log
+
+  e2e:
+    strategy:
+      matrix:
+        component: [bundle, scores]
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout NodeCG
+        uses: actions/checkout@v3
+        with:
+          repository: ystv/nodecg
+          ref: ystv
+          path: ./nodecg
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: ./nodecg/bundles/ystv-sports-graphics
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock,**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install Dependencies
+        working-directory: ./nodecg/bundles/ystv-sports-graphics
+        run: |
+          yarn --immutable --inline-builds
+          mkdir -p scores-src/build/Release/
+          cp node_modules/couchbase/build/Release/couchbase_impl.node scores-src/build/Release/couchbase_impl.node
+
+      - name: Install NodeCG dependencies
+        if: matrix.component == 'bundle'
+        working-directory: ./nodecg
+        run: npm ci
+
+      - name: Start everything!
+        run: nodecg/bundles/ystv-sports-graphics/scripts/test-e2e.sh --setup-only ${{ matrix.component != 'bundle' && '--no-bundle' || '' }}
+
+      - name: Run Cypress
+        uses: cypress-io/github-action@v5
+        with:
+          browser: chrome
+          record: true
+          spec: ${{ matrix.component }}-src/**
+          working-directory: ./nodecg/bundles/ystv-sports-graphics
+          group: ${{ matrix.component }}
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # overwrite commit message sent to Cypress Cloud
+          COMMIT_INFO_MESSAGE: ${{github.event.pull_request.title}}
+          # re-enable PR comment bot
+          COMMIT_INFO_SHA: ${{github.event.pull_request.head.sha}}
+
+      - name: Upload videos of failures
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: E2E test video
+          path: ./nodecg/bundles/ystv-sports-graphics/cypress/videos
+
+      - name: Upload logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: Server logs (E2E)
+          path: |
+            ./nodecg/bundles/ystv-sports-graphics/test-server.log
+            ./nodecg/bundles/ystv-sports-graphics/test-nodecg.log

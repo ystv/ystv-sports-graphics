@@ -9,7 +9,8 @@ services:
       - ./scripts/couchbase-entrypoint.sh:/entrypoint.sh:ro
     ports:
       - "8091-8097:8091-8097"
-      - "11210-11211:11210-11211"
+      - "18091-18097:18091-18097"
+      - "11207-11211:11207-11211"
     deploy:
       resources:
         limits:
@@ -29,6 +30,7 @@ services:
   
   server:
     build:
+      context: .
       dockerfile: Dockerfile.server
     init: true
     ports:
