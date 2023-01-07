@@ -19,7 +19,7 @@
     "test:unit:common": "cd src/common && jest --coverage",
     "test:unit:server": "cd src/server && jest --coverage",
     "test": "run-s --continue-on-error 'test:unit:*'",
-    "test:integration:client": "NODE_ENV=test INTEGRATION=true PUBLIC_API_BASE=http://localhost:8000/api vitest --run --coverage",
+    "test:integration:client": "NODE_ENV=test INTEGRATION=true PUBLIC_API_BASE=http://localhost:8000/api vitest --run --coverage --no-threads",
     "test:integration": "run-s --continue-on-error 'test:integration:*'"
   },
   "private": true,
