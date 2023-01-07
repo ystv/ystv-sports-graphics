@@ -93,6 +93,15 @@ integration("apiClient", () => {
       username: "admin",
       password: "password",
     });
+    // Wait for the server to catch up
+    for (;;) {
+      const state = (await setupReq("/bootstrap/ready", "get", 200)) as {
+        ready: boolean;
+      };
+      if (state.ready) {
+        break;
+      }
+    }
     const res = (await setupReq("/auth/login/local", "post", 200, {
       username: "admin",
       password: "password",
