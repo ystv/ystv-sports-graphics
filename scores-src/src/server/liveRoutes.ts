@@ -97,7 +97,7 @@ export function createLiveRouter() {
             logger.error("WS send error", meta);
             reject(meta);
           } else {
-            logger.debug("WS sent", { kind: msg.kind });
+            logger.silly("WS sent", { kind: msg.kind });
             resolve();
           }
         });
@@ -252,7 +252,7 @@ export function createLiveRouter() {
       try {
         ensure(typeof msg === "string", UserError, "non-string message");
         const payload: LiveClientMessage = JSON.parse(msg);
-        logger.debug("WS recv", payload);
+        logger.silly("WS recv", payload);
 
         switch (payload.kind) {
           case "PING":

@@ -72,7 +72,18 @@ import createLeaguesRouter from "./leagueRoutes";
       // No need to handle the err, as the error-handler middleware will transform it into
       // a response.
       const diff = process.hrtime(start);
-      httpLogger.info(req.method + " " + req.originalUrl, {
+      let logLevel;
+      if (res.statusCode >= 400) {
+        logLevel = "warn";
+      } else if (
+        req.originalUrl.endsWith("/healthz") ||
+        req.originalUrl.endsWith("/metrics")
+      ) {
+        logLevel = "debug";
+      } else {
+        logLevel = "info";
+      }
+      httpLogger.log(logLevel, req.method + " " + req.originalUrl, {
         method: req.method,
         url: req.originalUrl,
         status: res.statusCode,

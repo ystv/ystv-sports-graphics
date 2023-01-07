@@ -80,7 +80,7 @@ export async function getActions(
     // The default timeout is high enough that Jest will think it's failed, so override it.
     block = 500;
   }
-  logger.debug(
+  logger.silly(
     `Listening to updates with lastMID ${lastMid} and block time ${block}`
   );
   let data;
