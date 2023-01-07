@@ -23,7 +23,7 @@ import {
 import {
   Button,
   Group,
-  InputWrapper,
+  Input,
   SegmentedControl,
   Space,
   Stack,
@@ -388,7 +388,7 @@ function LanesFieldRow(props: {
       />
       <FastField name={`${props.namespace}.side`}>
         {({ field, form }: FieldProps<"home" | "away">) => (
-          <InputWrapper title="Side" style={{ display: "table-cell" }}>
+          <Input.Wrapper title="Side" style={{ display: "table-cell" }}>
             <SegmentedControl
               data={[
                 {
@@ -401,7 +401,7 @@ function LanesFieldRow(props: {
               value={field.value}
               onChange={(val) => form.setFieldValue(field.name, val)}
             />
-          </InputWrapper>
+          </Input.Wrapper>
         )}
       </FastField>
       <Button
@@ -485,12 +485,12 @@ export function EditForm(props: { meta: EventMeta }) {
               helper="(metres)"
               type="number"
             />
-            <InputWrapper label="Swimmer Lanes">
+            <Input.Wrapper label="Swimmer Lanes">
               <LanesField
                 name={namespace + "swimmersByLane"}
                 meta={props.meta}
               />
-            </InputWrapper>
+            </Input.Wrapper>
           </Stack>
         )}
       />

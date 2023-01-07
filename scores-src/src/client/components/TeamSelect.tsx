@@ -2,7 +2,7 @@
  * These components live in client, not in common/formFields, because they use the API hooks.
  */
 
-import { Alert, Button, InputWrapper, Select, SelectItem } from "@mantine/core";
+import { Alert, Button, Input, Select, SelectItem } from "@mantine/core";
 import { useModals } from "@mantine/modals";
 import {
   Form,
@@ -28,7 +28,7 @@ export function CreateEditTeamFields(props: {
       <Field name="abbreviation" title="Abbreviation" helper="3 or 4 letters" />
       <ColourField name="primaryColour" title="Primary Colour" />
       <ColourField name="secondaryColour" title="Secondary Colour" />
-      <InputWrapper
+      <Input.Wrapper
         label="Team Crest"
         description="SVG please"
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,7 +40,7 @@ export function CreateEditTeamFields(props: {
           onChange={(e) => props.setCrestFile(e.target.files?.[0] ?? null)}
           accept=".svg"
         />
-      </InputWrapper>
+      </Input.Wrapper>
     </>
   );
 }
