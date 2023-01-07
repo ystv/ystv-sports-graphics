@@ -146,7 +146,7 @@ jobs:
         run: npm ci
 
       - name: Start everything!
-        run: nodecg/bundles/ystv-sports-graphics/scripts/test-e2e.sh --setup-only ${{ matrix.component != 'bundle' && '--no-bundle' }}
+        run: nodecg/bundles/ystv-sports-graphics/scripts/test-e2e.sh --setup-only ${{ matrix.component != 'bundle' && '--no-bundle' || '' }}
 
       - name: Run Cypress
         uses: cypress-io/github-action@v5

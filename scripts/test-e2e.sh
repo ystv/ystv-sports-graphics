@@ -50,6 +50,7 @@ if ! curl -fs -o /dev/null http://localhost:9090 && [ "$no_bundle" -eq 0 ]; then
 
   if [ ! -f "$SCRIPT_DIR/../../../cfg/ystv-sports-graphics.json" ]; then
     echo "Configuring bundle..."
+    mkdir -p "$SCRIPT_DIR/../../../cfg"
     cat >"$SCRIPT_DIR/../../../cfg/ystv-sports-graphics.json" <<EOF
 {
   "scoresService": {
