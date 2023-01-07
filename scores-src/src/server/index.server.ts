@@ -72,17 +72,23 @@ import createLeaguesRouter from "./leagueRoutes";
       // No need to handle the err, as the error-handler middleware will transform it into
       // a response.
       const diff = process.hrtime(start);
-      (res.statusCode >= 400
-        ? httpLogger.warn.bind(httpLogger)
-        : httpLogger.info.bind(httpLogger))(
-        req.method + " " + req.originalUrl,
-        {
-          method: req.method,
-          url: req.originalUrl,
-          status: res.statusCode,
-          duration: diff[0] + "ms" + diff[1] + "ns",
-        }
-      );
+      let logLevel;
+      if (res.statusCode >= 400) {
+        logLevel = "warn";
+      } else if (
+        req.originalUrl.endsWith("/healthz") ||
+        req.originalUrl.endsWith("/metrics")
+      ) {
+        logLevel = "debug";
+      } else {
+        logLevel = "info";
+      }
+      httpLogger.log(logLevel, req.method + " " + req.originalUrl, {
+        method: req.method,
+        url: req.originalUrl,
+        status: res.statusCode,
+        duration: diff[0] + "ms" + diff[1] + "ns",
+      });
       // Don't create metrics for 404s - DoS vector
       if (res.statusCode !== 404) {
         const path = new URL(req.originalUrl, `http://${req.hostname}`)
