@@ -97,7 +97,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
-          name: Server logs
+          name: Server logs (Integration)
           path: |
             ./nodecg/bundles/ystv-sports-graphics/test-server.log
 
@@ -175,7 +175,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
-          name: Server logs
+          name: Server logs (E2E)
           path: |
             ./nodecg/bundles/ystv-sports-graphics/test-server.log
             ./nodecg/bundles/ystv-sports-graphics/test-nodecg.log
