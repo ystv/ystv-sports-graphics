@@ -342,7 +342,6 @@ describe("Updates Stream", () => {
       kind: "SUBSCRIBE",
       to: `Event/test-league/football/${testEvent.id}`,
     });
-    (DB as unknown as InMemoryDB)._dump();
     await expect(ts.waitForMessage()).resolves.toHaveProperty(
       "kind",
       "SUBSCRIBE_OK"

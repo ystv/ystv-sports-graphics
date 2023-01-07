@@ -39,6 +39,5 @@ export async function resyncTeamUpdates(newInfo: TeamInfo, oldSlug: string) {
       }
     )
   ).rows;
-  console.log(rows);
   await Promise.all(rows.map((id) => updateEvent(id, newInfo, oldSlug)));
 }
