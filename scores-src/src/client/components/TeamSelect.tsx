@@ -146,7 +146,10 @@ export function TeamSelectField(props: TeamSelectProps) {
       searchable
       creatable
       getCreateLabel={(name) => `Create ${name}`}
-      onCreate={() => showCreateTeamModal((slug) => helpers.setValue(slug))}
+      onCreate={() => {
+        showCreateTeamModal((slug) => helpers.setValue(slug));
+        return undefined;
+      }}
     />
   );
 }
