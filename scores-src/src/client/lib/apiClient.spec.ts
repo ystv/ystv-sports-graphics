@@ -85,7 +85,7 @@ integration("apiClient", () => {
       if (text.includes(`"needsBootstrap":true`)) {
         return await setupReq(endpoint, method, status, bodyIn, token);
       }
-      throw new Error(text);
+      throw new Error(`Error in ${method} ${endpoint}: ${text}`);
     }
     return await res.json();
   }
