@@ -14,6 +14,7 @@ import {
   Edit,
   Init,
   Redo,
+  ResetHistory,
   resolveEventState,
   Undo,
   wrapAction,
@@ -32,7 +33,7 @@ import {
   EventTypeInfo,
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
-import { cloneDeep, identity, isEqual, pickBy } from "lodash-es";
+import { cloneDeep, identity, isEqual, omit, pickBy } from "lodash-es";
 import { leagueKey } from "./leagueRoutes";
 
 export function makeEventAPIFor<
@@ -222,6 +223,7 @@ export function makeEventAPIFor<
         req.body,
         { abortEarly: false, stripUnknown: true }
       );
+      newMeta.league = league;
       newMeta.id = id;
       newMeta.type = typeName;
       newMeta.homeTeam = (
@@ -251,7 +253,7 @@ export function makeEventAPIFor<
 
       const editAction = wrapAction(
         Edit({
-          ...newMeta,
+          ...omit(newMeta, "id", "type"),
           ...stateDelta,
         })
       );
@@ -502,6 +504,72 @@ export function makeEventAPIFor<
       logger.debug("resyncing", { league, typeName, id });
       await resync(league, typeName, id);
       res.status(200).json({ ok: true });
+    })
+  );
+
+  router.post(
+    "/:id/_resetHistory",
+    authenticate("dangerZone"),
+    asyncHandler(async (req, res) => {
+      const { league, id } = req.params;
+      invariant(typeof league === "string", "no league from url");
+      invariant(typeof id === "string", "no id from url");
+
+      const metaResult = await DB.collection("_default").get(
+        metaKey(league, id)
+      );
+      console.log("metaResult", metaResult);
+      const currentActionsResult = await DB.collection("_default").get(
+        historyKey(league, id)
+      );
+      const currentActions = currentActionsResult.content as Action[];
+
+      // Find the newest init action (should only ever be one!), and all the
+      // edit actions after that. Then run them through the reducer to get
+      // the final state, which will set all non-meta fields to their initial
+      // state. Then create a ResetHistory action which will apply all those
+      // (see eventStateHelpers for how ResetHistory is implemented).
+      const newestInitIdx = currentActions.findIndex(
+        (x) => x.type === Init.type
+      );
+      invariant(newestInitIdx > -1, "no init action found");
+      const resetActions = [
+        currentActions[newestInitIdx],
+        ...currentActions
+          .slice(newestInitIdx + 1)
+          .filter((x) => x.type === Edit.type),
+      ];
+      const newState = resolveEventState(reducer, resetActions);
+      const newAction = wrapAction(ResetHistory(newState));
+
+      // Test-resolve as a sanity check
+      try {
+        const state = resolveEventState(
+          reducer,
+          currentActions.concat(newAction)
+        );
+        console.log("resolved state", state);
+      } catch (e) {
+        logger.info("Test-resolve of redo failed", {
+          error: e instanceof Error ? e.message : e,
+        });
+        throw new PreconditionFailed(
+          "redoing that would result in an invalid state"
+        );
+      }
+
+      await DB.collection("_default").mutateIn(
+        historyKey(league, id),
+        [MutateInSpec.arrayAppend("", newAction)],
+        {
+          cas: currentActionsResult.cas,
+        }
+      );
+      await dispatchChangeToEvent(league, typeName, id, newAction);
+      res.status(200).json({
+        ...metaResult.content,
+        ...resolveEventState(reducer, currentActions.concat(newAction)),
+      });
     })
   );
 

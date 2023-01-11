@@ -99,6 +99,9 @@ async function findUserFromAuthHeader(value: string): Promise<User> {
  * authenticate creates an Express middleware that will authenticate the user,
  * setting `req.user`, and verify if they have the required permissions.
  * If not, it will abort the request.
+ *
+ * Note that the permissions are specified as an OR, not an AND, in other words
+ * having one of the given permissions will be sufficient to pass the check.
  * @param permissions
  * @returns
  * @example

@@ -30,7 +30,7 @@ function runTests<
 >(
   typeName: string,
   info: TInfo,
-  ...testActions: Array<[keyof TActions, Record<string, any>]>
+  ...testActions: Array<[keyof TActions & string, Record<string, any>]>
 ) {
   async function initEventDB() {
     const DB = require("./db").DB as unknown as InMemoryDB;
@@ -43,7 +43,10 @@ function runTests<
       crestAttachmentID: "",
       slug: "test",
     };
-    const initialMeta: Omit<EventMeta, "id" | "type"> = {
+    const initialMeta: EventMeta = {
+      league: "test-league",
+      id,
+      type: typeName,
       name: "test",
       notCovered: false,
       startTime: "2022-05-28T00:00:00Z",
@@ -520,6 +523,100 @@ function runTests<
         expect(historyRes.statusCode).toBe(200);
         expect(historyRes.body).toHaveLength(testActions.length + 1);
         expect(historyRes.body[testActions.length].meta.ts).toBe(newTs);
+      });
+    });
+
+    describe("reset history", () => {
+      it("works", async () => {
+        const { DB, id } = await initEventDB();
+        const initialStateRes = await request(app)
+          .get(`/api/events/test-league/${typeName}/${id}`)
+
+          .auth("test", "password")
+          .send();
+        expect(initialStateRes.statusCode).toBe(200);
+
+        for (const [type, payload] of testActions) {
+          const res = await request(app)
+            .post(`/api/events/test-league/${typeName}/${id}/${type}`)
+            .auth("test", "password")
+            .send(payload);
+          expect(res.statusCode).toBe(200);
+        }
+
+        const persistedHistory = await DB.collection("_default").get(
+          `EventHistory/test-league/${typeName}/${id}`
+        );
+        expect(persistedHistory.content).toHaveLength(testActions.length + 1);
+
+        const res = await request(app)
+          .post(`/api/events/test-league/${typeName}/${id}/_resetHistory`)
+          .auth("test", "password")
+          .send();
+        expect(res.statusCode).toBe(200);
+
+        const newHistory = await DB.collection("_default").get(
+          `EventHistory/test-league/${typeName}/${id}`
+        );
+        expect(newHistory.content).toHaveLength(testActions.length + 2);
+
+        const newStateRes = await await request(app)
+          .get(`/api/events/test-league/${typeName}/${id}`)
+          .auth("test", "password")
+          .send();
+        expect(newStateRes.statusCode).toBe(200);
+        expect(newStateRes.body).toEqual(initialStateRes.body);
+      });
+
+      it("preserves edits", async () => {
+        const { DB, id } = await initEventDB();
+        const initialStateRes = await await request(app)
+          .get(`/api/events/test-league/${typeName}/${id}`)
+
+          .auth("test", "password")
+          .send();
+        expect(initialStateRes.statusCode).toBe(200);
+
+        for (const [type, payload] of testActions) {
+          const res = await request(app)
+            .post(`/api/events/test-league/${typeName}/${id}/${type}`)
+            .auth("test", "password")
+            .send(payload);
+          expect(res.statusCode).toBe(200);
+        }
+
+        const midStateRes = await request(app)
+          .get(`/api/events/test-league/${typeName}/${id}`)
+          .auth("test", "password")
+          .send();
+        expect(midStateRes.statusCode).toBe(200);
+
+        const editRes = await request(app)
+          .put(`/api/events/test-league/${typeName}/${id}`)
+          .auth("test", "password")
+          .send({ ...midStateRes.body, worthPoints: 100 });
+        expect(editRes.statusCode).toBe(200);
+
+        const res = await request(app)
+          .post(`/api/events/test-league/${typeName}/${id}/_resetHistory`)
+          .auth("test", "password")
+          .send();
+        expect(res.statusCode).toBe(200);
+
+        const newStateRes = await await request(app)
+          .get(`/api/events/test-league/${typeName}/${id}`)
+
+          .auth("test", "password")
+          .send();
+        expect(newStateRes.statusCode).toBe(200);
+        expect(newStateRes.body).toHaveProperty("worthPoints", 100);
+
+        // these we all expect to change
+        delete initialStateRes.body.worthPoints;
+        delete newStateRes.body.worthPoints;
+        delete initialStateRes.body._cas;
+        delete newStateRes.body._cas;
+        expect(newStateRes.body).toEqual(initialStateRes.body);
       });
     });
   });

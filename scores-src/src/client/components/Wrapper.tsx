@@ -37,6 +37,7 @@ type MainLinkProps = {
   label: string;
   require?: Permission;
   backgroundColor?: DefaultMantineColor;
+  dataCy?: string;
 } & ({ link: string } | { onClick: () => unknown });
 
 function MainLink(props: MainLinkProps) {
@@ -67,6 +68,7 @@ function MainLink(props: MainLinkProps) {
               : theme.colors[props.backgroundColor || "gray"][0],
         },
       })}
+      data-cy={props.dataCy}
     >
       <Group>
         <ThemeIcon color={color} variant="light">
@@ -151,6 +153,7 @@ export function Wrapper() {
                 label: "Danger Zone!",
                 onClick: () => setDangerZone((d) => !d),
                 require: "dangerZone" as Permission,
+                dataCy: "dangerZoneBtn",
               },
               {
                 icon: <IconUser size={16} />,

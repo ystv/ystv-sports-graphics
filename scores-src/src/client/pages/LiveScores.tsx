@@ -10,6 +10,7 @@ import {
   usePOSTEventUndo,
   usePOSTEventDeclareWinner,
   usePOSTEventUpdateAction,
+  usePOSTEventResetHistory,
 } from "../lib/apiClient";
 import { capitalize, startCase } from "lodash-es";
 import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
@@ -24,13 +25,20 @@ import {
   Stack,
   Title,
 } from "@mantine/core";
-import { findUndoneActions, wrapReducer } from "../../common/eventStateHelpers";
+import {
+  findUndoneActions,
+  ResetHistory,
+  wrapReducer,
+} from "../../common/eventStateHelpers";
 import { Action } from "../../common/types";
 import { showNotification } from "@mantine/notifications";
 import { PermGate } from "../components/PermGate";
-import { IconTrophy, IconRefresh } from "@tabler/icons";
+import { IconTrophy, IconRefresh, IconAlertOctagon } from "@tabler/icons";
 import * as Yup from "yup";
 import { DateField, Checkbox } from "../../common/formFields";
+import { useAtomValue } from "jotai";
+import { dangerZoneAtom } from "../lib/globalState";
+import { useModals } from "@mantine/modals";
 
 function EventActionModal(props: {
   eventLeague: string;
@@ -203,7 +211,14 @@ function Timeline(props: {
     if (action.type[0] === "@") {
       continue;
     }
-    const Entry = actionRenderers[action.type.replace(/^.*?\//, "") as string];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let Entry;
+    if (action.type === ResetHistory.type) {
+      // eslint-disable-next-line react/display-name
+      Entry = () => <strong>History was reset</strong>;
+    } else {
+      Entry = actionRenderers[action.type.replace(/^.*?\//, "") as string];
+    }
     const Wrapper = ({ children }: { children: JSX.Element }) =>
       undone ? <s>{children}</s> : children;
     result.push(
@@ -295,6 +310,7 @@ export function LiveScores() {
     [type]
   );
   const doAction = usePOSTEventAction();
+  const modals = useModals();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [actionInitialState, setActionInitialState] = useState<
@@ -350,11 +366,12 @@ export function LiveScores() {
 
   const [resyncing, setResyncing] = useState<boolean>(false);
   async function resync() {
+    invariant(typeof league === "string", "no league");
     invariant(typeof type === "string", "no type");
     invariant(typeof id === "string", "no id");
     setResyncing(true);
     try {
-      await doResync(type, id);
+      await doResync(league, type, id);
       showNotification({
         message: "Resynced!",
         color: "blue",
@@ -374,6 +391,47 @@ export function LiveScores() {
       setResyncing(false);
     }
   }
+
+  const doResetHistory = usePOSTEventResetHistory();
+
+  const [resettingHistory, setResettingHistory] = useState<boolean>(false);
+  function resetHistory() {
+    modals.openConfirmModal({
+      title: "Really reset history?",
+      labels: {
+        confirm: "OK I'll",
+        cancel: "Go back!",
+      },
+      onConfirm: async () => {
+        invariant(typeof league === "string", "no league");
+        invariant(typeof type === "string", "no type");
+        invariant(typeof id === "string", "no id");
+        setResettingHistory(true);
+        try {
+          await doResetHistory(league, type, id);
+          showNotification({
+            message: "History reset!!",
+            color: "blue",
+          });
+        } catch (e) {
+          let msg: string;
+          if (e instanceof Error) {
+            msg = e.name + " " + e.message;
+          } else {
+            msg = String(e);
+          }
+          showNotification({
+            message: msg,
+            color: "red",
+          });
+        } finally {
+          setResettingHistory(false);
+        }
+      },
+    });
+  }
+
+  const dangerZone = useAtomValue(dangerZoneAtom);
 
   if (status === "READY" || status === "POSSIBLY_DISCONNECTED") {
     console.log("State:", state);
@@ -437,6 +495,19 @@ export function LiveScores() {
             >
               Declare Winner
             </Button>
+            {dangerZone && (
+              <Button
+                color="red"
+                variant="white"
+                leftIcon={<IconAlertOctagon size={16} />}
+                onClick={() => resetHistory()}
+                loading={resettingHistory}
+                disabled={resettingHistory}
+                data-cy="resetHistoryBtn"
+              >
+                Reset History (DANGER ZONE)
+              </Button>
+            )}
             <ActionIcon
               onClick={resync}
               loading={resyncing}

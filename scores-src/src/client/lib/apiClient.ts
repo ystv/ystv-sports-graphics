@@ -435,9 +435,9 @@ export function usePOSTEventDeclareWinner() {
 export function usePOSTEventResync() {
   const navigate = useNavigate();
 
-  return async (type: string, id: string) => {
+  return async (league: string, type: string, id: string) => {
     const result = await fetcher(navigate)(
-      `/events/${type}/${id}/_resync`,
+      `/events/${league}/${type}/${id}/_resync`,
       {
         method: "post",
       },
@@ -449,9 +449,9 @@ export function usePOSTEventResync() {
 export function usePOSTEventResetHistory() {
   const navigate = useNavigate();
 
-  return async (type: string, id: string) => {
+  return async (league: string, type: string, id: string) => {
     const result = await fetcher(navigate)(
-      `/events/${type}/${id}/_resetHistory`,
+      `/events/${league}/${type}/${id}/_resetHistory`,
       {
         method: "post",
       },

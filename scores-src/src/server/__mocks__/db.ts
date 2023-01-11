@@ -11,6 +11,8 @@ import {
   MutateInSpec,
   MutateInOptions,
   RemoveOptions,
+  GetAndLockOptions,
+  UnlockOptions,
 } from "couchbase";
 import { cloneDeep, get, isEqual, set } from "lodash-es";
 import binding from "couchbase/dist/binding";
@@ -18,6 +20,7 @@ import binding from "couchbase/dist/binding";
 interface Rec {
   value: unknown;
   cas: number;
+  oldCas?: number;
 }
 
 function newCas(): number {
@@ -26,10 +29,13 @@ function newCas(): number {
 
 class MemDBError extends Error {}
 
+const LOCKED_CAS = 0xff;
+
 export class InMemoryDB {
   private collections: Map<string, Map<string, Rec>> = new Map();
 
   public _reset() {
+    this._assertAllUnlocked();
     this.collections = new Map();
   }
 
@@ -39,6 +45,18 @@ export class InMemoryDB {
     for (const coll of Array.from(this.collections.keys())) {
       const data = Array.from(this.collections.get(coll)?.entries() ?? []);
       console.log("Collection " + coll + ":\n" + JSON.stringify(data, null, 4));
+    }
+  }
+
+  public _assertAllUnlocked() {
+    for (const coll of Array.from(this.collections.keys())) {
+      for (const [key, val] of Array.from(
+        this.collections.get(coll)?.entries() ?? []
+      )) {
+        if (val.cas === LOCKED_CAS) {
+          throw new Error(`Document ${key} is locked`);
+        }
+      }
     }
   }
 
@@ -60,6 +78,39 @@ export class InMemoryDB {
           cas: val.cas,
         } as GetResult;
       },
+      /**
+       * TESTING NOTE: unlike real CB, locks aren't automatically released when the lock time expires.
+       * Instead, the test harness is expected to call _assertAllUnlocked() which will error if
+       * any are still open.
+       */
+      async getAndLock(
+        key: string,
+        lockTime: number,
+        options?: GetAndLockOptions
+      ) {
+        const val = c.get(key);
+        if (!val) {
+          console.warn("Document not found: ", key);
+          throw new DocumentNotFoundError(new MemDBError(key));
+        }
+        const oldCas = val.cas;
+        c.set(key, { ...val, cas: LOCKED_CAS, oldCas });
+        return { ...val, cas: oldCas };
+      },
+      async unlock(key: string, cas: number, options?: UnlockOptions) {
+        const val = c.get(key);
+        if (!val) {
+          console.warn("Document not found: ", key);
+          throw new DocumentNotFoundError(new MemDBError(key));
+        }
+        if (val.oldCas !== cas) {
+          throw new CasMismatchError(
+            new MemDBError("Unlock CAS mismatch: " + key)
+          );
+        }
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        c.set(key, { value: val.value, cas: val.oldCas! });
+      },
       async insert(key: string, val: unknown) {
         if (c.has(key)) {
           throw new DocumentExistsError(new MemDBError(key));
@@ -79,10 +130,17 @@ export class InMemoryDB {
             }
           }
         }
-        c.set(key, { value: val, cas: newCas() });
+        c.set(key, { value: val, cas: newCas(), oldCas: undefined });
       },
       async upsert(key: string, val: unknown, options?: UpsertOptions) {
-        c.set(key, { value: val, cas: newCas() });
+        if (c.has(key)) {
+          if (c.get(key)?.cas === LOCKED_CAS) {
+            throw new CasMismatchError(
+              new MemDBError("upsert: key locked: " + key)
+            );
+          }
+        }
+        c.set(key, { value: cloneDeep(val), cas: newCas(), oldCas: undefined });
       },
       async remove(key: string, options?: RemoveOptions) {
         if (!c.has(key)) {
@@ -189,7 +247,7 @@ export class InMemoryDB {
               );
           }
         }
-        c.set(key, { value: val, cas: newCas() });
+        c.set(key, { value: cloneDeep(val), cas: newCas(), oldCas: undefined });
       },
     };
   }
