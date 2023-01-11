@@ -518,7 +518,6 @@ export function makeEventAPIFor<
       const metaResult = await DB.collection("_default").get(
         metaKey(league, id)
       );
-      console.log("metaResult", metaResult);
       const currentActionsResult = await DB.collection("_default").get(
         historyKey(league, id)
       );
@@ -544,11 +543,7 @@ export function makeEventAPIFor<
 
       // Test-resolve as a sanity check
       try {
-        const state = resolveEventState(
-          reducer,
-          currentActions.concat(newAction)
-        );
-        console.log("resolved state", state);
+        resolveEventState(reducer, currentActions.concat(newAction));
       } catch (e) {
         logger.info("Test-resolve of redo failed", {
           error: e instanceof Error ? e.message : e,
