@@ -12,6 +12,7 @@ import {
   UnstyledButton,
   Group,
   ThemeIcon,
+  DefaultMantineColor,
 } from "@mantine/core";
 
 import {
@@ -20,69 +21,87 @@ import {
   IconShieldLock,
   IconUsers,
   IconTrophy,
+  IconAlertOctagon,
 } from "@tabler/icons";
 import { setAuthToken } from "../lib/apiClient";
 import { Permission } from "../../common/types";
 import { PermGate } from "./PermGate";
+import { atom, useAtom, useSetAtom } from "jotai";
+import { dangerZoneAtom } from "../lib/globalState";
 
-export function Wrapper() {
-  const [opened, setOpened] = useState(false);
-  const navigate = useNavigate();
+const isNavOpenAtom = atom(false);
 
-  function MainLink(props: MainLinkProps) {
-    const { icon, color, label } = props;
-    const contents = (
-      <UnstyledButton
-        onClick={() => {
-          if ("onClick" in props) {
-            props.onClick();
-          }
-          setOpened(false);
-        }}
-        sx={(theme) => ({
-          display: "block",
-          width: "100%",
-          padding: theme.spacing.xs,
-          borderRadius: theme.radius.sm,
-          color:
-            theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
+type MainLinkProps = {
+  icon: React.ReactNode;
+  color: DefaultMantineColor;
+  label: string;
+  require?: Permission;
+  backgroundColor?: DefaultMantineColor;
+} & ({ link: string } | { onClick: () => unknown });
 
-          "&:hover": {
-            backgroundColor:
-              theme.colorScheme === "dark"
-                ? theme.colors.dark[6]
-                : theme.colors.gray[0],
-          },
-        })}
-      >
-        <Group>
-          <ThemeIcon color={color} variant="light">
-            {icon}
-          </ThemeIcon>
+function MainLink(props: MainLinkProps) {
+  const { icon, color, label } = props;
+  const setOpened = useSetAtom(isNavOpenAtom);
+  const contents = (
+    <UnstyledButton
+      onClick={() => {
+        if ("onClick" in props) {
+          props.onClick();
+        }
+        setOpened(false);
+      }}
+      sx={(theme) => ({
+        display: "block",
+        width: "100%",
+        padding: theme.spacing.xs,
+        borderRadius: theme.radius.sm,
+        backgroundColor:
+          props.backgroundColor && theme.colors[props.backgroundColor],
+        color:
+          theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
 
-          <Text size="sm">{label}</Text>
-        </Group>
-      </UnstyledButton>
-    );
-    const Wrapper = ({ children }: { children: JSX.Element }) => {
-      if (props.require) {
-        return (
-          <PermGate require={props.require} fallback={<></>}>
-            {children}
-          </PermGate>
-        );
-      }
-      return children;
-    };
-    if ("link" in props) {
+        "&:hover": {
+          backgroundColor:
+            theme.colorScheme === "dark"
+              ? theme.colors[props.backgroundColor || "dark"][6]
+              : theme.colors[props.backgroundColor || "gray"][0],
+        },
+      })}
+    >
+      <Group>
+        <ThemeIcon color={color} variant="light">
+          {icon}
+        </ThemeIcon>
+
+        <Text size="sm">{label}</Text>
+      </Group>
+    </UnstyledButton>
+  );
+  const Wrapper = ({ children }: { children: JSX.Element }) => {
+    if (props.require) {
       return (
-        <Wrapper>
-          <NavLink to={props.link}>{contents}</NavLink>
-        </Wrapper>
+        <PermGate require={props.require} fallback={<></>}>
+          {children}
+        </PermGate>
       );
     }
-    return <Wrapper>{contents}</Wrapper>;
+    return children;
+  };
+  if ("link" in props) {
+    return (
+      <Wrapper>
+        <NavLink to={props.link}>{contents}</NavLink>
+      </Wrapper>
+    );
   }
+  return <Wrapper>{contents}</Wrapper>;
+}
+
+export function Wrapper() {
+  const [opened, setOpened] = useAtom(isNavOpenAtom);
+  const navigate = useNavigate();
+  const [dangerZone, setDangerZone] = useAtom(dangerZoneAtom);
+
   return (
     <>
       <AppShell
@@ -126,6 +145,14 @@ export function Wrapper() {
                 require: "admin" as Permission,
               },
               {
+                icon: <IconAlertOctagon size={16} />,
+                color: dangerZone ? "red" : "orange",
+                backgroundColor: dangerZone ? "red" : undefined,
+                label: "Danger Zone!",
+                onClick: () => setDangerZone((d) => !d),
+                require: "dangerZone" as Permission,
+              },
+              {
                 icon: <IconUser size={16} />,
                 color: "yellow",
                 label: "Sign Out",
@@ -162,10 +189,3 @@ export function Wrapper() {
     </>
   );
 }
-
-type MainLinkProps = {
-  icon: React.ReactNode;
-  color: string;
-  label: string;
-  require?: Permission;
-} & ({ link: string } | { onClick: () => unknown });

@@ -118,6 +118,7 @@ function UserForm(props: UserFormProps) {
               ["read", "Read (can view events)"],
               ["write", "Write (can update events)"],
               ["admin", "Admin (can manage the system)"],
+              ["dangerZone", "Danger Zone"],
             ]}
           />
           <Button onClick={() => handleSubmit()} disabled={isSubmitting}>

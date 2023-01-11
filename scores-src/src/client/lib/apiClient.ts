@@ -446,6 +446,20 @@ export function usePOSTEventResync() {
   };
 }
 
+export function usePOSTEventResetHistory() {
+  const navigate = useNavigate();
+
+  return async (type: string, id: string) => {
+    const result = await fetcher(navigate)(
+      `/events/${type}/${id}/_resetHistory`,
+      {
+        method: "post",
+      },
+      200
+    );
+  };
+}
+
 export function useGETAuthMe() {
   const retval = useAPIRoute<User>("/auth/me", {}, 200);
   return retval;
