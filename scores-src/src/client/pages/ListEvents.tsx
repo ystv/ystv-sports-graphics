@@ -31,7 +31,7 @@ function EventsList(props: { league: string }) {
   async function resync(league: string, type: string, id: string) {
     setResyncing(`Event/${league}/${type}/${id}`);
     try {
-      await doResync(type, id);
+      await doResync(league, type, id);
       showNotification({
         message: "Resynced!",
         color: "blue",

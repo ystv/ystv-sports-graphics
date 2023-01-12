@@ -3,6 +3,10 @@ import { Action, BaseEventStateType, Reducer } from "./types";
 
 export const Init = createAction<Record<string, unknown>>("@@init");
 export const Edit = createAction<Record<string, unknown>>("@@edit");
+// ResetHistory is more like a real action than the others, so it doesn't have the @@ prefix
+export const ResetHistory = createAction<Record<string, unknown>>(
+  "System/resetHistory"
+);
 export const Undo = createAction<{ ts: number }>("@@undo");
 export const Redo = createAction<{ ts: number }>("@@redo");
 
@@ -17,7 +21,7 @@ export function wrapReducer<TState extends Record<string, unknown>>(
     if (Init.match(action as any)) {
       return action.payload;
     }
-    if (Edit.match(action as any)) {
+    if (Edit.match(action as any) || ResetHistory.match(action as any)) {
       return { ...state, ...action.payload };
     }
     return reducer(state, action);

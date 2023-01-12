@@ -139,7 +139,7 @@ export interface ActionFormProps<TState> {
   meta: EventMeta;
 }
 
-export type Permission = "SUDO" | "read" | "write" | "admin";
+export type Permission = "SUDO" | "read" | "write" | "admin" | "dangerZone";
 
 export interface User {
   username: string;

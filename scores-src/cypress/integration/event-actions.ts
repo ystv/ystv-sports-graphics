@@ -219,6 +219,26 @@ describe("Event Actions", () => {
         .should("not.contain", "1 minute");
     });
 
+    it("Reset History", function () {
+      cy.intercept({
+        method: "POST",
+        path: "/api/events/**/_resetHistory",
+      }).as("resetHistory");
+      cy.login("admin", "password");
+      cy.visit(`/events/test-league/football/${this.eventID}`);
+      cy.contains("Lancaster 1 - York 0").should("be.visible");
+
+      cy.get("[data-cy=resetHistoryBtn]").should("not.exist");
+
+      cy.get("[data-cy=dangerZoneBtn]").click();
+
+      cy.get("[data-cy=resetHistoryBtn]").click();
+      cy.contains("OK I'll").click();
+      cy.wait("@resetHistory");
+
+      cy.contains("Lancaster 0 - York 0").should("be.visible");
+    });
+
     it("Declare Winner", function () {
       cy.intercept({
         method: "PUT",
