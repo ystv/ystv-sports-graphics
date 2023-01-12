@@ -1,3 +1,4 @@
+#syntax=docker/dockerfile:1
 ARG NODECG_VERSION=1.9.0-ystv
 FROM registry.comp.ystv.co.uk/nodecg/nodecg:v${NODECG_VERSION} AS build
 ENV CI=true
@@ -13,7 +14,7 @@ COPY scores-src/package.json /app/scores-src/
 COPY bundle-src/package.json /app/bundle-src/
 COPY yarn.lock /app/
 
-RUN yarn --immutable --inline-builds && rm .yarn/cache/*
+RUN --mount=type=cache,target=.yarn/cache/,id=sports-graphics-yarn yarn --immutable --inline-builds
 # Everything up to here *must* be identical to Dockerfile.common
 
 COPY scores-src/ /app/scores-src/
