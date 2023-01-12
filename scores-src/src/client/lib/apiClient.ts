@@ -47,7 +47,14 @@ const fetcher =
       (import.meta.env.PUBLIC_API_BASE || "/api") + endpoint,
       req
     ).then(async (res) => {
-      console.info(endpoint, "status", res.status, "expected", expectedStatus);
+      console.info(
+        req?.method ?? "get",
+        endpoint,
+        "status",
+        res.status,
+        "expected",
+        expectedStatus
+      );
       if (typeof expectedStatus === "number") {
         if (res.status !== expectedStatus) {
           console.warn(

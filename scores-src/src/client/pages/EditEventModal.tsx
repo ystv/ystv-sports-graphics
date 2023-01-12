@@ -1,5 +1,6 @@
 import { Alert, Button, Modal, Stack, Title } from "@mantine/core";
 import { Form as FormikForm, Formik, FormikHelpers } from "formik";
+import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import invariant from "tiny-invariant";
@@ -8,6 +9,7 @@ import { EVENT_COMPONENTS, EVENT_TYPES } from "../../common/sports";
 import { EventCreateEditSchema } from "../../common/types";
 import { TeamSelectField } from "../components/TeamSelect";
 import { useGETEvent, usePUTEvent } from "../lib/apiClient";
+import { dangerZoneAtom } from "../lib/globalState";
 
 export function EditEventForm() {
   const { league, type, id } = useParams();
@@ -19,6 +21,7 @@ export function EditEventForm() {
   const update = usePUTEvent();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const nav = useNavigate();
+  const dangerZone = useAtomValue(dangerZoneAtom);
 
   const schema = EventCreateEditSchema.concat(EVENT_TYPES[type].stateSchema);
 
@@ -89,7 +92,7 @@ export function EditEventForm() {
                 {submitError !== null && (
                   <Alert>Could not save! {submitError}</Alert>
                 )}
-                {import.meta.env.DEV && (
+                {(import.meta.env.DEV || dangerZone) && (
                   <code data-cy="errors">{JSON.stringify(errors)}</code>
                 )}
               </Stack>
