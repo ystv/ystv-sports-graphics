@@ -5,8 +5,8 @@ const { components, typeInfo } = createGenericSport(
   [1],
   undefined,
   undefined,
-  false,
-  true
+  true,
+  false
 );
 
 export type State = ReturnType<typeof typeInfo["reducer"]>;
