@@ -1,7 +1,7 @@
 import * as Yup from "yup";
 
 /** An upward clock starts from zero and counts up infinitely. */
-export const UpwardClock = Yup.object({
+export const UpwardClock: Yup.SchemaOf<UpwardClockType> = Yup.object({
   type: Yup.mixed<"upward">().required().equals(["upward"]).default("upward"),
   state: Yup.mixed<"running" | "stopped">()
     .oneOf(["running", "stopped"])
@@ -11,7 +11,12 @@ export const UpwardClock = Yup.object({
   timeLastStartedOrStopped: Yup.number().required().default(0),
 }).required();
 
-export type UpwardClockType = Yup.InferType<typeof UpwardClock>;
+export interface UpwardClockType {
+  type: "upward";
+  state: "running" | "stopped";
+  wallClockLastStarted: number;
+  timeLastStartedOrStopped: number;
+}
 
 /** A downward clock counts down to zero. */
 export const DownwardClock = Yup.object({
@@ -31,7 +36,7 @@ export type DownwardClockType = Yup.InferType<typeof DownwardClock>;
 
 export type ClockType =
   | Yup.InferType<typeof UpwardClock>
-  | Yup.InferType<typeof UpwardClock>;
+  | Yup.InferType<typeof DownwardClock>;
 
 function isDownward(clock: ClockType): clock is DownwardClockType {
   return clock.type === "downward";

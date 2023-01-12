@@ -18,8 +18,8 @@ import {
   NumberInput,
   Stack,
   Title,
+  Input,
   SegmentedControl,
-  InputWrapper,
   PasswordInput,
   MultiSelect,
   Group,
@@ -143,7 +143,7 @@ export function DateField(props: DateFieldProps) {
     [props.format, value]
   );
   return (
-    <InputWrapper
+    <Input.Wrapper
       label={props.title}
       description={props.helper}
       error={meta.touched && meta.error}
@@ -167,7 +167,7 @@ export function DateField(props: DateFieldProps) {
           />
         )}
       </Group>
-    </InputWrapper>
+    </Input.Wrapper>
   );
 }
 
@@ -253,7 +253,7 @@ export function SegmentedSelectField(props: SegmentedSelectFieldProps) {
 
   const [field, meta, helpers] = useField(props.name);
   return (
-    <InputWrapper description={props.helper}>
+    <Input.Wrapper description={props.helper}>
       <SegmentedControl
         fullWidth
         data={props.values.map((e) => ({ value: e[0], label: e[1] }))}
@@ -262,7 +262,7 @@ export function SegmentedSelectField(props: SegmentedSelectFieldProps) {
         value={field.value}
         data-test-form-field={props.name}
       />
-    </InputWrapper>
+    </Input.Wrapper>
   );
 }
 
