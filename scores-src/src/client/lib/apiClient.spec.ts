@@ -80,12 +80,7 @@ integration("apiClient", () => {
       body,
     });
     if (res.status !== status) {
-      const text = await res.text();
-      // HACK
-      if (text.includes(`"needsBootstrap":true`)) {
-        return await setupReq(endpoint, method, status, bodyIn, token);
-      }
-      throw new Error(`Error in ${method} ${endpoint}: ${text}`);
+      throw new Error(await res.text());
     }
     return await res.json();
   }
