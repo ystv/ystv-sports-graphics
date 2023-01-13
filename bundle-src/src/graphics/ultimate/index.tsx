@@ -40,11 +40,11 @@ export function AllUltimateGraphics() {
       <GraphicContainer>
         {control.matchStatusPopup.visible && (
           <MatchStatusPopup
-            homeName={state.homeTeam.abbreviation}
+            homeName={state.homeTeam.name}
             homePrimaryColor={state.homeTeam.primaryColour}
             homeCrestAttachmentID={state.homeTeam.crestAttachmentID}
             homeScore={state.scoreHome}
-            awayName={state.awayTeam.abbreviation}
+            awayName={state.awayTeam.name}
             awayPrimaryColor={state.awayTeam.primaryColour}
             awaySecondaryColor={state.awayTeam.secondaryColour}
             awayCrestAttachmentID={state.awayTeam.crestAttachmentID}
