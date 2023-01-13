@@ -49,7 +49,7 @@ export function createUserManagementRouter() {
     permissions: Yup.array()
       .of(
         Yup.mixed<Permission>()
-          .oneOf(["admin", "read", "write", "SUDO"])
+          .oneOf(["admin", "read", "write", "SUDO", "dangerZone"])
           .required()
       )
       .required(),
