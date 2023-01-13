@@ -42,7 +42,8 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
               }}
             />
           )}
-          {props.homeScore}
+          <div className={styles.Score}>{props.homeScore}</div>
+          <div className={styles.Name}>{props.homeName}</div>
         </div>
         <div
           className={styles.Box}
@@ -61,7 +62,8 @@ export function MatchStatusPopup(props: MatchStatusPopupProps) {
               }}
             />
           )}
-          {props.awayScore}
+          <div className={styles.Score}>{props.awayScore}</div>
+          <div className={styles.Name}>{props.awayName}</div>
         </div>
         <div className={styles.Banner}>{props.banner}</div>
       </div>
