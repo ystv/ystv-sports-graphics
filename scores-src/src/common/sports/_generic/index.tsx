@@ -61,12 +61,12 @@ const PlayerSchema: Yup.SchemaOf<PlayerType> = Yup.object({
 
 interface Point {
   side: "home" | "away";
-  player: string | null;
+  player?: string | null;
 }
 
 const PointSchema: Yup.SchemaOf<Point> = Yup.object({
   side: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).required(),
-  player: Yup.string().uuid().required().nullable(),
+  player: Yup.string().uuid().optional().nullable(),
 });
 
 /**
