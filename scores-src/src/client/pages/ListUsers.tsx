@@ -29,7 +29,7 @@ const EditUserSchema = Yup.object({
   permissions: Yup.array()
     .of(
       Yup.mixed<Permission>()
-        .oneOf(["SUDO", "read", "write", "admin"])
+        .oneOf(["SUDO", "read", "write", "admin", "dangerZone"])
         .required()
     )
     .required(),
