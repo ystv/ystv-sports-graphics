@@ -309,6 +309,10 @@ export function LiveScores() {
     () => EVENT_TYPES[type].hiddenActions ?? new Set<any>(),
     [type]
   );
+  const dangerousActions = useMemo(
+    () => EVENT_TYPES[type].dangerousActions ?? new Set(),
+    [type]
+  );
   const doAction = usePOSTEventAction();
   const modals = useModals();
 
@@ -477,14 +481,20 @@ export function LiveScores() {
                 }
                 return validFn(state);
               })
-              .map((actionType) => (
-                <Button
-                  key={actionType}
-                  onClick={() => setActiveAction(actionType)}
-                >
-                  {startCase(actionType)}
-                </Button>
-              ))}
+              .map((actionType) => {
+                if (dangerousActions.has(actionType) && !dangerZone) {
+                  return null;
+                }
+                return (
+                  <Button
+                    key={actionType}
+                    onClick={() => setActiveAction(actionType)}
+                    color={dangerousActions.has(actionType) ? "red" : "blue"}
+                  >
+                    {startCase(actionType)}
+                  </Button>
+                );
+              })}
             <Button
               color="yellow"
               variant="white"

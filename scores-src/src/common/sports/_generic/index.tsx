@@ -207,6 +207,23 @@ export function createGenericSport(
           return wrapAction({ payload });
         },
       },
+      resetState: {
+        reducer(state) {
+          state.segmentPoints = [];
+          state.segment = 0;
+          state.scoreHome = 0;
+          state.scoreAway = 0;
+          state.clock = {
+            type: isDownward ? "downward" : "upward",
+            state: "stopped",
+            timeLastStartedOrStopped: 0,
+            wallClockLastStarted: 0,
+          };
+        },
+        prepare() {
+          return wrapAction({ payload: {} });
+        },
+      },
     },
   });
 
@@ -222,6 +239,7 @@ export function createGenericSport(
       points: Yup.number().required().min(0),
       player: Yup.string().uuid().optional().nullable(),
     }),
+    resetState: Yup.object({}),
   };
 
   const actionValidChecks: ActionValidChecks<State, typeof slice["actions"]> = {
@@ -287,6 +305,7 @@ export function createGenericSport(
         </span>
       );
     },
+    resetState: () => <strong>State reset.</strong>,
   };
 
   const hiddenActions = new Set(["addPoints"] as Array<
@@ -306,6 +325,7 @@ export function createGenericSport(
     actionValidChecks,
     actionRenderers,
     hiddenActions,
+    dangerousActions: new Set(["resetState"] as const),
   };
 
   const components: EventComponents<typeof slice["actions"], State> = {
