@@ -175,6 +175,7 @@ export interface EventTypeInfo<
   actionValidChecks: ActionValidChecks<TState, TActions>;
   actionRenderers: ActionRenderers<TActions, any, TState>;
   hiddenActions?: Set<keyof TActions>;
+  dangerousActions?: Set<keyof TActions>;
 }
 
 export interface EventComponents<
