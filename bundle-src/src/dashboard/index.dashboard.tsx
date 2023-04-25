@@ -63,7 +63,7 @@ function Dashboard() {
       defaultValue: null,
     }
   );
-  const eventState = useOnlyReplicantValue<EventMeta | null>(
+  const eventMeta = useOnlyReplicantValue<EventMeta | null>(
     "eventState",
     undefined,
     {
@@ -76,7 +76,7 @@ function Dashboard() {
     type = typeVal;
   }
 
-  const EventController = eventState
+  const EventController = eventMeta
     ? SportControllers[type] ?? (() => <b>no controller for {type}?!</b>)
     : () => null;
 
@@ -85,7 +85,12 @@ function Dashboard() {
       <MantineProvider theme={{}}>
         <Title order={2}>Scores service: {connectionState}</Title>
         <Title order={2}>
-          Selected event: {eventID === null ? "<none>" : eventID}
+          Selected event:{" "}
+          {eventID === null
+            ? "<none>"
+            : eventMeta === null
+            ? "<no meta?>"
+            : eventMeta.name}
         </Title>
         <Button nodecg-dialog="select-event">Select Event</Button>
         <Button onClick={() => nodecg.sendMessage("resync")} color="orange">
