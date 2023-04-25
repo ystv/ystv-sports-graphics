@@ -22,6 +22,7 @@ import { TableTennisDashboard } from "./events/tableTennis";
 import { VolleyballDashboard } from "./events/volleyball";
 import { HockeyDashboard } from "./events/hockey";
 import { SwimmingDashboard } from "./events/swimming";
+import { KorfballDashboard } from "./events/korfball";
 
 const SportControllers: Record<string, React.ComponentType> = {
   netball: NetballDashboard,
@@ -40,6 +41,7 @@ const SportControllers: Record<string, React.ComponentType> = {
   tableTennis: TableTennisDashboard,
   volleyball: VolleyballDashboard,
   swimming: SwimmingDashboard,
+  korfball: KorfballDashboard,
 };
 
 function Dashboard() {
