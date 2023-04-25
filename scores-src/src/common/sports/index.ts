@@ -66,6 +66,10 @@ import {
   typeInfo as korfballTypeInfo,
   components as korfballComponents,
 } from "./korfball";
+import {
+  typeInfo as octopushTypeInfo,
+  components as octopushComponents,
+} from "./octopush";
 import { EventComponents, EventTypeInfo } from "../types";
 
 export const EVENT_TYPES: Record<
@@ -90,6 +94,7 @@ export const EVENT_TYPES: Record<
   hockey: hockeyTypeInfo,
   swimming: swimmingTypeInfo,
   korfball: korfballTypeInfo,
+  octopush: octopushTypeInfo,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,4 +116,5 @@ export const EVENT_COMPONENTS: Record<string, EventComponents<any, any>> = {
   hockey: hockeyComponents,
   swimming: swimmingComponents,
   korfball: korfballComponents,
+  octopush: octopushComponents,
 };
