@@ -115,15 +115,15 @@ export = async (nodecg: NodeCG) => {
 
   function maybeResubscribe() {
     if (ws === null) {
-      nodecg.log.warn("MR: called when ws was still null!");
+      nodecg.log.warn("maybeResubscribe: called when ws was still null!");
       return;
     }
     if (ws.readyState !== ws.OPEN) {
-      nodecg.log.warn("MR: called when ws was not open!");
+      nodecg.log.warn("maybeResubscribe: called when ws was not open!");
       return;
     }
     if (subscribedId === eventIDRep.value) {
-      nodecg.log.debug("MR: Already subscribed to correct ID");
+      nodecg.log.debug("maybeResubscribe: Already subscribed to correct ID");
       // To avoid confusing users, set state to READY if we don't want an event
       if (subscribedId === null) {
         stateRep.value = "READY";
@@ -137,14 +137,14 @@ export = async (nodecg: NodeCG) => {
       return;
     }
     if (subscribedId !== null && eventIDRep.value !== subscribedId) {
-      nodecg.log.debug("MR: Want unsubscribe");
+      nodecg.log.debug("maybeResubscribe: Want unsubscribe");
       send({
         kind: "UNSUBSCRIBE",
         to: subscribedId,
       });
     }
     if (eventIDRep.value !== null && eventIDRep.value !== subscribedId) {
-      nodecg.log.debug("MR: want subscribe", eventIDRep.value);
+      nodecg.log.debug("maybeResubscribe: want subscribe", eventIDRep.value);
       send({
         kind: "SUBSCRIBE",
         to: eventIDRep.value,

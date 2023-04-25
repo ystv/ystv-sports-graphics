@@ -128,7 +128,7 @@ export function createLiveRouter() {
       mid?: string
     ) {
       const idParts = fullyQualifiedId.split("/");
-      invariant(idParts.length === 4, "dCTSD: invalid FQID!");
+      invariant(idParts.length === 4, "cASCS: invalid FQID!");
       const [_, _2, eventType] = idParts;
       const history = historyCache.get(fullyQualifiedId);
       invariant(Array.isArray(history), "cASCS: no history");
@@ -156,7 +156,7 @@ export function createLiveRouter() {
           ).content;
           historyCache.set(data.id, history);
           if (mode === "state") {
-            calculateAndSendCurrentState(data.id);
+            await calculateAndSendCurrentState(data.id);
           } else {
             await send({
               kind: "BULK_ACTIONS",
@@ -192,14 +192,14 @@ export function createLiveRouter() {
         );
       }
 
-      logger.debug("dCTSD: history updated", {
+      logger.debug("handleAction: history updated", {
         latest: history[history.length - 1],
         len: history.length,
         payload: data.payload,
       });
       historyCache.set(data.id, history);
       if (mode === "state") {
-        calculateAndSendCurrentState(data.id, mid);
+        await calculateAndSendCurrentState(data.id, mid);
       } else {
         await send({
           kind: "ACTION",
@@ -255,10 +255,6 @@ export function createLiveRouter() {
         logger.silly("WS recv", payload);
 
         switch (payload.kind) {
-          case "PING":
-            await send({ kind: "PONG" });
-            break;
-
           case "SUBSCRIBE": {
             ensure(
               typeof payload.to === "string",
@@ -345,6 +341,10 @@ export function createLiveRouter() {
             break;
           }
 
+          case "PING":
+            await send({ kind: "PONG" });
+          // fall through
+
           case "PONG":
             // Take this as an opportunity to renew their subscriptions key,
             // so it'll expire an hour after they're last seen
@@ -356,7 +356,7 @@ export function createLiveRouter() {
             break;
 
           default: {
-            // @ts-expect-error payload.kind is `never` because this is an exhaustive switch
+            // @ts-expect-error payload.kind is `never` because this is an exhaustive switch (if it isn't, we've missed a message kind!)
             const kind = payload.kind as string;
             logger.info("Unexpected WS message kind", { kind });
           }
