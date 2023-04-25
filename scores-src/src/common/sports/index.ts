@@ -62,6 +62,10 @@ import {
   typeInfo as swimmingTypeInfo,
   components as swimmingComponents,
 } from "./swimming";
+import {
+  typeInfo as korfballTypeInfo,
+  components as korfballComponents,
+} from "./korfball";
 import { EventComponents, EventTypeInfo } from "../types";
 
 export const EVENT_TYPES: Record<
@@ -85,6 +89,7 @@ export const EVENT_TYPES: Record<
   futsal: futsalTypeInfo,
   hockey: hockeyTypeInfo,
   swimming: swimmingTypeInfo,
+  korfball: korfballTypeInfo,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,4 +110,5 @@ export const EVENT_COMPONENTS: Record<string, EventComponents<any, any>> = {
   futsal: futsalComponents,
   hockey: hockeyComponents,
   swimming: swimmingComponents,
+  korfball: korfballComponents,
 };
