@@ -13,23 +13,25 @@ import {
   RemoveOptions,
   GetAndLockOptions,
   UnlockOptions,
+  Cas,
 } from "couchbase";
 import { cloneDeep, get, isEqual, set } from "lodash-es";
 import binding from "couchbase/dist/binding";
+import { CouchbaseCas } from "../dbHelpers";
 
 interface Rec {
   value: unknown;
-  cas: number;
-  oldCas?: number;
+  cas: string;
+  oldCas?: string;
 }
 
-function newCas(): number {
-  return Math.round(Math.random() * 1_000_000_000);
+function newCas(): string {
+  return Math.round(Math.random() * 1_000_000_000).toString(10);
 }
 
 class MemDBError extends Error {}
 
-const LOCKED_CAS = 0xff;
+const LOCKED_CAS = "-1";
 
 export class InMemoryDB {
   private collections: Map<string, Map<string, Rec>> = new Map();
@@ -75,7 +77,9 @@ export class InMemoryDB {
         }
         return {
           content: cloneDeep(val.value),
-          cas: val.cas,
+          cas: CouchbaseCas.from(val.cas),
+          value: undefined,
+          expiry: undefined,
         } as GetResult;
       },
       /**
@@ -97,13 +101,13 @@ export class InMemoryDB {
         c.set(key, { ...val, cas: LOCKED_CAS, oldCas });
         return { ...val, cas: oldCas };
       },
-      async unlock(key: string, cas: number, options?: UnlockOptions) {
+      async unlock(key: string, cas: Cas, options?: UnlockOptions) {
         const val = c.get(key);
         if (!val) {
           console.warn("Document not found: ", key);
           throw new DocumentNotFoundError(new MemDBError(key));
         }
-        if (val.oldCas !== cas) {
+        if (val.oldCas !== cas.toString()) {
           throw new CasMismatchError(
             new MemDBError("Unlock CAS mismatch: " + key)
           );
@@ -123,7 +127,7 @@ export class InMemoryDB {
         }
         if (options) {
           if (options.cas) {
-            if (c.get(key)?.cas !== options.cas) {
+            if (c.get(key)?.cas !== options.cas.toString()) {
               throw new CasMismatchError(
                 new MemDBError(`expected ${c.get(key)?.cas} got ${options.cas}`)
               );
@@ -148,7 +152,7 @@ export class InMemoryDB {
         }
         if (options) {
           if (options.cas) {
-            if (c.get(key)?.cas !== options.cas) {
+            if (c.get(key)?.cas !== options.cas.toString()) {
               throw new CasMismatchError(
                 new MemDBError(`expected ${c.get(key)?.cas} got ${options.cas}`)
               );
@@ -167,7 +171,7 @@ export class InMemoryDB {
         }
         if (options) {
           if (options.cas) {
-            if (c.get(key)?.cas !== options.cas) {
+            if (c.get(key)?.cas !== options.cas.toString()) {
               throw new CasMismatchError(
                 new MemDBError(`expected ${c.get(key)?.cas} got ${options.cas}`)
               );
@@ -178,10 +182,10 @@ export class InMemoryDB {
         let val = c.get(key)!.value as any;
         for (const op of specs) {
           switch (op._op) {
-            case binding.LCBX_SDCMD_ARRAY_ADD_LAST:
+            case binding.protocol_subdoc_opcode.array_push_last:
               val = [...(val as unknown[]), JSON.parse(op._data)];
               break;
-            case binding.LCBX_SDCMD_REMOVE:
+            case binding.protocol_subdoc_opcode.remove:
               if (op._path[op._path.length - 1] == "]") {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const [_, arrayPath, index] = /(.*?)\[([0-9-]+)\]$/.exec(
@@ -201,7 +205,7 @@ export class InMemoryDB {
                 );
               }
               break;
-            case binding.LCBX_SDCMD_ARRAY_INSERT:
+            case binding.protocol_subdoc_opcode.array_insert:
               if (op._path[op._path.length - 1] == "]") {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const [_, arrayPath, index] = /(.*?)\[([0-9-]+)\]$/.exec(
@@ -221,7 +225,7 @@ export class InMemoryDB {
                 );
               }
               break;
-            case binding.LCBX_SDCMD_REPLACE:
+            case binding.protocol_subdoc_opcode.replace:
               if (op._path[op._path.length - 1] == "]") {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const [_, arrayPath, index] = /(.*?)\[([0-9-]+)\]$/.exec(

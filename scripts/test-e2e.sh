@@ -35,10 +35,12 @@ fi
 if ! curl -fs -o /dev/null http://localhost:8000/healthz; then
   echo "Starting scores server..."
   yarn prod:server >"$SCRIPT_DIR/../test-server.log" 2>&1 &
+  curl --retry 30 --retry-delay 0 --retry-all-errors -fs -o /dev/null http://localhost:8000/healthz
 fi
 if ! curl -fs -o /dev/null http://localhost:3000; then
   echo "Starting scores client..."
   yarn prod:client >/dev/null &
+  curl --retry 30 --retry-delay 0 --retry-all-errors -fs -o /dev/null http://localhost:3000
 fi
 
 popd || exit 1
@@ -69,6 +71,7 @@ EOF
 
   echo "Starting NodeCG..."
   node "$SCRIPT_DIR/../../../index.js" >"$SCRIPT_DIR/../test-nodecg.log" 2>&1 &
+  curl --retry 30 --retry-delay 0 --retry-all-errors -fs -o /dev/null http://localhost:9090
   popd || exit 1
 fi
 

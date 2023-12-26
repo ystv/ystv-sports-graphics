@@ -17,6 +17,7 @@ if ! curl -fs -o /dev/null http://localhost:8000/healthz; then
 
   echo "Starting scores server..."
   yarn prod:server >"$SCRIPT_DIR/../test-server.log" 2>&1 &
+  curl --retry 30 --retry-delay 0 --retry-all-errors -fs -o /dev/null http://localhost:8000/healthz
 fi
 
 # Run tests
