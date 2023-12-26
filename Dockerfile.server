@@ -23,12 +23,13 @@ RUN yarn build:server
 FROM node:16-slim
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
-# needed for libcouchbase
-COPY --from=build /app/node_modules/couchbase/build/Release/couchbase_impl.node /app/addon-build/release/install-root/couchbase_impl.node
+WORKDIR /app
 COPY --from=build /app/scores-src/config /app/config
 COPY --from=build /app/scores-src/package.json /app/
+# couchbase has native dependencies - this'll install the right one for the Dockerfile platform
+# the awk command extracts the installed version, to make sure we download the same one
+RUN npm install argon2@$( npm list argon2 | awk -F@ '/argon2/ { print $2}' ) couchbase@$( npm list couchbase | awk -F@ '/couchbase/ { print $2}' )
 COPY --from=build /app/scores-src/dist/ /app/
-WORKDIR /app
 EXPOSE 8000
 CMD ["--enable-source-maps", "index.server.js"]
 
