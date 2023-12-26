@@ -8,6 +8,7 @@ import {
   DocumentNotFoundError,
   MutateInSpec,
   QueryScanConsistency,
+  Cas,
 } from "couchbase";
 import { dispatchChangeToEvent, resync } from "./updatesRepo";
 import {
@@ -35,6 +36,7 @@ import {
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
 import { cloneDeep, identity, isEqual, omit, pickBy } from "lodash-es";
 import { leagueKey } from "./leagueRoutes";
+import { CouchbaseCas } from "./dbHelpers";
 
 export function makeEventAPIFor<
   TState extends BaseEventStateType,
@@ -262,7 +264,7 @@ export function makeEventAPIFor<
         historyKey(league, id),
         [MutateInSpec.arrayAppend("", editAction)],
         {
-          cas: cas ?? history.cas,
+          cas: cas ? CouchbaseCas.from(cas) : history.cas,
         }
       );
 
