@@ -13,6 +13,7 @@ import { ensure } from "./errs";
 import { BadRequest } from "http-errors";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
 import { getLogger } from "./loggingSetup";
+import { CouchbaseCas } from "./dbHelpers";
 
 export function createEventsRouter() {
   const router = Router();
@@ -134,7 +135,7 @@ export function createEventsRouter() {
         "league",
       ]).validate(inputData, { abortEarly: false, stripUnknown: true });
       await DB.collection("_default").replace(metaKey(league, type, id), val, {
-        cas: cas,
+        cas: cas ? CouchbaseCas.from(cas) : undefined,
       });
       res.status(200).json(val);
     })

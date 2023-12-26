@@ -93,7 +93,7 @@ export function createUserManagementRouter() {
       };
       const data = await DB.collection("_default").getAndLock(id, 10);
       try {
-        if (payload._cas && data.cas != payload._cas) {
+        if (payload._cas && data.cas.toString() != payload._cas) {
           throw new Conflict("someone else has updated this user");
         }
         newData.passwordHash = data.content.passwordHash;
