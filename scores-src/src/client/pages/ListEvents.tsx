@@ -119,8 +119,14 @@ export function ListEvents() {
 
   useEffect(() => {
     if (leagues?.length > 0 && selectedLeague === null) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedLeague(leagues[0].slug!);
+      const def = leagues.find((x) => x.default);
+      if (def) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        setSelectedLeague(def.slug!);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        setSelectedLeague(leagues[0].slug!);
+      }
     }
   }, [selectedLeague, leagues]);
 
