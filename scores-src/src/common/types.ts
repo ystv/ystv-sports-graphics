@@ -91,6 +91,7 @@ export interface League {
   name: string;
   startDate: string;
   endDate: string;
+  default?: boolean;
 }
 
 export const LeagueSchema: Yup.SchemaOf<League> = Yup.object({
@@ -98,6 +99,7 @@ export const LeagueSchema: Yup.SchemaOf<League> = Yup.object({
   name: Yup.string().required(),
   startDate: Yup.string().required(),
   endDate: Yup.string().required(),
+  default: Yup.bool().optional(),
 });
 
 export interface ActionMeta {

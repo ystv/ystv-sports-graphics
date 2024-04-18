@@ -73,8 +73,20 @@ export function CreateEventModal() {
             <SelectField
               title="League"
               name="league"
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              values={leagues.data?.map((l) => [l.slug!, l.name]) ?? []}
+              values={
+                leagues.data
+                  ?.sort((a, b) => {
+                    if (a.default) {
+                      return -1;
+                    }
+                    if (b.default) {
+                      return 1;
+                    }
+                    return a.name.localeCompare(b.name);
+                  })
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                  ?.map((l) => [l.slug!, l.name]) ?? []
+              }
               rootAttrs={{ "data-cy": "selectLeague" }}
               required
             />
