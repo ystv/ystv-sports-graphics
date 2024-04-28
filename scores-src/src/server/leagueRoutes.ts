@@ -21,6 +21,7 @@ export default function createLeaguesRouter() {
       const result = await DB.query(
         `SELECT RAW l FROM _default l
       WHERE meta(l).id LIKE 'League/%'
+      AND (hidden IS MISSING OR hidden = false)
       ORDER BY MILLIS(l.startDate)`,
         { scanConsistency: QueryScanConsistency.RequestPlus }
       );
