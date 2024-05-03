@@ -61,12 +61,12 @@ export function AllVolleyballGraphics() {
             homeName={state.homeTeam.abbreviation}
             homePrimaryColor={state.homeTeam.primaryColour}
             homeCrestAttachmentID={state.homeTeam.crestAttachmentID}
-            homeScore={state.currentSetScoreHome}
+            homeScore={state.setsHome}
             awayName={state.awayTeam.abbreviation}
             awayPrimaryColor={state.awayTeam.primaryColour}
             awaySecondaryColor={state.awayTeam.secondaryColour}
             awayCrestAttachmentID={state.awayTeam.crestAttachmentID}
-            awayScore={state.currentSetScoreAway}
+            awayScore={state.setsAway}
             banner=""
           />
         )}
