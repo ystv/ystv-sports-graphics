@@ -13,7 +13,9 @@ function bannerMsg(round: number) {
 
 export function AllRosesFencingGraphics() {
   const state = useOnlyReplicantValue<State & EventMeta>("eventState");
-  const control = useOnlyReplicantValue<ControlRosesFencing>("control-fencing");
+  const control = useOnlyReplicantValue<ControlRosesFencing>(
+    "control-rosesFencing"
+  );
 
   const now = useTime();
 
