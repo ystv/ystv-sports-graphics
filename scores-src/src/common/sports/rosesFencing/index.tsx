@@ -14,7 +14,7 @@
 // //     <div>
 // //       <h2>Add Points</h2>
 // //       <p>Current Score: {currentState.}</p>
-// //       <inputt
+// //       <input
 // //         type="number"
 // //         value={meta.state.points}
 // //         onChange={(e) => meta.setState({ points: parseInt(e.target.value) })}
@@ -26,7 +26,6 @@
 //
 // export type State = ReturnType<typeof typeInfo["reducer"]>;
 //
-// export { components, typeInfo };
 
 import * as Yup from "yup";
 import { clockTimeAt, formatMMSSMS } from "../../clock";
@@ -334,3 +333,5 @@ const components: EventComponents<typeof slice["actions"], State> = {
     },
   },
 };
+
+export { components, typeInfo };
