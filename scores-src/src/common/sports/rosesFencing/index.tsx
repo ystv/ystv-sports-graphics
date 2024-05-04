@@ -162,6 +162,21 @@ const slice = createSlice({
         return wrapAction({ payload });
       },
     },
+    doubleTap: {
+      reducer(state) {
+        state.segmentPoints[state.segmentPoints.length - 1].push({
+          side: "home",
+          player: null,
+        });
+        state.segmentPoints[state.segmentPoints.length - 1].push({
+          side: "away",
+          player: null,
+        });
+      },
+      prepare() {
+        return wrapAction({ payload: {} });
+      },
+    },
     resetState: {
       reducer(state) {
         state.segmentPoints = [];
@@ -186,6 +201,7 @@ const actionPayloadValidators: ActionPayloadValidators<
     player: Yup.string().uuid().optional().nullable(),
   }),
   resetState: Yup.object({}),
+  doubleTap: Yup.object({}),
 };
 
 const actionValidChecks: ActionValidChecks<State, typeof slice["actions"]> = {};
@@ -218,10 +234,11 @@ const actionRenderers: ActionRenderers<
       </span>
     );
   },
+  doubleTap: () => <span>Double touch</span>,
   resetState: () => <strong>State reset.</strong>,
 };
 
-const hiddenActions = new Set(["addPoints"] as Array<
+const hiddenActions = new Set(["addPoints", "doubleTap"] as Array<
   keyof typeof slice["actions"]
 >);
 
@@ -268,8 +285,7 @@ const components: EventComponents<typeof slice["actions"], State> = {
             <Button
               disabled={state.segmentPoints.length === 0}
               onClick={() => {
-                act("addPoints", { side: "home", points: 1 });
-                act("addPoints", { side: "away", points: 1 });
+                act("doubleTap", undefined);
               }}
               size="lg"
             >
