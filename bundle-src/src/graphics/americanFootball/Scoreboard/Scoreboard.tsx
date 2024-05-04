@@ -22,6 +22,7 @@ export interface ScoreboardProps {
   isTimerShown: boolean;
   quarter: number;
   time: number;
+  quarterTitle?: string;
 }
 
 export function Scoreboard({
@@ -39,6 +40,7 @@ export function Scoreboard({
   isTimerShown = false,
   time = 0,
   quarter = 1,
+  quarterTitle = "Q",
 }: ScoreboardProps) {
   const now = useTime();
 
@@ -77,7 +79,7 @@ export function Scoreboard({
           score={awayScore}
         />
         <NameBox
-          name={"Q" + quarter}
+          name={quarterTitle + quarter}
           primaryColor="var(--ystv-dark)"
           sheen={false}
         />
