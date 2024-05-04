@@ -79,7 +79,7 @@ export function Scoreboard({
           score={awayScore}
         />
         <NameBox
-          name={quarterTitle + quarter}
+          name={quarterTitle + " " + quarter}
           primaryColor="var(--ystv-dark)"
           sheen={false}
         />

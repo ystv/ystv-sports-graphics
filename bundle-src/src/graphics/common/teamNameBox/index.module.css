@@ -1,5 +1,5 @@
 .Background {
-  width: 94rem;
+  min-width: 94rem;
   height: 40rem;
   box-shadow: inset 0 7rem 1rem 0 rgba(255, 255, 255, 0.26);
   position: relative;
@@ -29,8 +29,9 @@
 }
 
 .Text {
-  width: 94rem;
+  min-width: 94rem;
   height: 40rem;
+  padding: 0 8rem;
   text-shadow: 0 0 6rem rgba(0, 0, 0, 0.35);
   font-family: OpenSans;
   font-size: 24rem;

@@ -36,7 +36,7 @@ export function NameBox(props: Props & React.HTMLAttributes<HTMLDivElement>) {
         />
       )}
       <h5 className={styles.Text} style={{ color: secondaryColor }}>
-        {name.substring(0, 4).toUpperCase()}
+        {name.toUpperCase()}
       </h5>
     </div>
   );
