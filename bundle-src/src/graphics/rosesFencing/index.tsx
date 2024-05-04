@@ -1,5 +1,5 @@
 import { useOnlyReplicantValue } from "common/useReplicant";
-import type { State } from "@ystv/scores/src/common/sports/hockey";
+import type { State } from "@ystv/scores/src/common/sports/rosesFencing";
 import { ControlRosesFencing } from "../../common/types/control-rosesFencing";
 import { GraphicContainer } from "../common/container";
 import { Scoreboard } from "../americanFootball/Scoreboard/Scoreboard";
