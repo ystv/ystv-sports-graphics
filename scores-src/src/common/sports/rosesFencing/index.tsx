@@ -164,6 +164,8 @@ const slice = createSlice({
     },
     doubleTap: {
       reducer(state) {
+        state.scoreHome++;
+        state.scoreAway++;
         state.segmentPoints[state.segmentPoints.length - 1].push({
           side: "home",
           player: null,
