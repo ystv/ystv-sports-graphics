@@ -93,14 +93,14 @@ node('docker') {
         }
 
         // Send all this to jira!
-        jiraSendDeploymentInfo(
+        /*jiraSendDeploymentInfo(
             environmentType: 'production',
             environmentId: 'prod',
             environmentName: 'production',
             issueKeys: issueKeys,
             site: 'ystv.atlassian.net',
             state: 'in_progress'
-        )
+        )*/
     }
 
     stage('Deploy') {
@@ -113,23 +113,23 @@ node('docker') {
                 string(name: 'JOB_FILE', value: 'sports-graphics-bundle-prod.nomad'),
                 text(name: 'TAG_REPLACEMENTS', value: "registry.comp.ystv.co.uk/sports-scores/bundle:${deployBldNum}")
             ]
-            jiraSendDeploymentInfo(
+            /*jiraSendDeploymentInfo(
                 environmentType: 'production',
                 environmentId: 'prod',
                 environmentName: 'production',
                 issueKeys: issueKeys,
                 site: 'ystv.atlassian.net',
                 state: isRollBack ? 'rolled_back' : 'successful'
-            )
+            )*/
         } catch (Exception e) {
-            jiraSendDeploymentInfo(
+            /*jiraSendDeploymentInfo(
                 environmentType: 'production',
                 environmentId: 'prod',
                 environmentName: 'production',
                 issueKeys: issueKeys,
                 site: 'ystv.atlassian.net',
                 state: 'failed'
-            )
+            )*/
             throw e
         }
     }
