@@ -32,7 +32,7 @@ export const EventMetaSchema: Yup.SchemaOf<EventMeta> = Yup.object().shape({
     .default(() => new Date().toISOString()),
   name: Yup.string().required(),
   notCovered: Yup.boolean().default(false),
-  rosesLiveID: Yup.number().optional(),
+  rosesLiveID: Yup.string().optional(),
   winner: Yup.mixed<"home" | "away">().oneOf(["home", "away"]).notRequired(),
   worthPoints: Yup.number().integer().required().min(0),
   homeTeam: TeamInfoSchema,
