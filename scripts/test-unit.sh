@@ -5,7 +5,7 @@ export NODE_ENV=test
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 # Start Redis
-docker-compose --project-directory "$SCRIPT_DIR/.." up -d redis
+docker compose --project-directory "$SCRIPT_DIR/.." up -d redis
 
 pushd "$SCRIPT_DIR/../scores-src" || exit 1
 yarn test
