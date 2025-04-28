@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload logs
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Server logs (Integration)
           path: |
@@ -163,14 +163,14 @@ jobs:
 
       - name: Upload videos of failures
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: E2E test video
           path: ./nodecg/bundles/ystv-sports-graphics/cypress/videos
 
       - name: Upload logs
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Server logs (E2E)
           path: |
