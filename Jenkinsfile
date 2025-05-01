@@ -41,12 +41,16 @@ pipeline {
                 }
                 stage('Server') {
                     steps {
-                        sh "docker build --build-arg GIT_REV=${env.GIT_COMMIT} -t registry.comp.ystv.co.uk/sports-scores/server:${imageNamePrefix}${env.BUILD_NUMBER} -f Dockerfile.server ."
+                        withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
+                            sh "docker build --build-arg GIT_REV=${env.GIT_COMMIT} -t registry.comp.ystv.co.uk/sports-scores/server:${imageNamePrefix}${env.BUILD_NUMBER} -f Dockerfile.server ."
+                        }
                     }
                 }
                 stage('Client') {
                     steps {
-                        sh "docker build --build-arg GIT_REV=${env.GIT_COMMIT} -t registry.comp.ystv.co.uk/sports-scores/client:${imageNamePrefix}${env.BUILD_NUMBER} -f Dockerfile.client ."
+                        withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
+                            sh "docker build --build-arg GIT_REV=${env.GIT_COMMIT} -t registry.comp.ystv.co.uk/sports-scores/client:${imageNamePrefix}${env.BUILD_NUMBER} -f Dockerfile.client ."
+                        }withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
                     }
                 }
             }
