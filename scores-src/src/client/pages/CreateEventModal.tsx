@@ -111,7 +111,7 @@ export function CreateEventModal() {
               independent
             />
             <Field
-              type="number"
+              type="text"
               name="rosesLiveID"
               title="RosesLive ID"
               helper="Don't touch this unless you know what you're doing."
