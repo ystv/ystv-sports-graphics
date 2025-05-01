@@ -23,7 +23,9 @@ pipeline {
         }
         stage('Download Dependencies') {
             steps {
-                sh 'docker build -f Dockerfile.common .'
+                withDockerRegistry(credentialsId: 'docker-registry', url: 'https://registry.comp.ystv.co.uk') {
+                    sh 'docker build -f Dockerfile.common .'
+                }
             }
         }
         stage('Build Images') {
