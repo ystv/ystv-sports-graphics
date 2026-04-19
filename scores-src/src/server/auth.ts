@@ -1,10 +1,10 @@
-import { DB } from "./db";
+// import { DB } from "./db";
 import { verify, hash } from "argon2";
-import {
-  DocumentExistsError,
-  DocumentNotFoundError,
-  GetResult,
-} from "couchbase";
+// import {
+//   DocumentExistsError,
+//   DocumentNotFoundError,
+//   GetResult,
+// } from "couchbase";
 import { NextFunction, Request, Router, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import invariant from "tiny-invariant";
@@ -12,11 +12,16 @@ import { ensure } from "./errs";
 import { Unauthorized, Forbidden, BadRequest } from "http-errors";
 import { randomUUID } from "crypto";
 import { isBootstrapped } from "./bootstrap";
-import { Permission, User } from "../common/types";
+// import { Permission, User } from "../common/types";
+import { db } from "./db";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { Permission, User } from "../generated/prisma/client";
+
+type UserNoPasswd = Omit<User, "passwordHash">;
 
 declare module "express-serve-static-core" {
   interface Request {
-    user?: User;
+    user?: UserNoPasswd;
   }
 }
 
@@ -26,20 +31,17 @@ declare module "express-serve-static-core" {
  * @returns
  * @throws Forbidden if the session ID does not match to a user.
  */
-async function getUserForSession(sesionID: string): Promise<User> {
+async function getUserForSession(sesionID: string): Promise<UserNoPasswd> {
   try {
-    const sessionDoc = await DB.collection("_default").get(
-      `Session/${sesionID}`
-    );
-    const userDoc = await DB.collection("_default").get(
-      `User/${sessionDoc.content as string}`
-    );
-    return userDoc.content as User;
+    const session = await db.session.findUniqueOrThrow({
+      where: {
+        id: sesionID,
+      },
+      include: { user: { omit: { passwordHash: true } } },
+    });
+    return session.user as User;
   } catch (e) {
-    if (e instanceof DocumentNotFoundError) {
-      throw new Forbidden("Invalid session");
-    }
-    throw e;
+    throw new Forbidden("Invalid session");
   }
 }
 
@@ -75,7 +77,7 @@ const requestersToNotSendWWWAuthenticateFor = new Set([
   "fetch",
 ]);
 
-async function findUserFromAuthHeader(value: string): Promise<User> {
+async function findUserFromAuthHeader(value: string): Promise<UserNoPasswd> {
   const [scheme, ...rest] = value.split(" ");
   switch (scheme) {
     case "Bearer": {
@@ -117,7 +119,7 @@ export function authenticate(...permissions: Permission[]) {
       ensure(!!req.headers, BadRequest, "no headers?");
       const authHeader = req.headers["authorization"];
       const cookie: string | undefined = (req.cookies ?? {})[cookieKey];
-      let user: User;
+      let user: UserNoPasswd;
 
       if (authHeader?.length) {
         user = await findUserFromAuthHeader(authHeader);
@@ -170,20 +172,12 @@ const sessionTTLSeconds = 60 * 60 * 24 * 7;
  * @returns the session ID
  */
 export async function createSessionForUser(username: string): Promise<string> {
-  for (;;) {
-    try {
-      const sid = randomUUID();
-      await DB.collection("_default").insert(`Session/${sid}`, username, {
-        expiry: sessionTTLSeconds,
-      });
-      return sid;
-    } catch (e) {
-      if (e instanceof DocumentExistsError) {
-        continue;
-      }
-      throw e;
-    }
-  }
+  const session = await db.session.create({
+    data: {
+      username,
+    },
+  });
+  return session.id;
 }
 
 /**
@@ -197,16 +191,32 @@ export async function createLocalUser(
   username: string,
   password: string,
   permissions: Permission[]
-): Promise<User> {
+): Promise<UserNoPasswd> {
   const pwHash = await hash(password);
   const data: User = {
     username,
     passwordHash: pwHash,
     permissions,
   };
-  await DB.collection("_default").insert(`User/${username}`, data);
-  delete data.passwordHash;
-  return data;
+  const user = await db.user.create({
+    data,
+    omit: {
+      passwordHash: true,
+    },
+  });
+  return user;
+}
+
+export async function localUserExists(username: string): Promise<boolean> {
+  const user = await db.user.findFirst({
+    where: {
+      username,
+    },
+    omit: {
+      passwordHash: true,
+    },
+  });
+  return !!user;
 }
 
 /**
@@ -220,22 +230,25 @@ export async function createLocalUser(
 export async function authenticateUser(
   username: string,
   password: string
-): Promise<User> {
-  let userRes: GetResult;
+): Promise<UserNoPasswd> {
+  let userRes: User;
   try {
-    userRes = await DB.collection("_default").get(`User/${username}`);
+    userRes = await db.user.findFirstOrThrow({
+      where: {
+        username,
+      },
+    });
   } catch (e) {
-    if (e instanceof DocumentNotFoundError) {
+    if (e instanceof PrismaClientKnownRequestError && e.code === "P2001") {
       throw new Unauthorized("User does not exist");
     }
     throw e;
   }
-  const user = userRes.content as User;
-  const valid = await verify(user.passwordHash ?? "", password);
+  const valid = await verify(userRes.passwordHash ?? "", password);
   if (!valid) {
     throw new Unauthorized("Incorrect username or password");
   }
-  delete user.passwordHash;
+  const user = userRes as UserNoPasswd;
   return user;
 }
 

@@ -1,11 +1,7 @@
-import {
-  DocumentNotFoundError,
-  DocumentLockedError,
-  CasMismatchError,
-} from "couchbase";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { NextFunction, Request, Response } from "express";
 import { isHttpError } from "http-errors";
-import { MulterError, ErrorCode as MulterErrorCode } from "multer";
+import { MulterError } from "multer";
 import { Logger } from "winston";
 import { ValidationError } from "yup";
 
@@ -36,15 +32,9 @@ export const errorHandler: (
     }
 
     /* istanbul ignore else */
-    if (err instanceof DocumentNotFoundError) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2001") {
       code = 404;
       message = "entity not found";
-    } else if (
-      err instanceof DocumentLockedError ||
-      err instanceof CasMismatchError
-    ) {
-      code = 409;
-      message = "someone edited that at the same time as you";
     } else if (isHttpError(err)) {
       code = err.statusCode;
       message = err.message;

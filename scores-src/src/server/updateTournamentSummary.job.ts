@@ -1,23 +1,18 @@
 // import cfg from "./config";
 // import Queue from "bull";
-import { DB } from "./db";
-import { Action, EventMeta } from "../common/types";
 import { invariant } from "./errs";
 import { Logger } from "winston";
 import { identity } from "lodash-es";
 import { wrapReducer } from "../common/eventStateHelpers";
 import { EVENT_TYPES } from "../common/sports";
+import { db } from "./db";
+import { EventMeta, LeagueSummary } from "../generated/prisma/client";
 
-export interface LeagueSummary {
-  totalPointsHome: number;
-  totalPointsAway: number;
-  latestResults: Array<{
-    eventType: string;
-    name: string;
-    winner: "home" | "away";
-    points: number;
-  }>;
-}
+// export interface LeagueSummary {
+//   totalPointsHome: number;
+//   totalPointsAway: number;
+//   latestResults: Array<LatestResult>;
+// }
 
 // export const updateTournamentSummaryQueue = new Queue(
 //   "updateTournamentSummary",
@@ -33,49 +28,59 @@ export interface LeagueSummary {
 // const baseLogger = getLogger("updateTournamentSummary");
 
 export async function doUpdate(logger: Logger, league: string) {
-  const result: LeagueSummary = {
+  const result: Omit<LeagueSummary, "id"> = {
     latestResults: [],
     totalPointsAway: 0,
     totalPointsHome: 0,
   };
 
-  const allEventResult = await DB.query(
-    `SELECT e AS data, meta().id AS id
-    FROM _default e
-    WHERE meta(e).id LIKE 'EventMeta/%'
-    AND league = $1
-    ORDER BY MILLIS(e.startTime)`,
-    {
-      parameters: [league],
-    }
-  );
-  logger.debug("Processsing", { league, len: allEventResult.rows.length });
-  for (const row of allEventResult.rows) {
-    const { id, data: meta } = row as { id: string; data: EventMeta };
-    if (!meta.winner) {
+  const allEventResult = await db.eventMeta.findMany({
+    where: {
+      league,
+    },
+    orderBy: {
+      startTime: "asc",
+    },
+  });
+  logger.debug("Processsing", { league, len: allEventResult.length });
+  for (const row of allEventResult) {
+    // const { id, data: meta } = row as { id: string; ...data: EventMeta };
+    const id = row.id;
+    if (!row.winner) {
       logger.debug("Skipping event with no winner", { id });
       continue;
     }
-    if (meta.winner === "home") {
-      result.totalPointsHome += meta.worthPoints;
-    } else if (meta.winner === "away") {
-      result.totalPointsAway += meta.worthPoints;
+    if (row.winner === "home") {
+      result.totalPointsHome += row.worthPoints;
+    } else if (row.winner === "away") {
+      result.totalPointsAway += row.worthPoints;
     } else {
       invariant(false, "winner wasn't either home or away");
     }
     result.latestResults.push({
-      eventType: meta.type,
-      name: meta.name,
-      points: meta.worthPoints,
-      winner: meta.winner,
+      eventType: row.type,
+      name: row.name,
+      points: row.worthPoints,
+      winner: row.winner,
     });
     logger.debug("Computed", {
       id,
-      winner: meta.winner,
-      points: meta.worthPoints,
+      winner: row.winner,
+      points: row.worthPoints,
     });
   }
-  await DB.collection("_default").upsert(`LeagueSummary/${league}`, result);
+  await db.leagueSummary.upsert({
+    where: {
+      id: league,
+    },
+    create: {
+      league: { connect: { slug: league } },
+      ...result,
+    },
+    update: {
+      ...result,
+    },
+  });
 }
 
 // updateTournamentSummaryQueue.process(async function (job) {

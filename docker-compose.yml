@@ -1,52 +1,51 @@
-version: '3.9'
+version: "3.9"
 
 services:
+  database:
+    # Official Postgres image from DockerHub (we use the last version)
+    image: "postgres:latest"
 
-  couchbase:
-    image: ${COUCHBASE_SERVER_IMAGE:-couchbase/server:community-7.1.1}
-    volumes:
-      - cbdata:/cbdata
-      - ./scripts/couchbase-entrypoint.sh:/entrypoint.sh:ro
+    # By default, a Postgres database is running on the 5432 port.
+    # If we want to access the database from our computer (outside the container),
+    # we must share the port with our computer's port.
+    # The syntax is [port we want on our machine]:[port we want to retrieve in the container]
+    # Note: You are free to change your computer's port,
+    # but take into consideration that it will change the way
+    # you are connecting to your database.
     ports:
-      - "8091-8097:8091-8097"
-      - "18091-18097:18091-18097"
-      - "11207-11211:11207-11211"
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: 2G
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "-u", "Administrator:password", "http://localhost:8091/pools/default"]
-      interval: 10s
-      timeout: 10s
-      start_period: 1m30s
-      retries: 5
-  
+      - 5432:5432
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sports_graphics
+
+    volumes:
+      - ./db-data/:/var/lib/postgresql/data/
+
   redis:
     image: redis:6-alpine
     ports:
       - "6379:6379"
-  
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
-    init: true
-    ports:
-      - "8000:8000"
-    environment:
-      - DB_CONNECTION_STRING=couchbase://couchbase
-      - DB_USER=sports-scores
-      - DB_PASSWORD=password
-      - DB_BUCKET=sports-scores
-      - REDIS_CONNECTION_STRING=redis://redis
-      - NODE_ENV=development
-    depends_on:
-      redis: 
-        condition: service_started
-      # couchbase:
-      #   condition: service_healthy
 
-volumes:
-  cbdata:
+  # server:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.server
+  #   init: true
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - DB_CONNECTION_STRING=couchbase://couchbase
+  #     - DB_USER=sports-scores
+  #     - DB_PASSWORD=password
+  #     - DB_BUCKET=sports-scores
+  #     - REDIS_CONNECTION_STRING=redis://redis
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     redis:
+  #       condition: service_started
+  # couchbase:
+  #   condition: service_healthy
+# volumes:
+#   cbdata:

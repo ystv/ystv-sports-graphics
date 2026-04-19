@@ -2,11 +2,12 @@ import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import * as Yup from "yup";
 import { BadRequest, Conflict } from "http-errors";
-import { Permission, User } from "../common/types";
 import { authenticate, createLocalUser } from "./auth";
-import { DB } from "./db";
 import { ensure } from "./errs";
 import { hash } from "argon2";
+import { Permission, User } from "../generated/prisma/client";
+import { UserNoPasswd } from "../common/types";
+import { db } from "./db";
 
 export function createUserManagementRouter() {
   const router = Router();
@@ -15,13 +16,10 @@ export function createUserManagementRouter() {
     "/",
     authenticate("admin"),
     asyncHandler(async (req, res) => {
-      const rows = await DB.query(
-        `SELECT RAW u FROM _default u WHERE meta(u).id LIKE 'User/%'`
-      );
-      const result: User[] = [];
-      for (const row of rows.rows) {
-        const val: User = row;
-        delete val.passwordHash;
+      const rows = await db.user.findMany({ omit: { passwordHash: true } });
+      const result: UserNoPasswd[] = [];
+      for (const row of rows) {
+        const val: UserNoPasswd = row;
         result.push(val);
       }
       res.status(200).json(result);
@@ -34,12 +32,17 @@ export function createUserManagementRouter() {
     asyncHandler(async (req, res) => {
       const id = req.params.id;
       ensure(typeof id === "string", BadRequest, "missing id");
-      const data = await DB.collection("_default").get(`User/${id}`);
-      const user: User = data.content;
-      delete user.passwordHash;
+      const data = await db.user.findUniqueOrThrow({
+        where: {
+          username: id,
+        },
+        omit: {
+          passwordHash: true,
+        },
+      });
+      const user: UserNoPasswd = data;
       res.status(200).json({
         ...user,
-        _cas: data.cas,
       });
     })
   );
@@ -87,25 +90,13 @@ export function createUserManagementRouter() {
       const payload = await EditUserSchema.validate(req.body, {
         abortEarly: false,
       });
-      const newData: User = {
+      const newData: UserNoPasswd = {
         username: payload.username,
         permissions: payload.permissions,
       };
-      const data = await DB.collection("_default").getAndLock(id, 10);
-      try {
-        if (payload._cas && data.cas.toString() != payload._cas) {
-          throw new Conflict("someone else has updated this user");
-        }
-        newData.passwordHash = data.content.passwordHash;
-        await DB.collection("_default").replace(id, newData, {
-          cas: data.cas,
-        });
-        delete newData.passwordHash;
-        res.status(200).json(newData);
-      } catch (e) {
-        await DB.collection("_default").unlock(id, data.cas);
-        throw e;
-      }
+      const data = await db.user.findUniqueOrThrow({ where: { username } });
+      await db.user.update({ where: { username }, data: newData });
+      res.status(200).json(newData);
     })
   );
 
@@ -123,19 +114,15 @@ export function createUserManagementRouter() {
         abortEarly: false,
       });
       const id = `User/${username}`;
-      const dbRes = await DB.collection("_default").getAndLock(id, 10);
-      try {
-        const data: User = dbRes.content;
-        data.passwordHash = await hash(payload.password);
-        await DB.collection("_default").replace(id, data, {
-          cas: dbRes.cas,
-        });
-        delete data.passwordHash;
-        res.status(200).json(data);
-      } catch (e) {
-        await DB.collection("_default").unlock(id, dbRes.cas);
-        throw e;
-      }
+      const dbRes = await db.user.findUniqueOrThrow({
+        where: { username },
+        omit: { passwordHash: true },
+      });
+
+      const data: UserNoPasswd = dbRes;
+      const passwordHash = await hash(payload.password);
+      await db.user.update({ where: { username }, data: { passwordHash } });
+      res.status(200).json(data);
     })
   );
 
@@ -143,9 +130,9 @@ export function createUserManagementRouter() {
     "/:id",
     authenticate("admin"),
     asyncHandler(async (req, res) => {
-      const id = req.params.id;
-      ensure(typeof id === "string", BadRequest, "missing id");
-      await DB.collection("_default").remove(`User/${id}`);
+      const username = req.params.id;
+      ensure(typeof username === "string", BadRequest, "missing id");
+      await db.user.delete({ where: { username } });
       res.status(204).json();
     })
   );

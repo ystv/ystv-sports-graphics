@@ -4,10 +4,10 @@ import got from "got";
 import invariant from "tiny-invariant";
 import { EVENT_TYPES } from "../common/sports";
 import { identity } from "lodash-es";
-import { EventMeta } from "../common/types";
 import * as fs from "fs";
 import * as path from "path";
 import { ensure } from "./errs";
+import { EventMeta } from "../generated/prisma/client";
 
 const logger = getLogger("rosesLiveSync");
 

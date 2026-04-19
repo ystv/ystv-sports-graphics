@@ -1,15 +1,7 @@
-import { DB } from "./db";
 import { v4 as uuidv4 } from "uuid";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { PreconditionFailed } from "http-errors";
-import {
-  DocumentExistsError,
-  DocumentNotFoundError,
-  MutateInSpec,
-  QueryScanConsistency,
-  Cas,
-} from "couchbase";
 import { dispatchChangeToEvent, resync } from "./updatesRepo";
 import {
   Edit,
@@ -29,14 +21,14 @@ import {
   Action,
   BaseEventStateType,
   EventCreateEditSchema,
-  EventMeta,
-  EventMetaSchema,
   EventTypeInfo,
 } from "../common/types";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
 import { cloneDeep, identity, isEqual, omit, pickBy } from "lodash-es";
 import { leagueKey } from "./leagueRoutes";
-import { CouchbaseCas } from "./dbHelpers";
+import { db } from "./db";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { EventMeta } from "../generated/prisma/client";
 
 export function makeEventAPIFor<
   TState extends BaseEventStateType,
@@ -66,21 +58,18 @@ export function makeEventAPIFor<
     asyncHandler(async (req, res) => {
       const league = req.params.league;
       invariant(typeof league === "string", "no league from url");
-      const result = await DB.query(
-        `SELECT RAW e
-        FROM _default e
-        WHERE meta(e).id LIKE 'EventMeta/%'
-        AND e.league = $1
-        AND e.type = $2
-        ORDER BY MILLIS(e.startTime)`,
-        {
-          parameters: [league, typeName],
-          scanConsistency: QueryScanConsistency.RequestPlus,
-        }
-      );
+      const result = await db.eventMeta.findMany({
+        where: {
+          leagueSlug: league,
+          type: typeName,
+        },
+        orderBy: {
+          startTime: "asc",
+        },
+      });
       const events = await Promise.all(
-        result.rows.map(async (row) => {
-          const meta = row as EventMeta;
+        result.map(async (row) => {
+          const meta = row;
           const history = await DB.collection("_default").get(
             row.id.replace("EventMeta", "EventHistory")
           );
@@ -107,15 +96,11 @@ export function makeEventAPIFor<
       invariant(typeof id === "string", "no id from url");
 
       // check the league exists
-      try {
-        await DB.collection("_default").get(leagueKey(league));
-      } catch (e) {
-        if (e instanceof DocumentNotFoundError) {
-          throw new BadRequest("league not found");
-        } else {
-          throw e;
-        }
-      }
+      await db.league.findFirstOrThrow({
+        where: {
+          slug: league,
+        },
+      });
 
       const meta = await DB.collection("_default").get(metaKey(league, id));
       const history = await DB.collection("_default").get(
@@ -155,16 +140,12 @@ export function makeEventAPIFor<
       meta.league = league;
       meta.type = typeName;
       // The input contains the slugs for the teams, replace them with the actual data.
-      meta.homeTeam = (
-        await DB.collection("_default").get(
-          `Team/${meta.homeTeam as unknown as string}`
-        )
-      ).content;
-      meta.awayTeam = (
-        await DB.collection("_default").get(
-          `Team/${meta.awayTeam as unknown as string}`
-        )
-      ).content;
+      meta.homeTeam = await db.team.findUniqueOrThrow({
+        where: { slug: meta.homeTeam },
+      });
+      meta.awayTeam = await db.team.findUniqueOrThrow({
+        where: { slug: meta.awayTeam },
+      });
 
       const initialState = await stateSchema.validate(req.body, {
         abortEarly: false,
@@ -179,7 +160,10 @@ export function makeEventAPIFor<
           await DB.collection("_default").insert(metaKey(league, id), meta);
           break;
         } catch (e) {
-          if (e instanceof DocumentExistsError) {
+          if (
+            e instanceof PrismaClientKnownRequestError &&
+            e.code === "P2001"
+          ) {
             continue;
           }
           throw e;

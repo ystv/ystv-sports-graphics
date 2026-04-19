@@ -3,6 +3,7 @@ module.exports = {
   ignorePatterns: [
     "scores-src/dist/**",
     "scores-src/addon-build/**",
+    "scores-src/src/generated/**",
     "dashboard/**",
     "graphics/**",
     "extension.js",

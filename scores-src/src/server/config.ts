@@ -8,6 +8,10 @@ const config = {
     bucket: cfg.get<string>("db.bucket"),
     scope: cfg.get<string>("db.scope"),
   },
+  initialUser: {
+    username: "admin",
+    password: "",
+  },
   port: cfg.get<number>("port"),
   logLevel: cfg.get<string>("logLevel"),
   pathPrefix: cfg.get<string>("pathPrefix"),

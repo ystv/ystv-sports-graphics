@@ -1,4 +1,3 @@
-import { LookupInSpec } from "couchbase";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import invariant from "tiny-invariant";

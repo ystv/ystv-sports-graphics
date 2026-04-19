@@ -1,13 +1,13 @@
-import { DocumentNotFoundError } from "couchbase";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { startCase } from "lodash-es";
 import invariant from "tiny-invariant";
 import { authenticate } from "./auth";
-import { DB } from "./db";
 import { getLogger } from "./loggingSetup";
-import { LeagueSummary } from "./updateTournamentSummary.job";
 import { doUpdate as updateTournamentSummary } from "./updateTournamentSummary.job";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { db } from "./db";
+import { LeagueSummary } from "../generated/prisma/client";
 
 const logger = getLogger("tournamentSummaryRoutes");
 
@@ -22,14 +22,13 @@ export function createTournamentSummaryRouter() {
       invariant(typeof league === "string", "no league from url");
       let data: LeagueSummary;
       try {
-        data = (
-          await DB.collection("_default").get(
-            "TournaLeagueSummarymentSummary/" + league
-          )
-        ).content;
+        data = await db.leagueSummary.findUniqueOrThrow({
+          where: { id: league },
+        });
       } catch (e) {
-        if (e instanceof DocumentNotFoundError) {
+        if (e instanceof PrismaClientKnownRequestError && e.code === "P2001") {
           data = {
+            id: league,
             latestResults: [],
             totalPointsAway: 0,
             totalPointsHome: 0,
@@ -67,9 +66,9 @@ export function createTournamentSummaryRouter() {
       const league = req.params.league;
       invariant(typeof league === "string", "no league from url");
       await updateTournamentSummary(logger, league);
-      const data: LeagueSummary = (
-        await DB.collection("_default").get("LeagueSummary/" + league)
-      ).content;
+      const data: LeagueSummary = await db.leagueSummary.findUniqueOrThrow({
+        where: { id: league },
+      });
       res.status(200).json(data);
     })
   );

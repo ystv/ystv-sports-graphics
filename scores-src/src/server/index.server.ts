@@ -12,7 +12,7 @@ import onFinished from "on-finished";
 
 import { createEventTypesRouter } from "./eventTypeRoutes";
 import "./updateTournamentSummary.job";
-import * as db from "./db";
+import { db } from "./db";
 import * as redis from "./redis";
 import { NotFound } from "http-errors";
 import { createEventsRouter } from "./eventsRoutes";
@@ -38,9 +38,9 @@ import createLeaguesRouter from "./leagueRoutes";
   const indexlogger = logging.getLogger("index.server");
 
   try {
-    await db.connect();
+    await db.$connect();
   } catch (e) {
-    indexlogger.error("Failed to connect to Couchbase!", { error: e });
+    indexlogger.error("Failed to connect to Postgres!", { error: e });
     process.exit(10);
   }
   try {
@@ -51,7 +51,7 @@ import createLeaguesRouter from "./leagueRoutes";
   }
 
   process.on("beforeExit", async () => {
-    await db.disconnect();
+    await db.$disconnect();
     await redis.close();
     indexlogger.warn("Goodbye!");
   });
@@ -148,7 +148,7 @@ import createLeaguesRouter from "./leagueRoutes";
   app.get(
     "/readyz",
     asyncHandler(async (_, res) => {
-      await db.cluster.ping();
+      await db.$executeRaw`SELECT 1`;
       await redis.REDIS.ping();
       res.status(200).send(`{"ok": true}`);
     })

@@ -6,8 +6,6 @@ import { BadRequest } from "http-errors";
 import { randomUUID } from "crypto";
 import { EventUpdateMessage, getActions, SpecialMessage } from "./updatesRepo";
 import { ensure } from "./errs";
-import { DB } from "./db";
-import { DocumentNotFoundError } from "couchbase";
 import type { LiveClientMessage, LiveServerMessage } from "../common/liveTypes";
 import config from "./config";
 import { Request, Router } from "express";
@@ -19,6 +17,9 @@ import invariant from "tiny-invariant";
 import { EVENT_TYPES } from "../common/sports";
 import { Action } from "../common/types";
 import { ClientClosedError } from "redis";
+import { db } from "./db";
+import { EventHistory } from "../generated/prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 type SocketMode = "actions" | "state";
 
@@ -149,11 +150,11 @@ export function createLiveRouter() {
             return;
           }
           logger.debug("Processing resync", { id: data.id });
-          const history = (
-            await DB.collection("_default").get(
-              data.id.replace("Event/", "EventHistory/")
-            )
-          ).content;
+          const history = await db.eventHistory.findMany({
+            where: {
+              eventId: data.id,
+            },
+          });
           historyCache.set(data.id, history);
           if (mode === "state") {
             await calculateAndSendCurrentState(data.id);
@@ -181,11 +182,11 @@ export function createLiveRouter() {
           meta: JSON.parse(data.meta),
         });
       } else {
-        history = (
-          await DB.collection("_default").get(
-            data.id.replace("Event/", "EventHistory/")
-          )
-        ).content;
+        history = await db.eventHistory.findMany({
+          where: {
+            eventId: data.id,
+          },
+        });
         invariant(
           typeof history !== "undefined",
           "history undefined even after DB get"
@@ -271,18 +272,21 @@ export function createLiveRouter() {
               config.subscriptionLifetime
             );
 
-            let currentHistory;
+            let currentHistory: EventHistory[];
             try {
-              currentHistory = (
-                await DB.collection("_default").get(
-                  `EventHistory/${league}/${eventType}/${eventId}`
-                )
-              ).content;
+              currentHistory = await db.eventHistory.findMany({
+                where: {
+                  eventId: `${league}/${eventType}/${eventId}`,
+                },
+              });
             } catch (e) {
               logger.warn("In SUBSCRIBE handler, failed to fetch history", {
                 err: e,
               });
-              if (e instanceof DocumentNotFoundError) {
+              if (
+                e instanceof PrismaClientKnownRequestError &&
+                e.code === "P2001"
+              ) {
                 currentHistory = [];
               } else {
                 throw e;
@@ -323,11 +327,11 @@ export function createLiveRouter() {
               UserError,
               "can't resync not subscribed event"
             );
-            const history = (
-              await DB.collection("_default").get(
-                payload.what.replace("Event/", "EventHistory/")
-              )
-            ).content;
+            const history = await db.eventHistory.findMany({
+              where: {
+                eventId: payload.what,
+              },
+            });
             historyCache.set(payload.what, history);
             if (mode === "state") {
               calculateAndSendCurrentState(payload.what);

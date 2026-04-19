@@ -1,11 +1,10 @@
 import { Router } from "express";
 import { authenticate } from "./auth";
 import asyncHandler from "express-async-handler";
-import { DB } from "./db";
 import { League, LeagueSchema } from "../common/types";
 import { v4 as uuidv4 } from "uuid";
 import slug from "slug";
-import { QueryScanConsistency } from "couchbase";
+import { db } from "./db";
 
 export function leagueKey(slug: string) {
   return `League/${slug}`;
@@ -18,14 +17,15 @@ export default function createLeaguesRouter() {
     "/",
     authenticate("read"),
     asyncHandler(async (req, res) => {
-      const result = await DB.query(
-        `SELECT RAW l FROM _default l
-      WHERE meta(l).id LIKE 'League/%'
-      AND (hidden IS MISSING OR hidden = false)
-      ORDER BY MILLIS(l.startDate)`,
-        { scanConsistency: QueryScanConsistency.RequestPlus }
-      );
-      res.status(200).json(result.rows as League[]);
+      const result = await db.league.findMany({
+        where: {
+          hidden: false,
+        },
+        orderBy: {
+          startDate: "asc",
+        },
+      });
+      res.status(200).json(result as League[]);
     })
   );
 
@@ -41,7 +41,9 @@ export default function createLeaguesRouter() {
         lower: true,
       });
       data.slug = leagueSlug;
-      await DB.collection("_default").insert(leagueKey(leagueSlug), data);
+      await db.league.create({
+        data,
+      });
       res.status(201).json(data);
     })
   );

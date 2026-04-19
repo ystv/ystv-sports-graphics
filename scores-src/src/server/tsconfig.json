@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "module": "commonjs",
     "rootDir": "..",
     "noEmit": true,
@@ -12,5 +13,5 @@
     "typeRoots": ["../../node_modules/@types"],
     "downlevelIteration": true
   },
-  "include": ["../common/**/*.ts", "../common/**/*.tsx", "./**/*.ts"]
+  "include": ["../common/**/*.ts", "../common/**/*.tsx", "./**/*.ts", "../prisma.d.ts"]
 }

@@ -1,11 +1,10 @@
 import { getLogger } from "./loggingSetup";
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
-import { DB } from "./db";
 import { ensure, invariant } from "./errs";
 import { BadRequest } from "http-errors";
 import { createLocalUser } from "./auth";
-import { QueryScanConsistency } from "couchbase";
+import { db } from "./db";
 
 const logger = getLogger("testRoutes");
 
@@ -19,19 +18,7 @@ export function createTestRouter() {
   router.post(
     "/resetDB",
     asyncHandler(async (req, res) => {
-      await DB.query("DELETE FROM _default", {
-        scanConsistency: QueryScanConsistency.RequestPlus,
-      });
-      await DB.collection("_default").insert("BootstrapState", {
-        bootstrapped: true,
-      });
-      // Execute another dummy query to check that everything's caught up
-      await DB.query(
-        "SELECT * FROM _default WHERE meta().id = 'BootstrapState'",
-        {
-          scanConsistency: QueryScanConsistency.RequestPlus,
-        }
-      );
+      await db.$queryRaw`DELETE FROM *`;
       res.status(200).json({ ok: true });
     })
   );

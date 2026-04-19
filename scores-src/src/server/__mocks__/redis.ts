@@ -1,3 +1,3 @@
-export const REDIS = {
-  xAdd: jest.fn(),
-};
+// export const REDIS = {
+//   xAdd: jest.fn(),
+// };

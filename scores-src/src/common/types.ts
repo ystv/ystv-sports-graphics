@@ -1,15 +1,16 @@
 import * as Yup from "yup";
+import { User, Permission, Team, EventMeta } from "../generated/prisma/client";
 
-export interface TeamInfo {
-  slug: string;
-  name: string;
-  abbreviation: string;
-  primaryColour: string;
-  secondaryColour: string;
-  crestAttachmentID: string;
-}
+// export interface TeamInfo {
+//   slug: string;
+//   name: string;
+//   abbreviation: string;
+//   primaryColour: string;
+//   secondaryColour: string;
+//   crestAttachmentID: string;
+// }
 
-export const TeamInfoSchema: Yup.SchemaOf<TeamInfo> = Yup.object({
+export const TeamInfoSchema: Yup.SchemaOf<Team> = Yup.object({
   slug: Yup.string().required(),
   name: Yup.string().required(),
   abbreviation: Yup.string().required().min(3).max(4),
@@ -68,38 +69,23 @@ export const EventCreateEditSchema: Yup.SchemaOf<EventMeta> =
       }),
   });
 
-export interface EventMeta {
-  id: string;
-  league: string; // league slug
-  type: string;
-  name: string;
-  startTime: string;
-  notCovered?: boolean;
-  rosesLiveID?: number;
-  winner?: "home" | "away";
-  worthPoints: number;
-  homeTeam: TeamInfo;
-  awayTeam: TeamInfo;
-  [K: string]: unknown;
-}
-
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type BaseEventStateType = {};
 
 export interface League {
-  slug?: string;
+  slug: string;
   name: string;
-  startDate: string;
-  endDate: string;
-  default?: boolean;
+  startDate: Date;
+  endDate: Date;
+  default: boolean;
 }
 
 export const LeagueSchema: Yup.SchemaOf<League> = Yup.object({
-  slug: Yup.string().optional(),
+  slug: Yup.string().required(),
   name: Yup.string().required(),
-  startDate: Yup.string().required(),
-  endDate: Yup.string().required(),
-  default: Yup.bool().optional(),
+  startDate: Yup.date().required(),
+  endDate: Yup.date().required(),
+  default: Yup.bool().required(),
 });
 
 export interface ActionMeta {
@@ -141,13 +127,9 @@ export interface ActionFormProps<TState> {
   meta: EventMeta;
 }
 
-export type Permission = "SUDO" | "read" | "write" | "admin" | "dangerZone";
+// export type Permission = "SUDO" | "read" | "write" | "admin" | "dangerZone";
 
-export interface User {
-  username: string;
-  passwordHash?: string;
-  permissions: Permission[];
-}
+export type UserNoPasswd = Omit<User, "passwordHash">;
 
 export type ActionRenderers<
   TActions,

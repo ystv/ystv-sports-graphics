@@ -6,3 +6,5 @@ addon-build/
 .rosesLiveSync.*
 
 src/client/coverage/
+
+/generated/prisma

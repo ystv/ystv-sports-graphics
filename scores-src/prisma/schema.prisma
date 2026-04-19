@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Attachment {
+  id       String @id @unique @default(uuid(4))
+  contents Bytes
+  mimeType String
+
+  team Team?
+}
+
+model Team {
+  slug              String @id @unique
+  name              String
+  abbreviation      String
+  primaryColour     String
+  secondaryColour   String
+  crestAttachmentID String @unique
+
+  crestAttachment Attachment @relation(fields: [crestAttachmentID], references: [id])
+
+  homeEventMetas EventMeta[] @relation(name: "eventHomeTeam")
+  awayEventMetas EventMeta[] @relation(name: "eventAwayTeam")
+}
+
+enum Winner {
+  home
+  away
+}
+
+model EventMeta {
+  id          String   @id
+  league      String // league slug
+  leagueObj   League   @relation(fields: [league], references: [slug])
+  type        String
+  name        String
+  startTime   String
+  notCovered  Boolean?
+  rosesLiveID Int?
+  winner      Winner?
+  worthPoints Int
+  homeTeam    String
+  homeTeamObj Team     @relation(name: "eventHomeTeam", fields: [homeTeam], references: [slug])
+  awayTeam    String
+  awayTeamObj Team     @relation(name: "eventAwayTeam", fields: [awayTeam], references: [slug])
+  // [K: string]: unknown;
+  meta        Json
+
+  history EventHistory[]
+}
+
+model EventHistory {
+  id      String    @id @default(cuid())
+  eventId String
+  event   EventMeta @relation(fields: [eventId], references: [id])
+
+  type    String
+  payload Json
+  /// [DBActionMeta]
+  meta    Json
+  ts      DateTime @default(now())
+
+  @@index([eventId, ts])
+}
+
+enum Permission {
+  SUDO
+  read
+  write
+  admin
+  dangerZone
+}
+
+model User {
+  username     String       @id
+  passwordHash String?
+  permissions  Permission[]
+
+  sessions Session[]
+}
+
+model Session {
+  id       String   @id @default(uuid(4))
+  username String
+  expires  DateTime @default(dbgenerated("(NOW() + '1 week'::interval)"))
+
+  user User @relation(fields: [username], references: [username])
+}
+
+model League {
+  slug      String   @id
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  default   Boolean  @default(false)
+  hidden    Boolean  @default(false)
+
+  events EventMeta[]
+
+  leagueSummaries LeagueSummary[]
+}
+
+model LeagueSummary {
+  id              String @id
+  /// [LatestResult]
+  latestResults   Json[]
+  totalPointsAway Int    @default(0)
+  totalPointsHome Int    @default(0)
+
+  league League @relation(fields: [id], references: [slug])
+}
