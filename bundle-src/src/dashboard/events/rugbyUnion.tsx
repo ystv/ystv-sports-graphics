@@ -25,6 +25,9 @@ export function RugbyUnionDashboard() {
   if (!state) {
     return <b>No state...?!</b>;
   }
+  if (!control) {
+    return <b>No control...?!</b>;
+  }
 
   return (
     <Container fluid>
